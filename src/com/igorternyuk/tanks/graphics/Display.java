@@ -6,6 +6,8 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.event.KeyListener;
+import java.awt.event.WindowListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
@@ -32,6 +34,9 @@ public class Display {
         this.window = new JFrame(title);
         this.canvas = new Canvas();
         this.canvas.setPreferredSize(new Dimension(width, height));
+        this.canvas.setFocusable(true);
+        this.canvas.requestFocus();
+
         this.window.setResizable(false);
         this.window.getContentPane().add(this.canvas);
         this.window.pack();
@@ -93,5 +98,13 @@ public class Display {
 
     public void addInputListener(KeyboardState keyboardState) {
         this.window.add(keyboardState);
+    }
+
+    public void addKeyListener(KeyListener listener) {
+        this.canvas.addKeyListener(listener);
+    }
+
+    public void addWindowListener(WindowListener listener) {
+        this.window.addWindowListener(listener);
     }
 }

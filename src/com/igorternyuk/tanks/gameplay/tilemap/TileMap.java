@@ -99,13 +99,13 @@ public class TileMap {
         if (areCoordinatesValid(row, col)) {
             int val = this.map[row][col];
             if (isEntityCode(val)) {
-                return TileType.REGULAR;
+                return TileType.BRICKS;
             }
             int r = val / this.numTilesX;
             int c = val % this.numTilesX;
             return this.tiles[r][c].getType();
         } else {
-            return TileType.BLOCKED;
+            return TileType.BRICKS;
         }
     }
 
@@ -179,11 +179,7 @@ public class TileMap {
     }
 
     private TileType getTileTypeForTheTileSet(int row, int col) {
-        if (row == 0) {
-            return TileType.REGULAR;
-        } else {
-            return TileType.BLOCKED;
-        }
+        return TileType.ICE;
     }
 
     public void draw(Graphics2D g) {

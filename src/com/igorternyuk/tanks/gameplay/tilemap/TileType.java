@@ -5,6 +5,9 @@ package com.igorternyuk.tanks.gameplay.tilemap;
  * @author igor
  */
 public enum TileType {
-    REGULAR,
-    BLOCKED
+    BRICKS,
+    METAL,
+    WATER,
+    BUSH,
+    ICE
 }

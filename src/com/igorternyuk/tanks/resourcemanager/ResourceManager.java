@@ -21,6 +21,7 @@ public class ResourceManager {
     }
 
     public boolean loadImage(ImageIdentifier identifier, String pathToImage) {
+        //TODO remove return code
         BufferedImage image = null;
         try {
             image = ImageIO.read(

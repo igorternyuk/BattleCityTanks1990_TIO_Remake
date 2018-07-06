@@ -15,9 +15,22 @@ public class TextureAtlas {
         this.atlas = atlas;
     }
 
+    public BufferedImage getAtlas() {
+        return atlas;
+    }
+
     public BufferedImage cutOut(Rectangle boundingRect) {
-        return this.atlas.getSubimage(boundingRect.x, boundingRect.y,
-                boundingRect.width, boundingRect.height);
+        System.out.println("cutting the image fragment out...");
+        if(this.atlas == null){
+            System.out.println("Atlas not loaded");
+        }
+        System.out.println("rect = " + boundingRect);
+        int x = boundingRect.x;
+        int y = boundingRect.y;
+        int w = boundingRect.width;
+        int h = boundingRect.height;
+        System.out.println("x = " + x + " y = " + y + " w = " + w +" h = " + h);
+        return this.atlas.getSubimage(x,y,w,h);
     }
 
     public BufferedImage cutOut(int topLeftX, int topLeftY, int fragmentWidth,

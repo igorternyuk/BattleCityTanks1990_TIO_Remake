@@ -4,9 +4,11 @@ import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.GameStatus;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
-import com.igorternyuk.tanks.gameplay.entities.player.Player;
 import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
 import com.igorternyuk.tanks.graphics.images.Background;
+import com.igorternyuk.tanks.graphics.images.TextureAtlas;
+import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
+import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
 import java.awt.Graphics2D;
 import com.igorternyuk.tanks.input.KeyboardState;
 import com.igorternyuk.tanks.resourcemanager.ImageIdentifier;
@@ -15,12 +17,10 @@ import com.igorternyuk.tanks.utils.Painter;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -34,10 +34,12 @@ public class LevelState extends GameState {
     private static final int SCREEN_HALF_HEIGHT =
             (int) (Game.HEIGHT / 2 / SCALE);
     private TileMap tileMap;
-    private Background background;
-    private Player player;
+    private TextureAtlas atlas;
+    private SpriteSheetManager spriteSheetManager;
+    //private Player player;
     private List<Entity> entities = new ArrayList<>();
     private GameStatus gameStatus = GameStatus.PLAY;
+    private boolean loaded = false;
 
     public LevelState(GameStateManager gsm, ResourceManager rm) {
         super(gsm, rm);
@@ -60,28 +62,22 @@ public class LevelState extends GameState {
     @Override
     public void load() {
         System.out.println("Level state loading...");
-        /*this.resourceManager.loadImage(ImageIdentifier.LEVEL_BACKGROUND,
-                "/Backgrounds/grassbg1.gif");
-        this.background = new Background(this.resourceManager
-                .getImage(ImageIdentifier.LEVEL_BACKGROUND));
-        this.tileMap = new TileMap(this.resourceManager, Game.TILE_SIZE);
-        this.tileMap.loadTileSet("/Tilesets/grasstileset.gif");
-        this.tileMap.loadMap("/Maps/level1.map");
-        this.resourceManager.loadImage(ImageIdentifier.PLAYER_SPRITE_SHEET,
-                "/Sprites/Player/playerSpriteSheet.png");
-        this.resourceManager.loadImage(ImageIdentifier.FIRE_BALL,
-                "/Sprites/Player/fireball.gif");
-        this.resourceManager.loadImage(ImageIdentifier.SNAIL,
-                "/Sprites/Enemies/snail.gif");
-        this.resourceManager.loadImage(ImageIdentifier.SPIDER,
-                "/Sprites/Enemies/spider.gif");
-        this.resourceManager.loadImage(ImageIdentifier.EXPLOSION,
-                "/Sprites/Enemies/explosion.gif");
-        this.resourceManager.loadImage(ImageIdentifier.HUD,
-                "/HUD/hud.gif");
-        this.resourceManager.loadImage(ImageIdentifier.POWERUPS,
-                "/Sprites/Powerups/powerups.png");
-        startNewGame();*/
+        this.resourceManager.loadImage(ImageIdentifier.TEXTURE_ATLAS,
+                "/images/texture_atlas.png");
+        this.atlas = new TextureAtlas(this.resourceManager.getImage(
+                ImageIdentifier.TEXTURE_ATLAS));
+        this.spriteSheetManager = new SpriteSheetManager();
+        loadSprites();
+        loaded = true;
+    }
+    
+    private void loadSprites(){
+        System.out.println("Loading the sprites...");
+        BufferedImage image = this.atlas.getAtlas();
+        System.out.println("atlas width = " + image.getWidth() + " atlas height = " + image.getHeight());
+        for(SpriteSheetIdentifier identifier: SpriteSheetIdentifier.values()){
+            this.spriteSheetManager.put(identifier, this.atlas);
+        }
     }
 
     private void startNewGame() {
@@ -103,14 +99,15 @@ public class LevelState extends GameState {
 
     @Override
     public void unload() {
-        this.player = null;
-        this.resourceManager.unloadImage(ImageIdentifier.LEVEL_BACKGROUND);
+        //this.player = null;
         this.tileMap = null;
     }
 
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
-        if(this.gameStatus != GameStatus.PLAY || this.player == null)
+        if(!this.loaded)
+            return;
+        if(this.gameStatus != GameStatus.PLAY /*|| this.player == null*/)
             return;
         updateEntities(keyboardState, frameTime);
         checkCollisions();
@@ -179,18 +176,35 @@ public class LevelState extends GameState {
 
     @Override
     public void draw(Graphics2D g) {
-        if (this.background != null) {
-            this.background.draw(g);
-        }
-
-        if (this.tileMap != null) {
+        if(!this.loaded)
+            return;
+        /*if (this.tileMap != null) {
             this.tileMap.draw(g);
         }
 
         for (int i = this.entities.size() - 1; i >= 0; --i) {
            // this.entities.get(i).draw(g);
+        }*/
+       BufferedImage[] images = {
+            this.spriteSheetManager.get(SpriteSheetIdentifier.PROJECTILE),
+            this.spriteSheetManager.get(SpriteSheetIdentifier.PROJECTILE_EXPLOSION),
+            this.spriteSheetManager.get(SpriteSheetIdentifier.TANK_EXPLOSION),
+            this.spriteSheetManager.get(SpriteSheetIdentifier.TANK_PROTECTION),
+            this.spriteSheetManager.get(SpriteSheetIdentifier.BONUS),       
+            this.spriteSheetManager.get(SpriteSheetIdentifier.SPLASH),
+            this.spriteSheetManager.get(SpriteSheetIdentifier.SCORES),
+            this.spriteSheetManager.get(SpriteSheetIdentifier.NUMBERS),
+            this.spriteSheetManager.get(SpriteSheetIdentifier.PAUSE),
+            this.spriteSheetManager.get(SpriteSheetIdentifier.GAME_OVER)
+       };
+  
+       //BufferedImage image = this.atlas.getAtlas();
+        for(int i = 0; i < images.length; ++i){
+            BufferedImage image = images[i];
+            g.drawImage(image, i < 5 ? 0 : 128, i < 5 ? i * 64 : 80 * (i - 5),
+                    image.getWidth() * 2,
+                    image.getHeight() * 2, null);
         }
-        
         drawGameStatus(g);
     }
 }

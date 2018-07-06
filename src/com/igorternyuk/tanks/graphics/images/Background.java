@@ -11,8 +11,6 @@ import java.awt.image.BufferedImage;
  */
 public class Background extends Image {
 
-    private static final int SCROLLING_SPEED = 5;
-
     public Background(BufferedImage image, double x, double y, double dx,
             double dy) {
         super(image, x, y, dx, dy);
@@ -24,8 +22,7 @@ public class Background extends Image {
 
     @Override
     public void update(KeyboardState keyBoardState, double frameTime) {
-        this.x += this.dx * SCROLLING_SPEED;
-        this.y += this.dy * SCROLLING_SPEED;
+        super.update(keyBoardState, frameTime);
         fixCoordinateBounds();
     }
 

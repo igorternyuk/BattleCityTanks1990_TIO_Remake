@@ -1,5 +1,6 @@
 package com.igorternyuk.tanks.graphics;
 
+import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Canvas;
 import java.awt.Dimension;
@@ -83,7 +84,7 @@ public class Display {
 
     public void swapBuffers() {
         Graphics g = this.bufferStrategy.getDrawGraphics();
-        g.drawImage(this.bufferImage, 0, 0, null);
+        g.drawImage(this.bufferImage, 0, 0, Game.WIDTH, Game.HEIGHT, null);
         this.bufferStrategy.show();
     }
 

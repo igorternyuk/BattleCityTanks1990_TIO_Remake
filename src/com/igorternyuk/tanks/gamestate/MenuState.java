@@ -24,7 +24,8 @@ public class MenuState extends GameState {
             48);
     private static final Font FONT_MENU_ITEM =
             new Font("Tahoma", Font.PLAIN, 36);
-
+    private static final double BACKGROUND_SCROLLING_SPEED = 30;
+    
     private Background background;
     private int currentChoice = 0;
     private String[] options;
@@ -38,13 +39,13 @@ public class MenuState extends GameState {
     public void load() {
         System.out.println("Menu state loading...");
         if (!this.resourceManager.loadImage(ImageIdentifier.MENU_BACKGROUND,
-                "/Backgrounds/menubg.gif")) {
+                "/images/menubg.gif")) {
             System.out.println("Could not load background image");
         }
         this.background = new Background(
                 this.resourceManager.getImage(ImageIdentifier.MENU_BACKGROUND));
         this.background.setPosition(0, 0);
-        this.background.setVelocity(0.1, 0);
+        this.background.setVelocity(BACKGROUND_SCROLLING_SPEED, 0);
     }
 
     @Override
@@ -101,7 +102,7 @@ public class MenuState extends GameState {
     @Override
     public void draw(Graphics2D g) {
         this.background.draw(g);
-        Painter.drawCenteredString(g, "JPlatformer", FONT_MENU_TITLE,
+        Painter.drawCenteredString(g, "JTanks", FONT_MENU_TITLE,
                 COLOR_MENU_TITLE, Game.HEIGHT / 4);
         for (int i = 0; i < this.options.length; ++i) {
             Color color = (i == currentChoice) ?

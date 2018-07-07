@@ -8,10 +8,30 @@ import java.awt.Point;
  * @author igor
  */
 public enum TankColor {
-    YELLOW(new Point(0,0)),
-    GRAY(new Point(8 * Game.TILE_SIZE,0)),
-    GREEN(new Point(0, 8 * Game.TILE_SIZE)),
-    RED(new Point(8 * Game.TILE_SIZE, 8 * Game.TILE_SIZE));
+    YELLOW(new Point(0,0)) {
+        @Override
+        public TankColor next() {
+            return TankColor.GRAY;
+        }
+    },
+    GRAY(new Point(8 * Game.TILE_SIZE,0)) {
+        @Override
+        public TankColor next() {
+            return TankColor.GREEN;
+        }
+    },
+    GREEN(new Point(0, 8 * Game.TILE_SIZE)) {
+        @Override
+        public TankColor next() {
+            return TankColor.RED;
+        }
+    },
+    RED(new Point(8 * Game.TILE_SIZE, 8 * Game.TILE_SIZE)) {
+        @Override
+        public TankColor next() {
+            return TankColor.YELLOW;
+        }
+    };
     
     private Point offsetFromTankSpriteSheetTopLeftCorner;
 
@@ -23,4 +43,6 @@ public enum TankColor {
     public Point getOffsetFromTankSpriteSheetTopLeftCorner() {
         return offsetFromTankSpriteSheetTopLeftCorner;
     }
+    
+    public abstract TankColor next();
 }

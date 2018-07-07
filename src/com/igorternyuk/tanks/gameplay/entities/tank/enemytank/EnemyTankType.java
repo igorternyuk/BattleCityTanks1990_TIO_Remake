@@ -24,7 +24,7 @@ public enum EnemyTankType {
         this.score = score;
         this.spriteSheetPositionY = positionY;
     }
-
+    
     public double getSpeed() {
         return this.speed;
     }

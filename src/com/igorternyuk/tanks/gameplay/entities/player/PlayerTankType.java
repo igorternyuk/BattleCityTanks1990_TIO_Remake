@@ -12,11 +12,21 @@ public enum PlayerTankType {
         public boolean canRepeatFire() {
             return false;
         }
+
+        @Override
+        public PlayerTankType next() {
+            return PlayerTankType.LIGHT;
+        }
     },
     LIGHT(1, 8, 32, 25, 1 * Game.TILE_SIZE) {
         @Override
         public boolean canRepeatFire() {
             return false;
+        }
+
+        @Override
+        public PlayerTankType next() {
+            return PlayerTankType.MIDDLE;
         }
     },
     MIDDLE(2, 8, 32, 25, 2 * Game.TILE_SIZE) {
@@ -24,11 +34,21 @@ public enum PlayerTankType {
         public boolean canRepeatFire() {
             return true;
         }
+
+        @Override
+        public PlayerTankType next() {
+            return PlayerTankType.HEAVY;
+        }
     },
     HEAVY(3, 6, 16, 100, 3 * Game.TILE_SIZE) {
         @Override
         public boolean canRepeatFire() {
             return false;
+        }
+
+        @Override
+        public PlayerTankType next() {
+            return PlayerTankType.LIGHT;
         }
     };
 
@@ -48,6 +68,7 @@ public enum PlayerTankType {
     }
 
     public abstract boolean canRepeatFire();
+    public abstract PlayerTankType next();
 
     public int getStarNumber() {
         return this.starNumber;

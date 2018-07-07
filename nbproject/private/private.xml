@@ -32,6 +32,7 @@
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/resourcemanager/ImageIdentifier.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/Direction.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gamestate/GameStateManager.java</file>
+            <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/tank/enemytank/EnemyTank.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/tilemap/TileMap.java</file>
         </group>
     </open-files>

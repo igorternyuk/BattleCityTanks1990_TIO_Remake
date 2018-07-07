@@ -23,6 +23,8 @@ public class Game implements Runnable {
     public static final int HEIGHT = 416;
     public static final int HALF_WIDTH = WIDTH / 2;
     public static final int HALF_HEIGHT = HEIGHT / 2;
+    public static final int TILE_SIZE = 16;
+    public static final int HALF_TILE_SIZE = TILE_SIZE / 2;
     private static final String TITLE = "JTanks";
     private static final int CLEAR_COLOR = 0xff000000;
     private static final int NUM_BUFFERS = 4;

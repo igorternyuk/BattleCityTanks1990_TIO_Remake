@@ -185,26 +185,8 @@ public class LevelState extends GameState {
         for (int i = this.entities.size() - 1; i >= 0; --i) {
            // this.entities.get(i).draw(g);
         }*/
-       BufferedImage[] images = {
-            this.spriteSheetManager.get(SpriteSheetIdentifier.PROJECTILE),
-            this.spriteSheetManager.get(SpriteSheetIdentifier.PROJECTILE_EXPLOSION),
-            this.spriteSheetManager.get(SpriteSheetIdentifier.TANK_EXPLOSION),
-            this.spriteSheetManager.get(SpriteSheetIdentifier.TANK_PROTECTION),
-            this.spriteSheetManager.get(SpriteSheetIdentifier.BONUS),       
-            this.spriteSheetManager.get(SpriteSheetIdentifier.SPLASH),
-            this.spriteSheetManager.get(SpriteSheetIdentifier.SCORES),
-            this.spriteSheetManager.get(SpriteSheetIdentifier.NUMBERS),
-            this.spriteSheetManager.get(SpriteSheetIdentifier.PAUSE),
-            this.spriteSheetManager.get(SpriteSheetIdentifier.GAME_OVER)
-       };
-  
-       //BufferedImage image = this.atlas.getAtlas();
-        for(int i = 0; i < images.length; ++i){
-            BufferedImage image = images[i];
-            g.drawImage(image, i < 5 ? 0 : 128, i < 5 ? i * 64 : 80 * (i - 5),
-                    image.getWidth() * 2,
-                    image.getHeight() * 2, null);
-        }
+
         drawGameStatus(g);
+        
     }
 }

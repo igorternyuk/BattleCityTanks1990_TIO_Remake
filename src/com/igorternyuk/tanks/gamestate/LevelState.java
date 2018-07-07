@@ -4,6 +4,8 @@ import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.GameStatus;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
+import com.igorternyuk.tanks.gameplay.entities.explosion.Explosion;
+import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
 import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
 import com.igorternyuk.tanks.graphics.images.Background;
 import com.igorternyuk.tanks.graphics.images.TextureAtlas;
@@ -43,7 +45,6 @@ public class LevelState extends GameState {
 
     public LevelState(GameStateManager gsm, ResourceManager rm) {
         super(gsm, rm);
-        initEntityCreator();
     }
 
     public SpriteSheetManager getSpriteSheetManager() {
@@ -69,10 +70,6 @@ public class LevelState extends GameState {
     public List<Entity> getEntities() {
         return this.entities;
     }
-    
-    private void initEntityCreator() {
-        
-    }
 
     @Override
     public void load() {
@@ -83,6 +80,7 @@ public class LevelState extends GameState {
                 ImageIdentifier.TEXTURE_ATLAS));
         this.spriteSheetManager = new SpriteSheetManager();
         loadSprites();
+        startNewGame();
         loaded = true;
     }
     
@@ -102,14 +100,9 @@ public class LevelState extends GameState {
     }
     
     private void createEntities() {
-        Map<Point, EntityType> enemyPosiitons = this.tileMap.
-                getEntityPositions();
-        enemyPosiitons.keySet().forEach((Point point) -> {
-            EntityType type = enemyPosiitons.get(point);
-            /*if(this.entityCreatorMap.containsKey(type)){
-                this.entityCreatorMap.get(type).accept(point);
-            }*/
-        });
+        Explosion explosion = new Explosion(this, ExplosionType.PROJECTILE,
+                64, 64);
+        this.entities.add(explosion);
     }
 
     @Override
@@ -118,16 +111,7 @@ public class LevelState extends GameState {
         this.tileMap = null;
     }
 
-    @Override
-    public void update(KeyboardState keyboardState, double frameTime) {
-        if(!this.loaded)
-            return;
-        if(this.gameStatus != GameStatus.PLAY /*|| this.player == null*/)
-            return;
-        updateEntities(keyboardState, frameTime);
-        checkCollisions();
-        checkGameStatus();
-    }
+    
     
     private void updateEntities(KeyboardState keyboardState, double frameTime){
         //Remove the dead entities
@@ -135,7 +119,7 @@ public class LevelState extends GameState {
 
         //Update all entitites
         for (int i = this.entities.size() - 1; i >= 0; --i) {
-            //this.entities.get(i).update(keyboardState, frameTime);
+            this.entities.get(i).update(keyboardState, frameTime);
         }
     }
 
@@ -188,18 +172,30 @@ public class LevelState extends GameState {
         Painter.drawCenteredString(g, this.gameStatus.getDescription(),
                 FONT_GAME_STATUS, this.gameStatus.getColor(), Game.HEIGHT / 2);
     }
-
+    
+    @Override
+    public void update(KeyboardState keyboardState, double frameTime) {
+        if(!this.loaded)
+            return;
+        if(this.gameStatus != GameStatus.PLAY /*|| this.player == null*/)
+            return;
+        //System.out.println("numEntities.size() = " + this.entities.size());
+        updateEntities(keyboardState, frameTime);
+        checkCollisions();
+        checkGameStatus();
+    }
+    
     @Override
     public void draw(Graphics2D g) {
         if(!this.loaded)
             return;
         /*if (this.tileMap != null) {
             this.tileMap.draw(g);
-        }
+        }*/
 
         for (int i = this.entities.size() - 1; i >= 0; --i) {
-           // this.entities.get(i).draw(g);
-        }*/
+            this.entities.get(i).draw(g);
+        }
 
         drawGameStatus(g);
         

@@ -15,7 +15,7 @@ public abstract class Entity {
     protected double x, y;
     protected double speed;
     protected Direction direction;
-    protected int health;
+    protected int health = 100;
 
     public Entity(LevelState level, EntityType type, double x, double y,
             double speed, Direction direction) {

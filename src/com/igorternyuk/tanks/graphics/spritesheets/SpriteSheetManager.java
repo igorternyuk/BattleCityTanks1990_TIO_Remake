@@ -21,8 +21,6 @@ public class SpriteSheetManager {
     public void put(SpriteSheetIdentifier identifier, TextureAtlas atlas) {
         this.spriteSheets.put(identifier, atlas.cutOut(identifier.
                 getBoundingRect()));
-        System.out.println("identifier = " + identifier);
-        System.out.println("Bounding rect = " + identifier.getBoundingRect());
     }
     
     public void remove(SpriteSheetIdentifier identifier){

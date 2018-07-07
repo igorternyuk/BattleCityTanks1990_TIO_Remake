@@ -16,7 +16,7 @@ public class AnimationManager<I> {
     private AnimationPlayMode prevAnimPlayMode;
 
     public void setCurrentAnimation(I identifier) {
-        if(identifier == null || this.animations.containsKey(identifier))
+        if(identifier == null || !this.animations.containsKey(identifier))
             return;
         Animation currAnim = getCurrentAnimation();
         if (currAnim != null) {
@@ -72,8 +72,11 @@ public class AnimationManager<I> {
     public void draw(Graphics2D g, int destX, int destY, double scaleX,
             double scaleY) {
         Animation currAnim = getCurrentAnimation();
-        if (currAnim != null) {
-            currAnim.draw(g, destX, destY, scaleX, scaleY);
-        }
+        if(currAnim == null)
+            return;
+        if(currAnim.getPlayMode() == AnimationPlayMode.ONCE
+                    && currAnim.hasBeenPlayedOnce())
+            return;
+        currAnim.draw(g, destX, destY, scaleX, scaleY);            
     }
 }

@@ -12,7 +12,7 @@ import java.awt.Graphics2D;
  */
 public abstract class AnimatedEntity<I> extends Entity {
 
-    private AnimationManager<I> animationManager = new AnimationManager<>();
+    protected AnimationManager<I> animationManager = new AnimationManager<>();
 
     public AnimatedEntity(LevelState level, EntityType type, double x, double y,
             double speed, Direction direction) {

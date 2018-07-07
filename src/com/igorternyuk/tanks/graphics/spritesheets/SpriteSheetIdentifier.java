@@ -22,7 +22,8 @@ public enum SpriteSheetIdentifier {
     GAME_OVER(288,184,32,16),
     LEVEL_FLAG(376,184,16,16),
     ENEMY_TANK_SIGN(320,192,8,8),
-    RIGHT_PANEL(368,0,32,240);
+    RIGHT_PANEL(368,0,32,240),
+    EMPTY(288, 48, 16, 16);
 
     private Rectangle boundingRect;
     

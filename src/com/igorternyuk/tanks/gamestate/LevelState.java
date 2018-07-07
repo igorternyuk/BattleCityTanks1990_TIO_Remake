@@ -6,6 +6,8 @@ import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.explosion.Explosion;
 import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
+import com.igorternyuk.tanks.gameplay.entities.splash.Splash;
+import com.igorternyuk.tanks.gameplay.entities.splash.SplashType;
 import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
 import com.igorternyuk.tanks.graphics.images.Background;
 import com.igorternyuk.tanks.graphics.images.TextureAtlas;
@@ -103,6 +105,8 @@ public class LevelState extends GameState {
         Explosion explosion = new Explosion(this, ExplosionType.PROJECTILE,
                 64, 64);
         this.entities.add(explosion);
+        Splash s = new Splash(this, SplashType.BONUS, 0, 0);
+        this.entities.add(s);
     }
 
     @Override

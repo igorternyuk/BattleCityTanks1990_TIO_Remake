@@ -27,7 +27,7 @@ public class Explosion extends AnimatedEntity<ExplosionType> {
     }
 
     @Override
-    public void loadAnimations() {
+    public final void loadAnimations() {
         System.out.println("Loading explosion animation...");
         BufferedImage spriteSheet;
         if (this.explosionType == ExplosionType.PROJECTILE) {
@@ -45,7 +45,6 @@ public class Explosion extends AnimatedEntity<ExplosionType> {
                     spriteSheet, animType.getAnimationSpeed(), animType.
                     getFrames()));
         }
-        System.out.println( this.animationManager.getAnimationCount() + " animations loaded");
     }
 
 }

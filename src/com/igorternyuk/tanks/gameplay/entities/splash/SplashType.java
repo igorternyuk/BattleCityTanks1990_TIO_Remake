@@ -1,0 +1,45 @@
+package com.igorternyuk.tanks.gameplay.entities.splash;
+
+import com.igorternyuk.tanks.gameplay.Game;
+import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ *
+ * @author igor
+ */
+public enum SplashType {
+    BONUS(0.8, new Rectangle(0, 0, Game.TILE_SIZE, Game.TILE_SIZE),
+            Game.TILE_SIZE, 4),
+    NEW_ENEMY_TANK(0.8, new Rectangle(0, 0, Game.TILE_SIZE, Game.TILE_SIZE),
+            Game.TILE_SIZE, 4);
+
+    private List<Rectangle> frames = new ArrayList<>();
+    private double animationSpeed;
+
+    private SplashType(double speed, Rectangle firstFrame, int frameStep,
+            int frameCount) {
+        this.animationSpeed = speed;
+        for (int i = 0; i < frameCount; ++i) {
+            Rectangle nextFrame = (Rectangle) firstFrame.clone();
+            nextFrame.x = firstFrame.x + i * frameStep;
+            this.frames.add(nextFrame);
+        }
+        for(Rectangle r: this.frames){
+            System.out.println("frame = " + r);
+        }
+    }
+
+    private void SplashType(double speed, List<Rectangle> frames) {
+        this.frames.addAll(frames);
+    }
+
+    public List<Rectangle> getFrames() {
+        return this.frames;
+    }
+
+    public double getAnimationSpeed() {
+        return this.animationSpeed;
+    }
+}

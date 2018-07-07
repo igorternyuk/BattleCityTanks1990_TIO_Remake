@@ -45,18 +45,33 @@ public class LevelState extends GameState {
         super(gsm, rm);
         initEntityCreator();
     }
-    
-    
-    private void initEntityCreator() {
-        
+
+    public SpriteSheetManager getSpriteSheetManager() {
+        return this.spriteSheetManager;
     }
 
+    public boolean isLoaded() {
+        return loaded;
+    }
+    
+    public TileMap getTileMap() {
+        return this.tileMap;
+    }
+    
+    public int getMapWidth(){
+        return 13 * 16;
+    }
+    
+    public int getMapHeight(){
+        return 13 * 16;
+    }
+    
     public List<Entity> getEntities() {
         return this.entities;
     }
-
-    public TileMap getTileMap() {
-        return this.tileMap;
+    
+    private void initEntityCreator() {
+        
     }
 
     @Override

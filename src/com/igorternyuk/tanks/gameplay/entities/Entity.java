@@ -15,14 +15,16 @@ public abstract class Entity {
     protected double x, y;
     protected double speed;
     protected Direction direction;
+    protected int health;
 
     public Entity(LevelState level, EntityType type, double x, double y,
-            double speed) {
+            double speed, Direction direction) {
         this.level = level;
         this.type = type;
         this.x = x;
         this.y = y;
         this.speed = speed;
+        this.direction = direction;
     }
 
     public EntityType getType() {
@@ -35,6 +37,14 @@ public abstract class Entity {
 
     public Direction getDirection() {
         return this.direction;
+    }
+    
+    public boolean isAlive(){
+        return this.health > 0;
+    }
+    
+    public int getHealth(){
+        return this.health;
     }
     
     public void setDirection(Direction direction){
@@ -89,6 +99,13 @@ public abstract class Entity {
         if(this.y > this.level.getMapHeight()){
             this.y = this.level.getMapHeight();
         }
+    }
+    
+    protected boolean isOutOfBounds(){
+        return this.x < 0
+                || this.x > this.level.getMapWidth()
+                || this.y < 0
+                || this.y > this.level.getMapHeight();
     }
 
     protected void move(double frameTime) {

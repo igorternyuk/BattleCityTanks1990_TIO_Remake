@@ -7,27 +7,31 @@ import java.util.Map;
 /**
  *
  * @author igor
- * @param <Identifier> Animation identifier
+ * @param <I> Animation identifier
  */
-public class AnimationManager<Identifier> {
+public class AnimationManager<I> {
 
-    private Map<Identifier, Animation> animations = new HashMap<>();
-    private Identifier currentAnimation, prevAnimation;
+    private Map<I, Animation> animations = new HashMap<>();
+    private I currentAnimation, prevAnimation;
     private AnimationPlayMode prevAnimPlayMode;
 
-    public void setCurrentAnimation(Identifier identifier) {
-        if (this.animations.containsKey(identifier)) {
-            Animation currAnim = getCurrentAnimation();
-            if (currAnim != null) {
-                currAnim.stop();
-            }
-            this.currentAnimation = identifier;
-            this.prevAnimation = identifier;
-            this.prevAnimPlayMode = getCurrentAnimation().getPlayMode();
+    public void setCurrentAnimation(I identifier) {
+        if(identifier == null || this.animations.containsKey(identifier))
+            return;
+        Animation currAnim = getCurrentAnimation();
+        if (currAnim != null) {
+            currAnim.stop();
         }
+        this.currentAnimation = identifier;
+        this.prevAnimation = identifier;
+        this.prevAnimPlayMode = getCurrentAnimation().getPlayMode();
+    }
+    
+    public int getAnimationCount(){
+        return this.animations.size();
     }
 
-    public Identifier getCurrentAnimationIdentifier() {
+    public I getCurrentAnimationIdentifier() {
         return this.currentAnimation;
     }
 
@@ -50,11 +54,11 @@ public class AnimationManager<Identifier> {
         return this.animations.get(this.currentAnimation);
     }
 
-    public void addAnimation(Identifier identifier, Animation animation) {
+    public void addAnimation(I identifier, Animation animation) {
         this.animations.put(identifier, animation);
     }
 
-    public void removeAnimation(Identifier identifier) {
+    public void removeAnimation(I identifier) {
         this.animations.remove(identifier);
     }
 

@@ -13,9 +13,9 @@ public abstract class GameState {
     protected GameStateManager gameStateManager;
     protected ResourceManager resourceManager;
 
-    public GameState(GameStateManager gsm, ResourceManager rm) {
+    public GameState(GameStateManager gsm) {
         this.gameStateManager = gsm;
-        this.resourceManager = rm;
+        this.resourceManager = ResourceManager.getInstance();
     }
 
     public GameStateManager getGameStateManager() {

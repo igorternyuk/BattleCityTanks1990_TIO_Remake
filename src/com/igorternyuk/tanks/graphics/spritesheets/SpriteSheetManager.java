@@ -11,6 +11,18 @@ import java.util.Map;
  * @author igor
  */
 public class SpriteSheetManager {
+    
+    private static SpriteSheetManager instance;
+    
+    public static synchronized SpriteSheetManager getInstance(){
+        if(instance == null){
+            instance = new SpriteSheetManager();
+        }
+        return instance;
+    }
+    
+    private SpriteSheetManager(){
+    }
 
     private Map<SpriteSheetIdentifier, BufferedImage> spriteSheets =
             new HashMap<>();

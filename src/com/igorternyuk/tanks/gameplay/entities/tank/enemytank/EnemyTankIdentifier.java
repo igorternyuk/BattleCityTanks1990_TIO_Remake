@@ -3,6 +3,10 @@ package com.igorternyuk.tanks.gameplay.entities.tank.enemytank;
 import com.igorternyuk.tanks.gameplay.entities.tank.Alliance;
 import com.igorternyuk.tanks.gameplay.entities.tank.Heading;
 import com.igorternyuk.tanks.gameplay.entities.tank.TankColor;
+import java.awt.Point;
+import java.awt.image.BufferedImage;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -10,6 +14,34 @@ import java.util.Objects;
  * @author igor
  */
 public class EnemyTankIdentifier {
+
+    private static final Map<EnemyTankIdentifier, BufferedImage> spriteSheetMap =
+            getAllPossibleIdentifiers();
+
+    private static Map<EnemyTankIdentifier, BufferedImage> getAllPossibleIdentifiers() {
+        Map<EnemyTankIdentifier, BufferedImage> map = new HashMap<>();
+        for (TankColor color : TankColor.values()) {
+            for (Alliance alliance : Alliance.values()) {
+                Point topLeft = color.
+                        getOffsetFromTankSpriteSheetTopLeftCorner();
+                topLeft.x += alliance.
+                        getOffsetFromSameColorTankSpriteSheetTopLeftCorner().x;
+                topLeft.y += alliance.
+                        getOffsetFromSameColorTankSpriteSheetTopLeftCorner().y;
+                for(EnemyTankType type: EnemyTankType.values()){
+                    for(Heading heading: Heading.values()){
+                        int dx = heading.getSpriteSheetPositionX();
+                        int dy = type.getSpriteSheetPositionY();
+                        EnemyTankIdentifier key = new EnemyTankIdentifier(color, heading, type);
+                        //BufferedImage value = 
+                    }
+                }
+            }
+        }
+
+        return map;
+    }
+
     private Alliance alliance;
     private TankColor color;
     private Heading heading;
@@ -71,12 +103,11 @@ public class EnemyTankIdentifier {
         }
 
         final EnemyTankIdentifier other = (EnemyTankIdentifier) obj;
-        
+
         return Objects.equals(this.alliance, other.alliance)
-            && Objects.equals(this.color, other.color)
-            && Objects.equals(this.heading, other.heading)
-            && Objects.equals(this.type, other.type);
+                && Objects.equals(this.color, other.color)
+                && Objects.equals(this.heading, other.heading)
+                && Objects.equals(this.type, other.type);
     }
-    
-    
+
 }

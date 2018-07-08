@@ -49,8 +49,9 @@ public class LevelState extends GameState {
     private GameStatus gameStatus = GameStatus.PLAY;
     private boolean loaded = false;
 
-    public LevelState(GameStateManager gsm, ResourceManager rm) {
-        super(gsm, rm);
+    public LevelState(GameStateManager gsm) {
+        super(gsm);
+        this.spriteSheetManager = SpriteSheetManager.getInstance();
     }
 
     public SpriteSheetManager getSpriteSheetManager() {
@@ -58,7 +59,7 @@ public class LevelState extends GameState {
     }
 
     public boolean isLoaded() {
-        return loaded;
+        return this.loaded;
     }
     
     public TileMap getTileMap() {
@@ -83,11 +84,10 @@ public class LevelState extends GameState {
         this.resourceManager.loadImage(ImageIdentifier.TEXTURE_ATLAS,
                 "/images/texture_atlas.png");
         this.atlas = new TextureAtlas(this.resourceManager.getImage(
-                ImageIdentifier.TEXTURE_ATLAS));
-        this.spriteSheetManager = new SpriteSheetManager();
+                ImageIdentifier.TEXTURE_ATLAS));        
         loadSprites();
         startNewGame();
-        loaded = true;
+        this.loaded = true;
     }
     
     private void loadSprites(){

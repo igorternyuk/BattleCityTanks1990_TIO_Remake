@@ -30,8 +30,8 @@ public class MenuState extends GameState {
     private int currentChoice = 0;
     private String[] options;
 
-    public MenuState(GameStateManager gsm, ResourceManager rm) {
-        super(gsm, rm);
+    public MenuState(GameStateManager gsm) {
+        super(gsm);
         this.options = new String[]{"Play", "Quit"};
     }
 

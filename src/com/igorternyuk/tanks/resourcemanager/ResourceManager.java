@@ -13,10 +13,19 @@ import javax.imageio.ImageIO;
  * @author igor
  */
 public class ResourceManager {
+    
+    private static ResourceManager instance;
+    
+    public static synchronized ResourceManager getInstance(){
+        if(instance == null){
+            instance = new ResourceManager();
+        }
+        return instance;
+    }
 
     private Map<ImageIdentifier, BufferedImage> images;
 
-    public ResourceManager() {
+    private ResourceManager() {
         this.images = new HashMap<>();
     }
 

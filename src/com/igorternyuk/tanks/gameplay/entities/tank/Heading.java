@@ -18,7 +18,7 @@ public enum Heading {
         this.animationPosX = positionX;
     }
 
-    public int getAnimationPosX() {
+    public int getSpriteSheetPositionX() {
         return this.animationPosX;
     }
     

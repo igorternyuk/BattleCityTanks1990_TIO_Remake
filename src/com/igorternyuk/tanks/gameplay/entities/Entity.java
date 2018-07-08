@@ -39,20 +39,20 @@ public abstract class Entity {
     public EntityType getEntityType() {
         return this.entityType;
     }
-    
-    public void attachChild(Entity child){
+
+    public void attachChild(Entity child) {
         this.children.add(child);
     }
-    
-    public void detachChild(Entity child){
+
+    public void detachChild(Entity child) {
         this.children.remove(child);
     }
-    
-    public boolean hasChild(Entity child){
+
+    public boolean hasChild(Entity child) {
         return this.children.contains(child);
     }
-    
-    public List<Entity> getChildren(){
+
+    public List<Entity> getChildren() {
         return this.children;
     }
 
@@ -87,6 +87,11 @@ public abstract class Entity {
     public abstract int getWidth();
 
     public abstract int getHeight();
+    
+    public void setPosition(double x, double y){
+        this.x = x;
+        this.y = y;
+    }
 
     public double getX() {
         return this.x;
@@ -119,8 +124,8 @@ public abstract class Entity {
         this.blinkingDuration = duration;
         this.blinking = true;
     }
-    
-    public void startInfiniteBlinking(double blinkPeriod){
+
+    public void startInfiniteBlinking(double blinkPeriod) {
         startBlinking(blinkPeriod, -1);
     }
 
@@ -184,13 +189,16 @@ public abstract class Entity {
         }
     }
 
-    public void update(KeyboardState keyboardState, double frameTime){
-        this.children.forEach(e -> e.update(keyboardState, frameTime));
+    public void update(KeyboardState keyboardState, double frameTime) {
+        this.children.forEach(child -> {
+            child.setPosition(child.x + this.x, child.y + this.y);
+            child.update(keyboardState, frameTime);
+        });
     }
 
-    public void draw(Graphics2D g){
-        this.children.forEach(e -> {
-            e.draw(g);
+    public void draw(Graphics2D g) {
+        this.children.forEach(child -> {
+            child.draw(g);
         });
     }
 }

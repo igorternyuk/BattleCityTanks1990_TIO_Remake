@@ -11,15 +11,23 @@ import java.util.Stack;
  * @author igor
  */
 public class GameStateManager {
+    private static GameStateManager instance;
+    
+    public static synchronized GameStateManager create(Game game){
+        if(instance == null){
+            instance = new GameStateManager(game);
+        }
+        return instance;
+    }
 
     private Game game;
     private Stack<GameState> gameStates;
 
-    public GameStateManager(Game game, ResourceManager rm) {
+    public GameStateManager(Game game) {
         this.game = game;
         this.gameStates = new Stack<>();
-        this.gameStates.push(new LevelState(this, rm));
-        this.gameStates.push(new MenuState(this, rm));
+        this.gameStates.push(new LevelState(this));
+        this.gameStates.push(new MenuState(this));
         this.gameStates.peek().load();
     }
 

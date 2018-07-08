@@ -22,6 +22,15 @@ import javax.swing.JFrame;
 public class Display {
 
     private static Display instance;
+    
+    public static Display create(int width, int height, String title,
+            int numBuffers, int clearColor) {
+        if (instance == null) {
+            instance = new Display(width, height, title, numBuffers, clearColor);
+        }
+        return instance;
+    }
+    
     private JFrame window;
     private Canvas canvas;
     private BufferedImage bufferImage;
@@ -60,14 +69,6 @@ public class Display {
 
         this.window.setVisible(true);
 
-    }
-
-    public static Display create(int width, int height, String title,
-            int numBuffers, int clearColor) {
-        if (instance == null) {
-            instance = new Display(width, height, title, numBuffers, clearColor);
-        }
-        return instance;
     }
 
     public JFrame getWindow() {

@@ -64,8 +64,8 @@ public class Game implements Runnable {
                 onWindowCloseRequest();
             }
         });
-        this.resourceManager = new ResourceManager(); //TODO Should be singleton
-        this.gameStateManager = new GameStateManager(this, this.resourceManager);
+        this.resourceManager = ResourceManager.getInstance();
+        this.gameStateManager = GameStateManager.create(this);
     }
 
     public void onWindowCloseRequest() {

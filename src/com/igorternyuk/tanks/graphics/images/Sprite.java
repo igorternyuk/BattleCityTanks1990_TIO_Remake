@@ -1,6 +1,7 @@
 package com.igorternyuk.tanks.graphics.images;
 
 import com.igorternyuk.tanks.gamestate.LevelState;
+import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
@@ -14,16 +15,12 @@ public class Sprite extends Image {
     private Rectangle sourceRect;
     private Rectangle destRect;
 
-    public Sprite(BufferedImage image, double x, double y, double dx, double dy) {
-        super(image, x, y, dx, dy);
+    public Sprite(BufferedImage image, double x, double y) {
+        super(image, x, y);
         this.sourceRect = new Rectangle(0, 0, this.image.getWidth(), this.image.
                 getHeight());
         this.destRect = new Rectangle((int) this.x, (int) this.y, this.image.
                 getWidth(), this.image.getHeight());
-    }
-
-    public Sprite(BufferedImage image, double x, double y) {
-        this(image, x, y, 0, 0);
     }
 
     @Override
@@ -56,7 +53,12 @@ public class Sprite extends Image {
     public int getHeight() {
         return this.destRect.height;
     }
-
+    
+    @Override
+    public void update(KeyboardState keyBoardState, double frameTime) {
+        
+    }
+    
     @Override
     public void draw(Graphics2D g) {
 
@@ -70,5 +72,4 @@ public class Sprite extends Image {
                 this.sourceRect.x + this.sourceRect.width,
                 this.sourceRect.y + this.sourceRect.height, null);
     }
-
 }

@@ -10,9 +10,9 @@ import java.util.List;
  * @author igor
  */
 public enum SplashType {
-    BONUS(0.8, new Rectangle(0, 0, Game.TILE_SIZE, Game.TILE_SIZE),
+    BONUS(0.2, new Rectangle(0, 0, Game.TILE_SIZE, Game.TILE_SIZE),
             Game.TILE_SIZE, 4),
-    NEW_ENEMY_TANK(0.8, new Rectangle(0, 0, Game.TILE_SIZE, Game.TILE_SIZE),
+    NEW_ENEMY_TANK(0.2, new Rectangle(0, 0, Game.TILE_SIZE, Game.TILE_SIZE),
             Game.TILE_SIZE, 4);
 
     private List<Rectangle> frames = new ArrayList<>();
@@ -25,9 +25,6 @@ public enum SplashType {
             Rectangle nextFrame = (Rectangle) firstFrame.clone();
             nextFrame.x = firstFrame.x + i * frameStep;
             this.frames.add(nextFrame);
-        }
-        for(Rectangle r: this.frames){
-            System.out.println("frame = " + r);
         }
     }
 

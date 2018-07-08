@@ -10,20 +10,33 @@ import java.awt.image.BufferedImage;
  * @author igor
  */
 public class Background extends Image {
-
+    protected double dx;
+    protected double dy;
     public Background(BufferedImage image, double x, double y, double dx,
             double dy) {
-        super(image, x, y, dx, dy);
+        super(image, x, y);
+        this.dx = dx;
+        this.dy = dy;
     }
 
     public Background(BufferedImage image) {
-        super(image, 0, 0, 0, 0);
+        super(image, 0, 0);
+    }
+    
+    public void setVelocity(double dx, double dy) {
+        this.dx = dx;
+        this.dy = dy;
     }
 
     @Override
     public void update(KeyboardState keyBoardState, double frameTime) {
-        super.update(keyBoardState, frameTime);
+        move(keyBoardState, frameTime);
         fixCoordinateBounds();
+    }
+    
+    private void move(KeyboardState keyBoardState, double frameTime){
+        this.x += this.dx * frameTime;
+        this.y += this.dy * frameTime;
     }
 
     private void fixCoordinateBounds() {

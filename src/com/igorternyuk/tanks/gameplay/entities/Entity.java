@@ -102,10 +102,10 @@ public abstract class Entity {
     }
     
     protected boolean isOutOfBounds(){
-        return this.x < 0
-                || this.x > this.level.getMapWidth()
-                || this.y < 0
-                || this.y > this.level.getMapHeight();
+        return right() < 0
+                || left() > this.level.getMapWidth()
+                || bottom() < 0
+                || top() > this.level.getMapHeight();
     }
 
     protected void move(double frameTime) {

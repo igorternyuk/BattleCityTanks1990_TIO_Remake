@@ -1,41 +1,73 @@
 package com.igorternyuk.tanks.gameplay.entities.projectiles;
 
+import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gamestate.LevelState;
+import com.igorternyuk.tanks.graphics.images.Sprite;
+import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
 import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 
 /**
  *
  * @author igor
  */
-public class Projectile extends Entity{
+public class Projectile extends Entity {
 
-    public Projectile(LevelState level, EntityType type, double x, double y,
-            double speed, Direction direction) {
-        super(level, type, x, y, speed, direction);
+    private ProjectileType projectileType;
+    private Sprite sprite;
+
+    public Projectile(LevelState level, ProjectileType projectileType, double x,
+            double y, double speed, Direction direction) {
+        super(level, EntityType.PROJECTILE, x, y, speed, direction);
+        this.projectileType = projectileType;
+        BufferedImage image = this.level.getSpriteSheetManager().get(
+                SpriteSheetIdentifier.PROJECTILE);
+        this.sprite = new Sprite(image, this.x, this.y);
+    }
+
+    public ProjectileType getProjectileType() {
+        return this.projectileType;
+    }
+    
+    @Override
+    public boolean isAlive(){
+        return super.isAlive() && !isOutOfBounds();
+    }
+
+    @Override
+    public void setDirection(Direction direction) {
+        super.setDirection(direction);
+        updateSpriteSourceRect();
+    }
+
+    private void updateSpriteSourceRect() {
+        this.sprite.getSourceRect().x = Game.TILE_SIZE * this.direction.
+                ordinal();
     }
 
     @Override
     public int getWidth() {
-        return 0;
+        return this.sprite.getWidth();
     }
 
     @Override
     public int getHeight() {
-        return 0;
+        return this.sprite.getHeight();
     }
 
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
-        
+        move(frameTime);
+        this.sprite.setPosition(this.x, this.y);
     }
 
     @Override
     public void draw(Graphics2D g) {
-        
+        this.sprite.draw(g);
     }
-    
+
 }

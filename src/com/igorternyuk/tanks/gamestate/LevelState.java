@@ -2,14 +2,15 @@ package com.igorternyuk.tanks.gamestate;
 
 import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.GameStatus;
+import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
-import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.explosion.Explosion;
 import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
+import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
+import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
 import com.igorternyuk.tanks.gameplay.entities.splash.Splash;
 import com.igorternyuk.tanks.gameplay.entities.splash.SplashType;
 import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
-import com.igorternyuk.tanks.graphics.images.Background;
 import com.igorternyuk.tanks.graphics.images.TextureAtlas;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
@@ -19,12 +20,10 @@ import com.igorternyuk.tanks.resourcemanager.ImageIdentifier;
 import com.igorternyuk.tanks.resourcemanager.ResourceManager;
 import com.igorternyuk.tanks.utils.Painter;
 import java.awt.Font;
-import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -102,11 +101,24 @@ public class LevelState extends GameState {
     }
     
     private void createEntities() {
-        Explosion explosion = new Explosion(this, ExplosionType.PROJECTILE,
+        Explosion explosion = new Explosion(this, ExplosionType.TANK,
                 64, 64);
         this.entities.add(explosion);
-        Splash s = new Splash(this, SplashType.BONUS, 0, 0);
-        this.entities.add(s);
+        /*Splash s = new Splash(this, SplashType.BONUS, 0, 0);
+        this.entities.add(s);*/
+        
+        Projectile p1 = new Projectile(this, ProjectileType.ENEMY, 0, 0, 0, Direction.NORTH);
+        this.entities.add(p1);
+        
+        Projectile p2 = new Projectile(this, ProjectileType.ENEMY, 20, 0, 0, Direction.WEST);
+        this.entities.add(p2);
+        
+        Projectile p3 = new Projectile(this, ProjectileType.ENEMY, 30, 0, 0, Direction.SOUTH);
+        this.entities.add(p3);
+        
+        Projectile p4 = new Projectile(this, ProjectileType.ENEMY, 40, 0, 0, Direction.EAST);
+        this.entities.add(p4);
+        
     }
 
     @Override
@@ -200,6 +212,10 @@ public class LevelState extends GameState {
         for (int i = this.entities.size() - 1; i >= 0; --i) {
             this.entities.get(i).draw(g);
         }
+        
+        /*BufferedImage im = this.spriteSheetManager.get(
+                SpriteSheetIdentifier.PROJECTILE);
+        g.drawImage(im, 0, 0, im.getWidth() * 2, 2 * im.getHeight(), null);*/
 
         drawGameStatus(g);
         

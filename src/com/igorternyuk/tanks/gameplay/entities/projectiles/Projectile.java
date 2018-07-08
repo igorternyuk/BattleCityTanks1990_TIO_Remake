@@ -9,6 +9,7 @@ import com.igorternyuk.tanks.graphics.images.Sprite;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
 import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
 /**
@@ -27,6 +28,7 @@ public class Projectile extends Entity {
         BufferedImage image = this.level.getSpriteSheetManager().get(
                 SpriteSheetIdentifier.PROJECTILE);
         this.sprite = new Sprite(image, this.x, this.y);
+        updateSprite();
     }
 
     public ProjectileType getProjectileType() {
@@ -41,12 +43,17 @@ public class Projectile extends Entity {
     @Override
     public void setDirection(Direction direction) {
         super.setDirection(direction);
-        updateSpriteSourceRect();
+        updateSprite();
     }
 
-    private void updateSpriteSourceRect() {
-        this.sprite.getSourceRect().x = Game.TILE_SIZE * this.direction.
-                ordinal();
+    private void updateSprite() {
+        Rectangle s = ProjectileType.getSourceRect(this.direction);
+        System.out.println("s = " + s);
+        this.sprite.setSourceRect(s);
+        this.sprite.setPosition(this.x, this.y);
+        this.sprite.getDestRect().width = this.sprite.getSourceRect().width;
+        this.sprite.getDestRect().height = this.sprite.getSourceRect().height;
+        System.out.println("d = " + this.sprite.getDestRect());
     }
 
     @Override

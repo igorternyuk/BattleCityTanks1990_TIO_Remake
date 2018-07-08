@@ -53,15 +53,14 @@ public class Sprite extends Image {
     public int getHeight() {
         return this.destRect.height;
     }
-    
+
     @Override
     public void update(KeyboardState keyBoardState, double frameTime) {
-        
+
     }
-    
+
     @Override
     public void draw(Graphics2D g) {
-
         g.drawImage(image, (int) (this.destRect.x * LevelState.SCALE),
                 (int) (this.destRect.y * LevelState.SCALE),
                 (int) ((this.destRect.x + this.destRect.width)

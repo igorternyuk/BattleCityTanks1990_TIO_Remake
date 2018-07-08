@@ -25,7 +25,9 @@ public enum ExplosionType {
             Rectangle nextFrame = (Rectangle) firstFrame.clone();
             nextFrame.x = firstFrame.x + i * frameStep;
             this.frames.add(nextFrame);
+            System.out.println("nextFrame = " + nextFrame);
         }
+        
     }
 
     private void ExplosionType(double speed, List<Rectangle> frames) {

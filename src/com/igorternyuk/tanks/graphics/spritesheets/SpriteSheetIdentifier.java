@@ -10,7 +10,7 @@ public enum SpriteSheetIdentifier {
     EAGLE(304,32,32,16),
     TANK(0,0,256,256),
     TILE(256, 0, 80, 88),
-    PROJECTILE(320, 96, 32, 16),
+    PROJECTILE(323, 102, 27, 4),
     PROJECTILE_EXPLOSION(256, 128, 48, 16),
     TANK_EXPLOSION(304, 128, 64, 32),
     TANK_PROTECTION(256, 144, 32, 16),

@@ -22,8 +22,8 @@ public class Explosion extends AnimatedEntity<ExplosionType> {
         super(level, EntityType.EXPLOSION, x, y, 0, Direction.NORTH);
         this.explosionType = explosionType;
         loadAnimations();
-        this.animationManager.setCurrentAnimation(ExplosionType.PROJECTILE);
-        this.animationManager.getCurrentAnimation().start(AnimationPlayMode.ONCE);
+        this.animationManager.setCurrentAnimation(explosionType);
+        this.animationManager.getCurrentAnimation().start(AnimationPlayMode.LOOP);
     }
 
     @Override

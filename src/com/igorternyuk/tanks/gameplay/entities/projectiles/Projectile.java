@@ -18,21 +18,21 @@ import java.awt.image.BufferedImage;
  */
 public class Projectile extends Entity {
 
-    private ProjectileType projectileType;
+    private ProjectileType type;
     private Sprite sprite;
 
     public Projectile(LevelState level, ProjectileType projectileType, double x,
             double y, double speed, Direction direction) {
         super(level, EntityType.PROJECTILE, x, y, speed, direction);
-        this.projectileType = projectileType;
+        this.type = projectileType;
         BufferedImage image = this.level.getSpriteSheetManager().get(
                 SpriteSheetIdentifier.PROJECTILE);
         this.sprite = new Sprite(image, this.x, this.y);
         updateSprite();
     }
 
-    public ProjectileType getProjectileType() {
-        return this.projectileType;
+    public ProjectileType getType() {
+        return this.type;
     }
     
     @Override

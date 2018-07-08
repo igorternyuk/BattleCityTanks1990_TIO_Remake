@@ -4,6 +4,8 @@ import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.GameStatus;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
+import com.igorternyuk.tanks.gameplay.entities.bonuses.Bonus;
+import com.igorternyuk.tanks.gameplay.entities.bonuses.BonusType;
 import com.igorternyuk.tanks.gameplay.entities.explosion.Explosion;
 import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
@@ -119,6 +121,8 @@ public class LevelState extends GameState {
         Projectile p4 = new Projectile(this, ProjectileType.ENEMY, 40, 0, 0, Direction.EAST);
         this.entities.add(p4);
         
+        Bonus bonus = new Bonus(this, BonusType.STAR, 13* 5, 13* 2);
+        this.entities.add(bonus);
     }
 
     @Override

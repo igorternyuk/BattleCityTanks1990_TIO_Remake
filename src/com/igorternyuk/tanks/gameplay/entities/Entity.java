@@ -11,7 +11,7 @@ import java.awt.Graphics2D;
 public abstract class Entity {
 
     protected LevelState level;
-    protected EntityType type;
+    protected EntityType entityType;
     protected double x, y;
     protected double speed;
     protected Direction direction;
@@ -20,15 +20,15 @@ public abstract class Entity {
     public Entity(LevelState level, EntityType type, double x, double y,
             double speed, Direction direction) {
         this.level = level;
-        this.type = type;
+        this.entityType = type;
         this.x = x;
         this.y = y;
         this.speed = speed;
         this.direction = direction;
     }
 
-    public EntityType getType() {
-        return this.type;
+    public EntityType getEntityType() {
+        return this.entityType;
     }
 
     public double getSpeed() {
@@ -41,6 +41,14 @@ public abstract class Entity {
     
     public boolean isAlive(){
         return this.health > 0;
+    }
+    
+    public void destroy(){
+        this.health = 0;
+    }
+    
+    public void hit(int damage){
+        this.health -= damage;
     }
     
     public int getHealth(){

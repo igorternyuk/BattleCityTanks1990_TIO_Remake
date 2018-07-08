@@ -8,6 +8,7 @@ import com.igorternyuk.tanks.gameplay.entities.bonuses.Bonus;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.BonusType;
 import com.igorternyuk.tanks.gameplay.entities.explosion.Explosion;
 import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
+import com.igorternyuk.tanks.gameplay.entities.indicators.EnemyTankCountIndicator;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
 import com.igorternyuk.tanks.gameplay.entities.splash.Splash;
@@ -109,21 +110,14 @@ public class LevelState extends GameState {
         /*Splash s = new Splash(this, SplashType.BONUS, 0, 0);
         this.entities.add(s);*/
         
-        Projectile p1 = new Projectile(this, ProjectileType.ENEMY, 0, 0, 0, Direction.NORTH);
-        this.entities.add(p1);
-        
-        Projectile p2 = new Projectile(this, ProjectileType.ENEMY, 20, 0, 0, Direction.WEST);
-        this.entities.add(p2);
-        
-        Projectile p3 = new Projectile(this, ProjectileType.ENEMY, 30, 0, 0, Direction.SOUTH);
-        this.entities.add(p3);
-        
-        Projectile p4 = new Projectile(this, ProjectileType.ENEMY, 40, 0, 0, Direction.EAST);
-        this.entities.add(p4);
-        
         Bonus bonus = new Bonus(this, BonusType.CLOCK, 13* 5, 13* 2);
         bonus.startInfiniteBlinking(0.25);
         this.entities.add(bonus);
+        
+        EnemyTankCountIndicator indicator = new EnemyTankCountIndicator(this,
+                0, 0);
+        indicator.setTankCount(17);
+        this.entities.add(indicator);
     }
 
     @Override

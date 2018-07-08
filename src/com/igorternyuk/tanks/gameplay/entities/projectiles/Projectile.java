@@ -47,13 +47,10 @@ public class Projectile extends Entity {
     }
 
     private void updateSprite() {
-        Rectangle s = ProjectileType.getSourceRect(this.direction);
-        System.out.println("s = " + s);
-        this.sprite.setSourceRect(s);
+        this.sprite.setSourceRect(ProjectileType.getSourceRect(this.direction));
         this.sprite.setPosition(this.x, this.y);
         this.sprite.getDestRect().width = this.sprite.getSourceRect().width;
         this.sprite.getDestRect().height = this.sprite.getSourceRect().height;
-        System.out.println("d = " + this.sprite.getDestRect());
     }
 
     @Override

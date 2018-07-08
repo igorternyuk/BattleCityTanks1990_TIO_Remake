@@ -16,6 +16,12 @@ public abstract class Entity {
     protected double speed;
     protected Direction direction;
     protected int health = 100;
+    protected boolean blinking = false;
+    protected double blinkTimer;
+    protected double blinkPeriod;
+    protected double blinkingTimer;
+    protected double blinkingDuration;
+    protected boolean needToDraw = true;
 
     public Entity(LevelState level, EntityType type, double x, double y,
             double speed, Direction direction) {
@@ -38,27 +44,27 @@ public abstract class Entity {
     public Direction getDirection() {
         return this.direction;
     }
-    
-    public boolean isAlive(){
+
+    public boolean isAlive() {
         return this.health > 0;
     }
-    
-    public void destroy(){
+
+    public void destroy() {
         this.health = 0;
     }
-    
-    public void hit(int damage){
+
+    public void hit(int damage) {
         this.health -= damage;
     }
-    
-    public int getHealth(){
+
+    public int getHealth() {
         return this.health;
     }
-    
-    public void setDirection(Direction direction){
+
+    public void setDirection(Direction direction) {
         this.direction = direction;
     }
-    
+
     public abstract int getWidth();
 
     public abstract int getHeight();
@@ -87,29 +93,46 @@ public abstract class Entity {
         return this.y + getHeight();
     }
 
+    public void startBlinking(double blinkPeriod, double duration) {
+        this.blinkTimer = 0;
+        this.blinkingTimer = 0;
+        this.blinkPeriod = blinkPeriod;
+        this.blinkingDuration = duration;
+        this.blinking = true;
+    }
+    
+    public void startInfiniteBlinking(double blinkPeriod){
+        startBlinking(blinkPeriod, -1);
+    }
+
+    public void stopBlinking() {
+        this.blinking = false;
+        this.needToDraw = true;
+    }
+
     public boolean collides(Entity other) {
         return !(right() < other.left()
                 || left() > other.right()
                 || top() > other.bottom()
                 || bottom() < other.top());
     }
-    
-    protected void fixBounds(){
-        if(this.x < 0){
+
+    protected void fixBounds() {
+        if (this.x < 0) {
             this.x = 0;
         }
-        if(this.x > this.level.getMapWidth()){
+        if (this.x > this.level.getMapWidth()) {
             this.x = this.level.getMapWidth();
         }
-        if(this.y < 0){
+        if (this.y < 0) {
             this.y = 0;
         }
-        if(this.y > this.level.getMapHeight()){
+        if (this.y > this.level.getMapHeight()) {
             this.y = this.level.getMapHeight();
         }
     }
-    
-    protected boolean isOutOfBounds(){
+
+    protected boolean isOutOfBounds() {
         return right() < 0
                 || left() > this.level.getMapWidth()
                 || bottom() < 0
@@ -119,6 +142,27 @@ public abstract class Entity {
     protected void move(double frameTime) {
         this.x += this.speed * this.direction.getVx() * frameTime;
         this.y += this.speed * this.direction.getVy() * frameTime;
+    }
+
+    protected void updateBlinkTimer(double frameTime) {
+        if (!this.blinking) {
+            return;
+        }
+
+        this.blinkTimer += frameTime;
+        this.blinkingTimer += frameTime;
+
+        if (this.blinkingDuration > 0 && this.blinkingTimer
+                >= this.blinkingDuration) {
+            this.needToDraw = true;
+            this.blinking = false;
+            return;
+        }
+
+        if (this.blinkTimer >= this.blinkPeriod) {
+            this.blinkTimer = 0;
+            this.needToDraw = !this.needToDraw;
+        }
     }
 
     public abstract void update(KeyboardState keyboardState, double frameTime);

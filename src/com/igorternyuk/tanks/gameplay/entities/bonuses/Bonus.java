@@ -19,6 +19,7 @@ public class Bonus extends Entity {
 
     private BonusType type;
     private Sprite sprite;
+    
     public Bonus(LevelState level, BonusType type, double x, double y) {
         super(level, EntityType.BONUS, x, y, 0, Direction.NORTH);
         this.type = type;
@@ -46,10 +47,13 @@ public class Bonus extends Entity {
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
         this.sprite.setPosition(this.x, this.y);
+        updateBlinkTimer(frameTime);
     }
 
     @Override
     public void draw(Graphics2D g) {
+        if(!this.needToDraw)
+            return;
         this.sprite.draw(g);
     }
 

@@ -121,7 +121,8 @@ public class LevelState extends GameState {
         Projectile p4 = new Projectile(this, ProjectileType.ENEMY, 40, 0, 0, Direction.EAST);
         this.entities.add(p4);
         
-        Bonus bonus = new Bonus(this, BonusType.STAR, 13* 5, 13* 2);
+        Bonus bonus = new Bonus(this, BonusType.CLOCK, 13* 5, 13* 2);
+        bonus.startInfiniteBlinking(0.25);
         this.entities.add(bonus);
     }
 

@@ -1,4 +1,4 @@
-package com.igorternyuk.tanks.gameplay.entities.explosion;
+package com.igorternyuk.tanks.gameplay.entities.tank.protection;
 
 import com.igorternyuk.tanks.gameplay.Game;
 import java.awt.Rectangle;
@@ -9,16 +9,14 @@ import java.util.List;
  *
  * @author igor
  */
-public enum ExplosionType {
-    TANK(0.2, new Rectangle(0, 0, 2 * Game.TILE_SIZE, 2 * Game.TILE_SIZE), 2
-            * Game.TILE_SIZE, 2),
-    PROJECTILE(0.2, new Rectangle(0, 0, Game.TILE_SIZE, Game.TILE_SIZE),
-            Game.TILE_SIZE, 3);
+public enum ProtectionType {
+    REGULAR(0.3, new Rectangle(0, 0, Game.TILE_SIZE, Game.TILE_SIZE),
+            Game.TILE_SIZE, 2);
 
     private List<Rectangle> frames = new ArrayList<>();
     private double animationSpeed;
 
-    private ExplosionType(double speed, Rectangle firstFrame, int frameStep,
+    private ProtectionType(double speed, Rectangle firstFrame, int frameStep,
             int frameCount) {
         this.animationSpeed = speed;
         for (int i = 0; i < frameCount; ++i) {
@@ -26,11 +24,7 @@ public enum ExplosionType {
             nextFrame.x = firstFrame.x + i * frameStep;
             this.frames.add(nextFrame);
         }
-        
-    }
 
-    private void ExplosionType(double speed, List<Rectangle> frames) {
-        this.frames.addAll(frames);
     }
 
     public List<Rectangle> getFrames() {
@@ -40,4 +34,5 @@ public enum ExplosionType {
     public double getAnimationSpeed() {
         return this.animationSpeed;
     }
+
 }

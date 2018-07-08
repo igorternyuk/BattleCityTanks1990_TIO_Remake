@@ -13,6 +13,8 @@ import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
 import com.igorternyuk.tanks.gameplay.entities.splash.Splash;
 import com.igorternyuk.tanks.gameplay.entities.splash.SplashType;
+import com.igorternyuk.tanks.gameplay.entities.tank.protection.Protection;
+import com.igorternyuk.tanks.gameplay.entities.tank.protection.ProtectionType;
 import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
 import com.igorternyuk.tanks.graphics.images.TextureAtlas;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
@@ -89,9 +91,6 @@ public class LevelState extends GameState {
     }
     
     private void loadSprites(){
-        System.out.println("Loading the sprites...");
-        BufferedImage image = this.atlas.getAtlas();
-        System.out.println("atlas width = " + image.getWidth() + " atlas height = " + image.getHeight());
         for(SpriteSheetIdentifier identifier: SpriteSheetIdentifier.values()){
             this.spriteSheetManager.put(identifier, this.atlas);
         }
@@ -118,6 +117,10 @@ public class LevelState extends GameState {
                 0, 0);
         indicator.setTankCount(17);
         this.entities.add(indicator);
+        
+        Protection protection = new Protection(this, ProtectionType.REGULAR,
+                13 * 7, 13 * 7);
+        this.entities.add(protection);
     }
 
     @Override

@@ -46,6 +46,7 @@ public class Bonus extends Entity {
 
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
+        super.update(keyboardState, frameTime);
         this.sprite.setPosition(this.x, this.y);
         updateBlinkTimer(frameTime);
     }
@@ -54,6 +55,7 @@ public class Bonus extends Entity {
     public void draw(Graphics2D g) {
         if(!this.needToDraw)
             return;
+        super.draw(g);
         this.sprite.draw(g);
     }
 

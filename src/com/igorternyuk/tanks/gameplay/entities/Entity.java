@@ -3,6 +3,8 @@ package com.igorternyuk.tanks.gameplay.entities;
 import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Graphics2D;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -22,6 +24,7 @@ public abstract class Entity {
     protected double blinkingTimer;
     protected double blinkingDuration;
     protected boolean needToDraw = true;
+    protected List<Entity> children = new ArrayList<>();
 
     public Entity(LevelState level, EntityType type, double x, double y,
             double speed, Direction direction) {
@@ -35,6 +38,22 @@ public abstract class Entity {
 
     public EntityType getEntityType() {
         return this.entityType;
+    }
+    
+    public void attachChild(Entity child){
+        this.children.add(child);
+    }
+    
+    public void detachChild(Entity child){
+        this.children.remove(child);
+    }
+    
+    public boolean hasChild(Entity child){
+        return this.children.contains(child);
+    }
+    
+    public List<Entity> getChildren(){
+        return this.children;
     }
 
     public double getSpeed() {
@@ -165,7 +184,13 @@ public abstract class Entity {
         }
     }
 
-    public abstract void update(KeyboardState keyboardState, double frameTime);
+    public void update(KeyboardState keyboardState, double frameTime){
+        this.children.forEach(e -> e.update(keyboardState, frameTime));
+    }
 
-    public abstract void draw(Graphics2D g);
+    public void draw(Graphics2D g){
+        this.children.forEach(e -> {
+            e.draw(g);
+        });
+    }
 }

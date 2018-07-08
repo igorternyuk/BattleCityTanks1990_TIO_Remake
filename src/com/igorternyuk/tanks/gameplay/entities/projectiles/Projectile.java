@@ -65,12 +65,14 @@ public class Projectile extends Entity {
 
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
+        super.update(keyboardState, frameTime);
         move(frameTime);
         this.sprite.setPosition(this.x, this.y);
     }
 
     @Override
     public void draw(Graphics2D g) {
+        super.draw(g);
         this.sprite.draw(g);
     }
 

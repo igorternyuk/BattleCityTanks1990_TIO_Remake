@@ -53,6 +53,7 @@ public class EnemyTankCountIndicator extends Entity {
 
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
+        super.update(keyboardState, frameTime);
         /*        this.tankCount = (int) this.level.getEntities().stream().filter(e ->
                 e.getEntityType() == EntityType.ENEMY_TANK).count();*/
         this.rows = this.tankCount / TANK_SIGNS_IN_ROW;
@@ -60,6 +61,7 @@ public class EnemyTankCountIndicator extends Entity {
 
     @Override
     public void draw(Graphics2D g) {
+        super.draw(g);
         for (int i = 0; i < this.rows; ++i) {
             for (int j = 0; j < TANK_SIGNS_IN_ROW; ++j) {
                 double posX = this.x + j * Game.HALF_TILE_SIZE;

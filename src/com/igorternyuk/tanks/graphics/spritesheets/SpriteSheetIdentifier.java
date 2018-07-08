@@ -17,7 +17,7 @@ public enum SpriteSheetIdentifier {
     BONUS(256, 112, 112, 16),
     SPLASH(256, 96, 64, 16),
     SCORES(288, 160, 80, 16),
-    NUMBERS(327, 183, 40, 16),
+    DIGITS(327, 183, 40, 16),
     PAUSE(288,176,40,8),
     GAME_OVER(288,184,32,16),
     LEVEL_FLAG(376,184,16,16),

@@ -215,9 +215,8 @@ public class LevelState extends GameState {
             this.entities.get(i).draw(g);
         }
         
-        /*BufferedImage im = this.spriteSheetManager.get(
-                SpriteSheetIdentifier.PROJECTILE);
-        g.drawImage(im, 0, 0, im.getWidth() * 2, 2 * im.getHeight(), null);*/
+        BufferedImage im = this.spriteSheetManager.fetchDigitSprite(2);
+        g.drawImage(im, 200, 100, im.getWidth() * 2, 2 * im.getHeight(), null);
 
         drawGameStatus(g);
         

@@ -35,11 +35,13 @@ public abstract class AnimatedEntity<I> extends Entity {
 
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
+        super.update(keyboardState, frameTime);
         this.animationManager.update(frameTime);
     }
 
     @Override
     public void draw(Graphics2D g) {
+        super.draw(g);
         this.animationManager.draw(g, (int)this.x, (int)this.y, 2, 2);
     }
 

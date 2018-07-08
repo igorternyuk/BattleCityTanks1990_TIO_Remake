@@ -25,7 +25,7 @@ public class Protection extends AnimatedEntity<ProtectionType>{
     }
 
     @Override
-    public void loadAnimations() {
+    public final void loadAnimations() {
         BufferedImage spriteSheet;
         if(this.type == ProtectionType.REGULAR){
             spriteSheet = this.level.getSpriteSheetManager().get(

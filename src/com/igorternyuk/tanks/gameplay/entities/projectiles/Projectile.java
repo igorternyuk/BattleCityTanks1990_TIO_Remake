@@ -9,7 +9,6 @@ import com.igorternyuk.tanks.graphics.images.Sprite;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
 import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
 /**

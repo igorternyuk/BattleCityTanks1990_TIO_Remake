@@ -10,6 +10,8 @@ import com.igorternyuk.tanks.gameplay.entities.bonuses.BonusType;
 import com.igorternyuk.tanks.gameplay.entities.explosion.Explosion;
 import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
 import com.igorternyuk.tanks.gameplay.entities.indicators.EnemyTankCountIndicator;
+import com.igorternyuk.tanks.gameplay.entities.player.Player;
+import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
 import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTank;
@@ -47,6 +49,7 @@ public class LevelState extends GameState {
     private SpriteSheetManager spriteSheetManager;
     //private Player player;
     private List<Entity> entities = new ArrayList<>();
+    private Player player;
     private GameStatus gameStatus = GameStatus.PLAY;
     private boolean loaded = false;
 
@@ -126,10 +129,9 @@ public class LevelState extends GameState {
         /*Projectile projectile = new Projectile(this, ProjectileType.PLAYER, 13
                 * 2, 13 * 2, 0, Direction.WEST);
         this.entities.add(projectile);*/
-
-        EnemyTank tanque = new EnemyTank(this,
-                EnemyTankType.HEAVY, 13 * 8, 13 * 8,
-                50, Direction.NORTH);
+        Player tanque = new Player(this, PlayerTankType.HEAVY, 13 * 9, 13 * 9,
+                64, Direction.NORTH);
+        this.player = tanque;
         tanque.attachChild(protection);
         this.entities.add(tanque);
     }
@@ -181,6 +183,9 @@ public class LevelState extends GameState {
                 break;
             case KeyEvent.VK_N:
                 startNewGame();
+                break;
+            case KeyEvent.VK_F:
+                this.player.setCanFire(true);
                 break;
             default:
                 break;

@@ -26,7 +26,7 @@ public class EnemyTankCountIndicator extends Entity {
         super(level, EntityType.INDICATOR, x, y, 0, Direction.NORTH);
         BufferedImage image = this.level.getSpriteSheetManager().get(
                 SpriteSheetIdentifier.ENEMY_TANK_SIGN);
-        this.sprite = new Sprite(image, this.x, this.y);
+        this.sprite = new Sprite(image, this.x, this.y, LevelState.SCALE);
     }
 
     public int getTankCount() {

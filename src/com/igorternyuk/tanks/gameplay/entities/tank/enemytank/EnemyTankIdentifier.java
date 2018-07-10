@@ -8,6 +8,7 @@ import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -51,6 +52,10 @@ public class EnemyTankIdentifier {
         }
 
         return map;
+    }
+    
+    public static Map<EnemyTankIdentifier, BufferedImage> getSpriteSheetMap(){
+        return Collections.unmodifiableMap(SPRITE_SHEET_MAP);
     }
 
     private Alliance alliance;

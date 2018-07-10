@@ -11,8 +11,6 @@ import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
 import com.igorternyuk.tanks.gameplay.entities.indicators.EnemyTankCountIndicator;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
-import com.igorternyuk.tanks.gameplay.entities.splash.Splash;
-import com.igorternyuk.tanks.gameplay.entities.splash.SplashType;
 import com.igorternyuk.tanks.gameplay.entities.tank.protection.Protection;
 import com.igorternyuk.tanks.gameplay.entities.tank.protection.ProtectionType;
 import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
@@ -22,7 +20,6 @@ import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
 import java.awt.Graphics2D;
 import com.igorternyuk.tanks.input.KeyboardState;
 import com.igorternyuk.tanks.resourcemanager.ImageIdentifier;
-import com.igorternyuk.tanks.resourcemanager.ResourceManager;
 import com.igorternyuk.tanks.utils.Painter;
 import java.awt.Font;
 import java.awt.event.KeyEvent;
@@ -35,6 +32,7 @@ import java.util.List;
  * @author igor
  */
 public class LevelState extends GameState {
+
     private static final Font FONT_GAME_STATUS = new Font("Verdana", Font.BOLD,
             48);
     public static final double SCALE = 2;
@@ -61,19 +59,19 @@ public class LevelState extends GameState {
     public boolean isLoaded() {
         return this.loaded;
     }
-    
+
     public TileMap getTileMap() {
         return this.tileMap;
     }
-    
-    public int getMapWidth(){
+
+    public int getMapWidth() {
         return 13 * 16;
     }
-    
-    public int getMapHeight(){
+
+    public int getMapHeight() {
         return 13 * 16;
     }
-    
+
     public List<Entity> getEntities() {
         return this.entities;
     }
@@ -84,14 +82,14 @@ public class LevelState extends GameState {
         this.resourceManager.loadImage(ImageIdentifier.TEXTURE_ATLAS,
                 "/images/texture_atlas.png");
         this.atlas = new TextureAtlas(this.resourceManager.getImage(
-                ImageIdentifier.TEXTURE_ATLAS));        
+                ImageIdentifier.TEXTURE_ATLAS));
         loadSprites();
         startNewGame();
         this.loaded = true;
     }
-    
-    private void loadSprites(){
-        for(SpriteSheetIdentifier identifier: SpriteSheetIdentifier.values()){
+
+    private void loadSprites() {
+        for (SpriteSheetIdentifier identifier : SpriteSheetIdentifier.values()) {
             this.spriteSheetManager.put(identifier, this.atlas);
         }
     }
@@ -101,26 +99,30 @@ public class LevelState extends GameState {
         createEntities();
         gameStatus = GameStatus.PLAY;
     }
-    
+
     private void createEntities() {
         Explosion explosion = new Explosion(this, ExplosionType.TANK,
                 64, 64);
         this.entities.add(explosion);
         /*Splash s = new Splash(this, SplashType.BONUS, 0, 0);
         this.entities.add(s);*/
-        
-        Bonus bonus = new Bonus(this, BonusType.CLOCK, 13* 5, 13* 2);
+
+        Bonus bonus = new Bonus(this, BonusType.CLOCK, 13 * 5, 13 * 2);
         bonus.startInfiniteBlinking(0.25);
         this.entities.add(bonus);
-        
-        EnemyTankCountIndicator indicator = new EnemyTankCountIndicator(this,
+
+        /*EnemyTankCountIndicator indicator = new EnemyTankCountIndicator(this,
                 0, 0);
         indicator.setTankCount(17);
         this.entities.add(indicator);
-        
+*/
         Protection protection = new Protection(this, ProtectionType.REGULAR,
                 13 * 7, 13 * 7);
         this.entities.add(protection);
+
+        Projectile projectile = new Projectile(this, ProjectileType.PLAYER, 13
+                * 2, 13 * 2, 0, Direction.NORTH);
+        this.entities.add(projectile);
     }
 
     @Override
@@ -129,9 +131,7 @@ public class LevelState extends GameState {
         this.tileMap = null;
     }
 
-    
-    
-    private void updateEntities(KeyboardState keyboardState, double frameTime){
+    private void updateEntities(KeyboardState keyboardState, double frameTime) {
         //Remove the dead entities
         //this.entities.removeIf(e -> e != this.player && !e.isAlive());
 
@@ -142,10 +142,10 @@ public class LevelState extends GameState {
     }
 
     private void checkCollisions() {
-        
+
     }
 
-    private void checkGameStatus(){
+    private void checkGameStatus() {
         /*if(!this.player.isAlive()){
             this.gameStatus = GameStatus.PLAYER_LOST;
         }
@@ -177,36 +177,39 @@ public class LevelState extends GameState {
                 break;
         }
     }
-    
-    private void togglePause(){
-        if(this.gameStatus == GameStatus.PLAY){
+
+    private void togglePause() {
+        if (this.gameStatus == GameStatus.PLAY) {
             this.gameStatus = GameStatus.PAUSED;
-        } else if(this.gameStatus == GameStatus.PAUSED){
+        } else if (this.gameStatus == GameStatus.PAUSED) {
             this.gameStatus = GameStatus.PLAY;
         }
     }
-    
-    private void drawGameStatus(Graphics2D g){
+
+    private void drawGameStatus(Graphics2D g) {
         Painter.drawCenteredString(g, this.gameStatus.getDescription(),
                 FONT_GAME_STATUS, this.gameStatus.getColor(), Game.HEIGHT / 2);
     }
-    
+
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
-        if(!this.loaded)
+        if (!this.loaded) {
             return;
-        if(this.gameStatus != GameStatus.PLAY /*|| this.player == null*/)
+        }
+        if (this.gameStatus != GameStatus.PLAY /*|| this.player == null*/) {
             return;
+        }
         //System.out.println("numEntities.size() = " + this.entities.size());
         updateEntities(keyboardState, frameTime);
         checkCollisions();
         checkGameStatus();
     }
-    
+
     @Override
     public void draw(Graphics2D g) {
-        if(!this.loaded)
+        if (!this.loaded) {
             return;
+        }
         /*if (this.tileMap != null) {
             this.tileMap.draw(g);
         }*/
@@ -214,11 +217,11 @@ public class LevelState extends GameState {
         for (int i = this.entities.size() - 1; i >= 0; --i) {
             this.entities.get(i).draw(g);
         }
-        
+
         BufferedImage im = this.spriteSheetManager.fetchDigitSprite(2);
         g.drawImage(im, 200, 100, im.getWidth() * 2, 2 * im.getHeight(), null);
 
         drawGameStatus(g);
-        
+
     }
 }

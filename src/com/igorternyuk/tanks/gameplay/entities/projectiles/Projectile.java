@@ -27,7 +27,7 @@ public class Projectile extends Entity {
         this.type = projectileType;
         BufferedImage image = this.level.getSpriteSheetManager().get(
                 SpriteSheetIdentifier.PROJECTILE);
-        this.sprite = new Sprite(image, this.x, this.y);
+        this.sprite = new Sprite(image, this.x, this.y, LevelState.SCALE);
         updateSprite();
     }
 
@@ -49,8 +49,6 @@ public class Projectile extends Entity {
     private void updateSprite() {
         this.sprite.setSourceRect(ProjectileType.getSourceRect(this.direction));
         this.sprite.setPosition(this.x, this.y);
-        this.sprite.getDestRect().width = this.sprite.getSourceRect().width;
-        this.sprite.getDestRect().height = this.sprite.getSourceRect().height;
     }
 
     @Override

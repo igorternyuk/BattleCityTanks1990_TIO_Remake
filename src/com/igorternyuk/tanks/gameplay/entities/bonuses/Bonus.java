@@ -1,6 +1,5 @@
 package com.igorternyuk.tanks.gameplay.entities.bonuses;
 
-import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
@@ -25,9 +24,8 @@ public class Bonus extends Entity {
         this.type = type;
         BufferedImage image = this.level.getSpriteSheetManager().get(
                 SpriteSheetIdentifier.BONUS);
-        this.sprite = new Sprite(image, this.x, this.y);
+        this.sprite = new Sprite(image, this.x, this.y, LevelState.SCALE);
         this.sprite.setSourceRect(this.type.getSourceRect());
-        this.sprite.getDestRect().width = Game.TILE_SIZE;
     }
 
     public BonusType getType() {

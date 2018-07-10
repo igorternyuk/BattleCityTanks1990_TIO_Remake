@@ -10,7 +10,8 @@ public enum Direction {
     NORTH(new Point(0, -1)),
     WEST(new Point(-1, 0)),
     SOUTH(new Point(0, +1)),
-    EAST(new Point(+1, 0));
+    EAST(new Point(+1, 0)),
+    NULL(new Point(0,0));
     
     private Point vector;
 

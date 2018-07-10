@@ -9,5 +9,6 @@ public enum TileType {
     METAL,
     WATER,
     BUSH,
-    ICE
+    ICE,
+    EMPTY;
 }

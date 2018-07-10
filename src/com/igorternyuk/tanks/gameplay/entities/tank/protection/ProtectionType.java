@@ -34,5 +34,7 @@ public enum ProtectionType {
     public double getAnimationSpeed() {
         return this.animationSpeed;
     }
+    
+    
 
 }

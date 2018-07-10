@@ -24,7 +24,7 @@ public enum Alliance {
             return false;
         }
     },
-    ENEMY(new Point(0, 2 * Game.TILE_SIZE)) {
+    ENEMY(new Point(0, 4 * Game.TILE_SIZE)) {
         @Override
         public Alliance getOpponent() {
             return Alliance.PLAYER;

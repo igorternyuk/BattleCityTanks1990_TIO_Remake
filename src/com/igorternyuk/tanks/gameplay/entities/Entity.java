@@ -17,6 +17,7 @@ public abstract class Entity {
     protected double x, y;
     protected double speed;
     protected Direction direction;
+    protected boolean moving = false;
     protected int health = 100;
     protected boolean blinking = false;
     protected double blinkTimer;
@@ -56,6 +57,15 @@ public abstract class Entity {
         return this.children;
     }
 
+    public boolean isMoving() {
+        return moving;
+    }
+
+    public void setMoving(boolean moving) {
+        this.moving = moving;
+    }
+    
+    
     public double getSpeed() {
         return this.speed;
     }
@@ -142,17 +152,17 @@ public abstract class Entity {
     }
 
     protected void fixBounds() {
-        if (this.x < 0) {
+        if (left() < 0) {
             this.x = 0;
         }
-        if (this.x > this.level.getMapWidth()) {
-            this.x = this.level.getMapWidth();
+        if (right() > this.level.getMapWidth()) {
+            this.x = this.level.getMapWidth() - getWidth();
         }
-        if (this.y < 0) {
+        if (top() < 0) {
             this.y = 0;
         }
-        if (this.y > this.level.getMapHeight()) {
-            this.y = this.level.getMapHeight();
+        if (bottom() > this.level.getMapHeight()) {
+            this.y = this.level.getMapHeight() - getHeight();
         }
     }
 
@@ -191,7 +201,7 @@ public abstract class Entity {
 
     public void update(KeyboardState keyboardState, double frameTime) {
         this.children.forEach(child -> {
-            child.setPosition(child.x + this.x, child.y + this.y);
+            child.setPosition(this.x, this.y);
             child.update(keyboardState, frameTime);
         });
     }

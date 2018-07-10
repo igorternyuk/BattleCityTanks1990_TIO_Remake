@@ -4,6 +4,7 @@ import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.GameStatus;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
+import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.Bonus;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.BonusType;
 import com.igorternyuk.tanks.gameplay.entities.explosion.Explosion;
@@ -11,6 +12,8 @@ import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
 import com.igorternyuk.tanks.gameplay.entities.indicators.EnemyTankCountIndicator;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
+import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTank;
+import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTankType;
 import com.igorternyuk.tanks.gameplay.entities.tank.protection.Protection;
 import com.igorternyuk.tanks.gameplay.entities.tank.protection.ProtectionType;
 import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
@@ -115,14 +118,20 @@ public class LevelState extends GameState {
                 0, 0);
         indicator.setTankCount(17);
         this.entities.add(indicator);
-*/
+         */
         Protection protection = new Protection(this, ProtectionType.REGULAR,
                 13 * 7, 13 * 7);
-        this.entities.add(protection);
+        //this.entities.add(protection);
 
-        Projectile projectile = new Projectile(this, ProjectileType.PLAYER, 13
-                * 2, 13 * 2, 0, Direction.NORTH);
-        this.entities.add(projectile);
+        /*Projectile projectile = new Projectile(this, ProjectileType.PLAYER, 13
+                * 2, 13 * 2, 0, Direction.WEST);
+        this.entities.add(projectile);*/
+
+        EnemyTank tanque = new EnemyTank(this,
+                EnemyTankType.HEAVY, 13 * 8, 13 * 8,
+                50, Direction.NORTH);
+        tanque.attachChild(protection);
+        this.entities.add(tanque);
     }
 
     @Override

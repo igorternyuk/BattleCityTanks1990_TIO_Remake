@@ -74,6 +74,8 @@ public class Sprite extends Image {
 
     @Override
     public void draw(Graphics2D g) {
+        System.out.println("Projectile current image fragment width = " + this.currentImageFragment.getWidth());
+        System.out.println("Projectile current image fragment height = " + this.currentImageFragment.getHeight());
         g.drawImage(this.currentImageFragment, this.destX, this.destY, null);
     }
 }

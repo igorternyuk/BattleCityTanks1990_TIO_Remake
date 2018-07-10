@@ -34,9 +34,9 @@ public class Projectile extends Entity {
     public ProjectileType getType() {
         return this.type;
     }
-    
+
     @Override
-    public boolean isAlive(){
+    public boolean isAlive() {
         return super.isAlive() && !isOutOfBounds();
     }
 

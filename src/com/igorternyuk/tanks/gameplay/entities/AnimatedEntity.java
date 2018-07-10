@@ -42,7 +42,8 @@ public abstract class AnimatedEntity<I> extends Entity {
     @Override
     public void draw(Graphics2D g) {
         super.draw(g);
-        this.animationManager.draw(g, (int)this.x, (int)this.y, 2, 2);
+        this.animationManager.draw(g, (int) this.x, (int) this.y,
+                LevelState.SCALE, LevelState.SCALE);
     }
 
 }

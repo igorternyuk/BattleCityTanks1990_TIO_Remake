@@ -3,7 +3,6 @@ package com.igorternyuk.tanks.gameplay;
 import com.igorternyuk.tanks.gamestate.GameStateManager;
 import com.igorternyuk.tanks.graphics.Display;
 import com.igorternyuk.tanks.input.KeyboardState;
-import com.igorternyuk.tanks.resourcemanager.ResourceManager;
 import java.awt.Graphics2D;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -38,13 +37,25 @@ public class Game implements Runnable {
     private Display display;
     private Graphics2D graphics;
     private KeyboardState keyboardState;
-    private ResourceManager resourceManager;
     private GameStateManager gameStateManager;
 
     public Game() {
+        init();
+    }
+    
+    private void init(){
+        createDisplay();
+        addInputListeners();
+        this.gameStateManager = GameStateManager.create(this);
+    }
+    
+    private void createDisplay(){
         this.display = Display.create(WIDTH, HEIGHT, TITLE, NUM_BUFFERS,
                 CLEAR_COLOR);
         this.graphics = this.display.getGraphics();
+    }
+    
+    private void addInputListeners(){
         this.keyboardState = new KeyboardState();
         this.display.addInputListener(this.keyboardState);
         this.display.addKeyListener(new KeyAdapter() {
@@ -64,8 +75,6 @@ public class Game implements Runnable {
                 onWindowCloseRequest();
             }
         });
-        this.resourceManager = ResourceManager.getInstance();
-        this.gameStateManager = GameStateManager.create(this);
     }
 
     public void onWindowCloseRequest() {

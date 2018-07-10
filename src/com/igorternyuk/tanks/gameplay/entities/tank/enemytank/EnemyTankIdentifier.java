@@ -1,8 +1,11 @@
 package com.igorternyuk.tanks.gameplay.entities.tank.enemytank;
 
+import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.tank.Alliance;
 import com.igorternyuk.tanks.gameplay.entities.tank.Heading;
 import com.igorternyuk.tanks.gameplay.entities.tank.TankColor;
+import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
+import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
@@ -15,7 +18,7 @@ import java.util.Objects;
  */
 public class EnemyTankIdentifier {
 
-    private static final Map<EnemyTankIdentifier, BufferedImage> spriteSheetMap =
+    private static final Map<EnemyTankIdentifier, BufferedImage> SPRITE_SHEET_MAP =
             getAllPossibleIdentifiers();
 
     private static Map<EnemyTankIdentifier, BufferedImage> getAllPossibleIdentifiers() {
@@ -28,12 +31,20 @@ public class EnemyTankIdentifier {
                         getOffsetFromSameColorTankSpriteSheetTopLeftCorner().x;
                 topLeft.y += alliance.
                         getOffsetFromSameColorTankSpriteSheetTopLeftCorner().y;
-                for(EnemyTankType type: EnemyTankType.values()){
-                    for(Heading heading: Heading.values()){
+                for (EnemyTankType type : EnemyTankType.values()) {
+                    for (Heading heading : Heading.values()) {
                         int dx = heading.getSpriteSheetPositionX();
                         int dy = type.getSpriteSheetPositionY();
-                        EnemyTankIdentifier key = new EnemyTankIdentifier(color, heading, type);
-                        //BufferedImage value = 
+                        EnemyTankIdentifier key = new EnemyTankIdentifier(color,
+                                heading, type);
+                        SpriteSheetManager manager = SpriteSheetManager.
+                                getInstance();
+                        BufferedImage spriteSheet = manager.get(
+                                SpriteSheetIdentifier.TANK);
+                        BufferedImage sprite = spriteSheet.getSubimage(topLeft.x
+                                + dx, topLeft.y + dy,
+                                2 * Game.TILE_SIZE, Game.TILE_SIZE);
+                        map.put(key, sprite);
                     }
                 }
             }

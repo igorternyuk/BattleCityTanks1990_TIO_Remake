@@ -28,13 +28,17 @@ public class Player extends Tank {
 
     private static final double PROTECTION_TIME = 23;
     private PlayerTankIdentifier identifier;
+    private double respawnX, respawnY;
     private int score;
     private boolean hasProtection = false;
     private double protectionTimer;
+    private int lives = 5;
 
     public Player(LevelState level, PlayerTankType type, double x, double y,
             Direction direction) {
         super(level, EntityType.PLAYER_TANK, x, y, type.getSpeed(), direction);
+        this.respawnX = x;
+        this.respawnY = y;
         loadAnimations();
         this.identifier = new PlayerTankIdentifier(TankColor.YELLOW,
                 Heading.getHeading(direction), type);
@@ -43,6 +47,10 @@ public class Player extends Tank {
 
     public PlayerTankIdentifier getIdentifier() {
         return this.identifier;
+    }
+    
+    public void takeScore(int scoreIncrement){
+        this.score += scoreIncrement;
     }
 
     public int getScore() {
@@ -74,9 +82,14 @@ public class Player extends Tank {
     }
 
     public int getLives() {
-        return (int) (this.health / 100);
+        return this.lives;
     }
-
+    
+    @Override
+    public boolean isAlive(){
+        return this.lives > 0;
+    }
+    
     @Override
     public final void loadAnimations() {
         this.level.getPlayerSpriteSheetMap().keySet().forEach(key -> {
@@ -97,12 +110,37 @@ public class Player extends Tank {
             return;
         }
         Point departure = calcPointOfProjectileDeparture();
-        this.level.getEntities().add(
+        this.level.getEntityManager().addEntity(
                 new Projectile(level, ProjectileType.ENEMY, departure.x,
                         departure.y,
                         this.identifier.getType().getProjectileSpeed(),
                         this.direction));
-        this.canFire = false;
+        if(this.identifier.getType() != PlayerTankType.MIDDLE){
+            this.canFire = false;
+        }
+    }
+    
+    @Override
+    public void hit(int damage){
+        super.hit(damage);
+        if(!isAlive()){
+            explode();
+        }
+    }
+    
+    @Override
+    protected void explode(){
+        super.explode();
+        --this.lives;
+        if(isAlive()){
+            respawn();
+        }
+    }
+    
+    protected void respawn(){
+        this.health = 100;
+        setPosition(this.respawnX, this.respawnY);
+        this.identifier.setType(PlayerTankType.REGULAR);
     }
 
     private void setProperAnimation() {

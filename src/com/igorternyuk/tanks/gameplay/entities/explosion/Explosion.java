@@ -8,6 +8,7 @@ import com.igorternyuk.tanks.graphics.animations.Animation;
 import com.igorternyuk.tanks.graphics.animations.AnimationPlayMode;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
+import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.image.BufferedImage;
 
 /**
@@ -24,7 +25,7 @@ public class Explosion extends AnimatedEntity<ExplosionType> {
         this.explosionType = explosionType;
         loadAnimations();
         this.animationManager.setCurrentAnimation(explosionType);
-        this.animationManager.getCurrentAnimation().start(AnimationPlayMode.LOOP);
+        this.animationManager.getCurrentAnimation().start(AnimationPlayMode.ONCE);
     }
 
     @Override
@@ -45,6 +46,14 @@ public class Explosion extends AnimatedEntity<ExplosionType> {
             this.animationManager.addAnimation(animType, new Animation(
                     spriteSheet, animType.getAnimationSpeed(), animType.
                     getFrames()));
+        }
+    }
+    
+    @Override
+    public void update(KeyboardState keyboardState, double frameTime){
+        super.update(keyboardState, frameTime);
+        if(this.animationManager.getCurrentAnimation().hasBeenPlayedOnce()){
+            destroy();
         }
     }
 

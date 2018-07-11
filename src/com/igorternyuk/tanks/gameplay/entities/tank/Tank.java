@@ -3,6 +3,8 @@ package com.igorternyuk.tanks.gameplay.entities.tank;
 import com.igorternyuk.tanks.gameplay.entities.AnimatedEntity;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
+import com.igorternyuk.tanks.gameplay.entities.explosion.Explosion;
+import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
 import com.igorternyuk.tanks.gamestate.LevelState;
 import java.awt.Point;
@@ -20,6 +22,12 @@ public abstract class Tank<T> extends AnimatedEntity<T>{
     
     public abstract void chooseDirection();    
     public abstract void fire();
+    
+    protected void explode(){
+        Explosion explosion = new Explosion(this.level, ExplosionType.TANK,
+               this.x, this.y);
+        this.level.getEntityManager().addEntity(explosion);
+    }
 
     public boolean isCanFire() {
         return this.canFire;
@@ -27,10 +35,6 @@ public abstract class Tank<T> extends AnimatedEntity<T>{
 
     public void setCanFire(boolean canFire) {
         this.canFire = canFire;
-    }
-    
-    public void explode(){
-        
     }
     
     protected Point calcPointOfProjectileDeparture(){

@@ -1,9 +1,10 @@
 package com.igorternyuk.tanks.gameplay.entities.projectiles;
 
-import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
+import com.igorternyuk.tanks.gameplay.entities.explosion.Explosion;
+import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
 import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.graphics.images.Sprite;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
@@ -38,6 +39,13 @@ public class Projectile extends Entity {
     @Override
     public boolean isAlive() {
         return super.isAlive() && !isOutOfBounds();
+    }
+    
+    public void explode(){
+        Explosion explosion = new Explosion(this.level, ExplosionType.PROJECTILE,
+               this.x, this.y);
+        this.level.getEntityManager().addEntity(explosion);
+        destroy();
     }
 
     @Override

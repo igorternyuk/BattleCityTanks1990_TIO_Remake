@@ -41,6 +41,10 @@ public class Bonus extends Entity {
     public BonusType getType() {
         return this.type;
     }
+    
+    public int getScore(){
+        return this.type.getScore();
+    }
 
     @Override
     public int getWidth() {

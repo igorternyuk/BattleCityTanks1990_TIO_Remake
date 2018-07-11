@@ -8,19 +8,16 @@ import com.igorternyuk.tanks.gameplay.entities.EntityManager;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.Bonus;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.BonusType;
-import com.igorternyuk.tanks.gameplay.entities.explosion.Explosion;
-import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
 import com.igorternyuk.tanks.gameplay.entities.player.Player;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankIdentifier;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankType;
+import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
 import com.igorternyuk.tanks.gameplay.entities.tank.Alliance;
 import com.igorternyuk.tanks.gameplay.entities.tank.Heading;
 import com.igorternyuk.tanks.gameplay.entities.tank.TankColor;
 import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTank;
 import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTankIdentifier;
 import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTankType;
-import com.igorternyuk.tanks.gameplay.entities.tank.protection.Protection;
-import com.igorternyuk.tanks.gameplay.entities.tank.protection.ProtectionType;
 import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
 import com.igorternyuk.tanks.graphics.images.TextureAtlas;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
@@ -185,12 +182,6 @@ public class LevelState extends GameState {
     }
 
     private void createEntities() {
-        Explosion explosion = new Explosion(this, ExplosionType.TANK,
-                64, 64);
-        this.entityManager.addEntity(explosion);
-        /*Splash s = new Splash(this, SplashType.BONUS, 0, 0);
-        this.entities.add(s);*/
-
         Bonus bonus0 = new Bonus(this, BonusType.EXTRA_LIFE, 13 * 5, 13 * 2);
         bonus0.startInfiniteBlinking(0.4);
         this.entityManager.addEntity(bonus0);
@@ -222,10 +213,13 @@ public class LevelState extends GameState {
         this.player = tanque;
         this.entityManager.addEntity(tanque);
         
-        EnemyTank tank = new EnemyTank(this, EnemyTankType.HEAVY, 13 * 11, 13 * 11,
+        EnemyTank tank = new EnemyTank(this, 4, EnemyTankType.ARMORED_TROOP_CARRIER, 13 * 11, 13 * 11,
                 Direction.NORTH);
-        tank.setGleaming(true);
         this.entityManager.addEntity(tank);
+        
+        EnemyTank tank2 = new EnemyTank(this, 7, EnemyTankType.HEAVY, 13 * 13, 13 * 13,
+                Direction.NORTH);
+        this.entityManager.addEntity(tank2);
         //TODO create EntityManager
     }
 
@@ -236,7 +230,20 @@ public class LevelState extends GameState {
     }
 
     private void checkCollisions() {
-
+        List<Entity> projectiles = this.entityManager.getEntitiesByType(
+                EntityType.PROJECTILE);
+        List<Entity> enemyTanks = this.entityManager.getEntitiesByType(
+                EntityType.ENEMY_TANK);
+        for(int i = projectiles.size() - 1; i >= 0; --i){
+            for(int j = enemyTanks.size() - 1; j >= 0; --j){
+                Projectile projectile = (Projectile)projectiles.get(i);
+                EnemyTank enemyTank = (EnemyTank)enemyTanks.get(j);
+                if(projectile.collides(enemyTank)){
+                    enemyTank.hit(25);
+                    projectile.explode();
+                }
+            }
+        }
     }
     
     private void checkBonuses(){
@@ -275,6 +282,7 @@ public class LevelState extends GameState {
         } else if(bonus.getType() == BonusType.CLOCK){
             
         }
+        this.player.takeScore(bonus.getScore());
         bonus.collect();
     }
 

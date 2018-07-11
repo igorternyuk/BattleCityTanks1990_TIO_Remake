@@ -33,7 +33,6 @@ public class EntityManager {
             this.player = (Player)entity;
         }
         this.entities.add(entity);
-        this.entitiesByType.put(entity.getEntityType(), entities);
         List<Entity> lista = this.entitiesByType.get(entity.getEntityType());
         lista.add(entity);
     }
@@ -51,6 +50,10 @@ public class EntityManager {
         });
     }
     
+    public int entityCount(){
+        return this.entities.size();
+    }
+    
     public List<Entity> getEntitiesByType(EntityType entityType){
         return this.entitiesByType.get(entityType);
     }
@@ -62,11 +65,14 @@ public class EntityManager {
     public void update(KeyboardState keyboardState, double frameTime) {
         //Remove the dead entities
         this.entities.removeIf(e -> !e.isAlive());
-
+        this.entitiesByType.keySet().forEach(key -> {
+            this.entitiesByType.get(key).removeIf(e -> !e.isAlive());
+        });
         //Update all entitites
         for (int i = this.entities.size() - 1; i >= 0; --i) {
             this.entities.get(i).update(keyboardState, frameTime);
         }
+        //System.out.println("entities.size() = " + entities.size());
     }
 
     public void draw(Graphics2D g) {

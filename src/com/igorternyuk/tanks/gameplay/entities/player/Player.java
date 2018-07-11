@@ -2,18 +2,23 @@ package com.igorternyuk.tanks.gameplay.entities.player;
 
 import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
+import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
 import com.igorternyuk.tanks.gameplay.entities.tank.Heading;
 import com.igorternyuk.tanks.gameplay.entities.tank.Tank;
 import com.igorternyuk.tanks.gameplay.entities.tank.TankColor;
+import com.igorternyuk.tanks.gameplay.entities.tank.protection.Protection;
+import com.igorternyuk.tanks.gameplay.entities.tank.protection.ProtectionType;
 import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.graphics.animations.Animation;
 import com.igorternyuk.tanks.graphics.animations.AnimationPlayMode;
 import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -21,7 +26,11 @@ import java.awt.event.KeyEvent;
  */
 public class Player extends Tank {
 
+    private static final double PROTECTION_TIME = 23;
     private PlayerTankIdentifier identifier;
+    private int score;
+    private boolean hasProtection = false;
+    private double protectionTimer;
 
     public Player(LevelState level, PlayerTankType type, double x, double y,
             Direction direction) {
@@ -29,11 +38,43 @@ public class Player extends Tank {
         loadAnimations();
         this.identifier = new PlayerTankIdentifier(TankColor.YELLOW,
                 Heading.getHeading(direction), type);
-        updateAnimation();
+        setProperAnimation();
     }
 
     public PlayerTankIdentifier getIdentifier() {
         return this.identifier;
+    }
+
+    public int getScore() {
+        return this.score;
+    }
+
+    public void promote() {
+        PlayerTankType currType = this.identifier.getType();
+        if (currType == PlayerTankType.HEAVY) {
+            return;
+        }
+        this.identifier.setType(currType.next());
+    }
+
+    public void promoteToHeavy() {
+        this.identifier.setType(PlayerTankType.HEAVY);
+    }
+
+    public void addProtection() {
+        Protection protection = new Protection(this.level,
+                ProtectionType.REGULAR,
+                this.x, this.y);
+        attachChild(protection);
+        this.hasProtection = true;
+    }
+
+    public void gainExtraLife() {
+        this.health += 100;
+    }
+
+    public int getLives() {
+        return (int) (this.health / 100);
     }
 
     @Override
@@ -64,40 +105,37 @@ public class Player extends Tank {
         this.canFire = false;
     }
 
-    private void updateAnimation() {
+    private void setProperAnimation() {
         this.animationManager.setCurrentAnimation(this.identifier);
         this.animationManager.getCurrentAnimation().start(
                 AnimationPlayMode.LOOP);
     }
 
-    @Override
-    public void update(KeyboardState keyboardState, double frameTime) {
-        super.update(keyboardState, frameTime);
-        this.moving = false;
+    private void handleUserInput(KeyboardState keyboardState) {
         if (keyboardState.isKeyPressed(KeyEvent.VK_A)
                 || keyboardState.isKeyPressed(KeyEvent.VK_LEFT)) {
             setDirection(Direction.WEST);
             this.moving = true;
             this.identifier.setHeading(Heading.WEST);
-            updateAnimation();
+            setProperAnimation();
         } else if (keyboardState.isKeyPressed(KeyEvent.VK_D)
                 || keyboardState.isKeyPressed(KeyEvent.VK_RIGHT)) {
             setDirection(Direction.EAST);
             this.moving = true;
             this.identifier.setHeading(Heading.EAST);
-            updateAnimation();
+            setProperAnimation();
         } else if (keyboardState.isKeyPressed(KeyEvent.VK_W)
                 || keyboardState.isKeyPressed(KeyEvent.VK_UP)) {
             setDirection(Direction.NORTH);
             this.moving = true;
             this.identifier.setHeading(Heading.NORTH);
-            updateAnimation();
+            setProperAnimation();
         } else if (keyboardState.isKeyPressed(KeyEvent.VK_S)
                 || keyboardState.isKeyPressed(KeyEvent.VK_DOWN)) {
             setDirection(Direction.SOUTH);
             this.moving = true;
             this.identifier.setHeading(Heading.SOUTH);
-            updateAnimation();
+            setProperAnimation();
         } else {
             this.moving = false;
             this.animationManager.getCurrentAnimation().stop();
@@ -106,10 +144,32 @@ public class Player extends Tank {
         if (keyboardState.isKeyPressed(KeyEvent.VK_F)) {
             fire();
         }
+    }
+    
+    private void updateProtectionTimer(double frameTime){
+        if (this.hasProtection) {
+            this.protectionTimer += frameTime;
+            //System.out.println("this.protectionTimer = " + this.protectionTimer);
+            if (this.protectionTimer >= PROTECTION_TIME) {
+                this.protectionTimer = 0;
+                this.hasProtection = false;
+                List<Entity> protections = this.children.stream().filter(
+                        child -> child.getEntityType()
+                        == EntityType.PROTECTION).collect(Collectors.toList());
+                protections.forEach(p -> detachChild(p));
+            }
+        }
+    }
+
+    @Override
+    public void update(KeyboardState keyboardState, double frameTime) {
+        this.moving = false;
+        handleUserInput(keyboardState);
         if (this.moving) {
             move(frameTime);
             fixBounds();
         }
-        this.animationManager.update(frameTime);
+        super.update(keyboardState, frameTime);
+        updateProtectionTimer(frameTime);
     }
 }

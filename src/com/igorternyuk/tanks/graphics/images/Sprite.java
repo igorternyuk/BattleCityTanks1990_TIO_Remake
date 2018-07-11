@@ -60,11 +60,11 @@ public class Sprite extends Image {
     }
 
     public int getWidth() {
-        return this.currentImageFragment.getWidth();
+        return this.sourceRect.width;
     }
 
     public int getHeight() {
-        return this.currentImageFragment.getHeight();
+        return this.sourceRect.height;
     }
 
     @Override

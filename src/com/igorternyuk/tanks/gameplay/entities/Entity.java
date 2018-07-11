@@ -145,10 +145,21 @@ public abstract class Entity {
     }
 
     public boolean collides(Entity other) {
-        return !(right() < other.left()
+        boolean colided = !(right() < other.left()
                 || left() > other.right()
                 || top() > other.bottom()
                 || bottom() < other.top());
+        if(colided){
+            System.out.println("this.right() = " + right() + " other.left() = " + other.left());
+            System.out.println("this.left() = " + left() + " other.right() = " + other.right());
+            System.out.println("this.top() = " + top() + " other.bottom() = " + other.bottom());
+            System.out.println("this.bottom() = " + bottom() + " other.top() = " + other.top());
+            System.out.println("this.width = " + this.getWidth());
+            System.out.println("this.height = " + this.getHeight());
+            System.out.println("other.width = " + other.getWidth());
+            System.out.println("other.height = " + other.getHeight());
+        }
+        return colided;
     }
 
     protected void fixBounds() {

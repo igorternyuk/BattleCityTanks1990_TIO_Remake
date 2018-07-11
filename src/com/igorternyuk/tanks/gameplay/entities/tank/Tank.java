@@ -29,6 +29,10 @@ public abstract class Tank<T> extends AnimatedEntity<T>{
         this.canFire = canFire;
     }
     
+    public void explode(){
+        
+    }
+    
     protected Point calcPointOfProjectileDeparture(){
         Point departure = new Point();
         int projectileWidth = ProjectileType.getSourceRect(this.direction).width;

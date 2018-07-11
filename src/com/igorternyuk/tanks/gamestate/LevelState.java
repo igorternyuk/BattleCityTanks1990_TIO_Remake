@@ -5,6 +5,7 @@ import com.igorternyuk.tanks.gameplay.GameStatus;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityManager;
+import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.Bonus;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.BonusType;
 import com.igorternyuk.tanks.gameplay.entities.explosion.Explosion;
@@ -186,34 +187,35 @@ public class LevelState extends GameState {
         /*Splash s = new Splash(this, SplashType.BONUS, 0, 0);
         this.entities.add(s);*/
 
-        Bonus bonus = new Bonus(this, BonusType.CLOCK, 13 * 5, 13 * 2);
-        bonus.startInfiniteBlinking(0.25);
-        this.entityManager.addEntity(bonus);
+        Bonus bonus0 = new Bonus(this, BonusType.EXTRA_LIFE, 13 * 5, 13 * 2);
+        bonus0.startInfiniteBlinking(0.4);
+        this.entityManager.addEntity(bonus0);
         
-        Bonus bonus1 = new Bonus(this, BonusType.GRENADE, 13 * 7, 13 * 2);
-        bonus1.startInfiniteBlinking(0.25);
+        Bonus bonus1 = new Bonus(this, BonusType.TANK_PROTECTION, 13 * 7, 13 * 2);
+        bonus1.startInfiniteBlinking(0.4);
         this.entityManager.addEntity(bonus1);
         
         Bonus bonus2 = new Bonus(this, BonusType.GUN, 13 * 9, 13 * 2);
-        bonus2.startInfiniteBlinking(0.25);
+        bonus2.startInfiniteBlinking(0.4);
         this.entityManager.addEntity(bonus2);
+        
+        Bonus bonus3 = new Bonus(this, BonusType.STAR, 13 * 11, 13 * 2);
+        bonus3.startInfiniteBlinking(0.4);
+        this.entityManager.addEntity(bonus3);
 
         /*EnemyTankCountIndicator indicator = new EnemyTankCountIndicator(this,
                 0, 0);
         indicator.setTankCount(17);
         this.entities.add(indicator);
          */
-        Protection protection = new Protection(this, ProtectionType.REGULAR,
-                13 * 7, 13 * 7);
         //this.entities.add(protection);
 
         /*Projectile projectile = new Projectile(this, ProjectileType.PLAYER, 13
                 * 2, 13 * 2, 0, Direction.WEST);
         this.entities.add(projectile);*/
-        Player tanque = new Player(this, PlayerTankType.HEAVY, 13 * 9, 13 * 9,
+        Player tanque = new Player(this, PlayerTankType.REGULAR, 13 * 9, 13 * 9,
                 Direction.NORTH);
         this.player = tanque;
-        tanque.attachChild(protection);
         this.entityManager.addEntity(tanque);
         
         EnemyTank tank = new EnemyTank(this, EnemyTankType.HEAVY, 13 * 11, 13 * 11,
@@ -231,6 +233,45 @@ public class LevelState extends GameState {
 
     private void checkCollisions() {
 
+    }
+    
+    private void checkBonuses(){
+        List<Entity> bonuses = this.entityManager.getEntitiesByType(
+                EntityType.BONUS);
+        for(int i = 0; i < bonuses.size(); ++i){
+            Bonus bonus = (Bonus)bonuses.get(i);
+            if(this.player.collides(bonus)){
+                onBonusCollected(bonus);
+                break;
+            }
+        }
+    }
+    
+    private void onBonusCollected(Bonus bonus){
+        if(bonus.getType() == BonusType.EXTRA_LIFE){
+            System.out.println("health = " + this.player.getHealth());
+            this.player.gainExtraLife();
+            System.out.println("Tank collected");
+            System.out.println("Gained extra life health = " + this.player.getHealth());
+        } else if(bonus.getType() == BonusType.STAR){
+            this.player.promote();
+            System.out.println("Star collected");
+        } else if(bonus.getType() == BonusType.GUN){
+            System.out.println("Gun collected");
+            this.player.promoteToHeavy();
+            System.out.println("Promoted to heavy");
+        } else if(bonus.getType() == BonusType.TANK_PROTECTION){
+            System.out.println("Helmet collected");
+            this.player.addProtection();
+            System.out.println("Protection added");
+        } else if(bonus.getType() == BonusType.GRENADE){
+            
+        } else if(bonus.getType() == BonusType.SHOVEL){
+            
+        } else if(bonus.getType() == BonusType.CLOCK){
+            
+        }
+        bonus.destroy();
     }
 
     private void checkGameStatus() {
@@ -287,6 +328,7 @@ public class LevelState extends GameState {
         //System.out.println("numEntities.size() = " + this.entities.size());
         this.entityManager.update(keyboardState, frameTime);
         checkCollisions();
+        checkBonuses();
         checkGameStatus();
     }
 

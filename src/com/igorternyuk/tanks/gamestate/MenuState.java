@@ -10,6 +10,7 @@ import com.igorternyuk.tanks.utils.Painter;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 
 /**
  *
@@ -100,6 +101,16 @@ public class MenuState extends GameState {
                 break;
         }
         correctIndex();
+    }
+    
+    @Override
+    public void onMouseReleased(MouseEvent e) {
+        
+    }
+
+    @Override
+    public void onMouseMoved(MouseEvent e) {
+        
     }
 
     @Override

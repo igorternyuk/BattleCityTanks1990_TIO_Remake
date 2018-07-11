@@ -100,6 +100,4 @@ public enum TileType {
     public Rectangle getSpriteSheet() {
         return this.spriteSheet;
     }
-    
-
 }

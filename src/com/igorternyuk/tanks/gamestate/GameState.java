@@ -3,6 +3,7 @@ package com.igorternyuk.tanks.gamestate;
 import java.awt.Graphics2D;
 import com.igorternyuk.tanks.input.KeyboardState;
 import com.igorternyuk.tanks.resourcemanager.ResourceManager;
+import java.awt.event.MouseEvent;
 
 /**
  *
@@ -35,6 +36,10 @@ public abstract class GameState {
     public abstract void onKeyPressed(int keyCode);
 
     public abstract void onKeyReleased(int keyCode);
+    
+    public abstract void onMouseReleased(MouseEvent e);
+    
+    public abstract void onMouseMoved(MouseEvent e);
 
     public abstract void draw(Graphics2D g);
 

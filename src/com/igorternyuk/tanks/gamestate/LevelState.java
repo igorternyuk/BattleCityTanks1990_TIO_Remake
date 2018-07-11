@@ -29,6 +29,7 @@ import com.igorternyuk.tanks.utils.Painter;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.List;
@@ -311,7 +312,17 @@ public class LevelState extends GameState {
                 break;
         }
     }
-
+    
+    @Override
+    public void onMouseReleased(MouseEvent e){
+        
+    }
+    
+    @Override
+    public void onMouseMoved(MouseEvent e){
+        
+    }
+    
     private void togglePause() {
         if (this.gameStatus == GameStatus.PLAY) {
             this.gameStatus = GameStatus.PAUSED;
@@ -352,4 +363,6 @@ public class LevelState extends GameState {
         drawGameStatus(g);
 
     }
+
+    
 }

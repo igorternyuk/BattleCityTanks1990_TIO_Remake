@@ -44,7 +44,7 @@ public class Game implements Runnable {
     private Display display;
     private Graphics2D graphics;
     private KeyboardState keyboardState;
-    private GameStateManager gameStateManager;
+    private GameStateManager gameStateManager = GameStateManager.create();
 
     public Game() {
         init();
@@ -53,7 +53,7 @@ public class Game implements Runnable {
     private void init(){
         createDisplay();
         addInputListeners();
-        this.gameStateManager = GameStateManager.create(this);
+        gameStateManager.setGame(this);
     }
     
     private void createDisplay(){
@@ -77,57 +77,20 @@ public class Game implements Runnable {
             }
         });
         this.display.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                //System.out.println("mx = " + e.getX() + " my = " + e.getY());
-                super.mouseMoved(e); //To change body of generated methods, choose Tools | Templates.
-                
-            }
-
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                super.mouseDragged(e); //To change body of generated methods, choose Tools | Templates.
-            }
-
-            @Override
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                super.mouseWheelMoved(e); //To change body of generated methods, choose Tools | Templates.
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e); //To change body of generated methods, choose Tools | Templates.
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e); //To change body of generated methods, choose Tools | Templates.
-            }
 
             @Override
             public void mouseReleased(MouseEvent e) {
                 System.out.println("mx = " + e.getX() + " my = " + e.getY());
-                super.mouseReleased(e); //To change body of generated methods, choose Tools | Templates.
+                gameStateManager.onMouseReleased(e);
             }
 
-            @Override
-            public void mousePressed(MouseEvent e) {
-                super.mousePressed(e); //To change body of generated methods, choose Tools | Templates.
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                //System.out.println("mx = " + e.getX() + " my = " + e.getY());
-                super.mouseClicked(e); //To change body of generated methods, choose Tools | Templates.
-            }
-            
         });
         
         this.display.addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
-                //System.out.println("mx = " + e.getX() + " my = " + e.getY());
-                super.mouseMoved(e); //To change body of generated methods, choose Tools | Templates.
+                System.out.println("mx = " + e.getX() + " my = " + e.getY());
+                gameStateManager.onMouseMoved(e);
             }
         });
         this.display.addWindowListener(new WindowAdapter() {
@@ -136,8 +99,6 @@ public class Game implements Runnable {
                 onWindowCloseRequest();
             }
         });
-        
-        //this.display.ad
     }
 
     public void onWindowCloseRequest() {

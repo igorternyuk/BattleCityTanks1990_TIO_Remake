@@ -3,9 +3,9 @@ package com.igorternyuk.tanks.gamestate;
 import com.igorternyuk.tanks.gameplay.Game;
 import java.awt.Graphics2D;
 import com.igorternyuk.tanks.input.KeyboardState;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 /**
  *
@@ -18,9 +18,9 @@ public class GameStateManager {
     
     private static GameStateManager instance;
     
-    public static synchronized GameStateManager create(Game game){
+    public static synchronized GameStateManager create(){
         if(instance == null){
-            instance = new GameStateManager(game);
+            instance = new GameStateManager();
         }
         return instance;
     }
@@ -29,8 +29,8 @@ public class GameStateManager {
     private List<GameState> gameStates;
     private GameState currentGameState;
 
-    public GameStateManager(Game game) {
-        this.game = game;
+    public GameStateManager() {
+        //this.game = game;
         this.gameStates = new ArrayList<>();
         this.gameStates.add(MENU_STATE, new MenuState(this));
         this.gameStates.add(LEVEL_STATE, new LevelState(this));
@@ -39,6 +39,10 @@ public class GameStateManager {
         this.currentGameState.load();
     }
 
+    public void setGame(Game game) {
+        this.game = game;
+    }
+    
     public Game getGame() {
         return this.game;
     }
@@ -64,7 +68,16 @@ public class GameStateManager {
     public void onKeyReleased(int keyCode) {
         this.currentGameState.onKeyReleased(keyCode);
     }
-
+    
+    public void onMouseReleased(MouseEvent e){
+        this.currentGameState.onMouseReleased(e);
+    }
+    
+    public void onMouseMoved(MouseEvent e){
+        this.currentGameState.onMouseMoved(e);
+    }
+    
+    
     public void update(KeyboardState keyboardState, double frameTime) {
         this.currentGameState.update(keyboardState, frameTime);
     }

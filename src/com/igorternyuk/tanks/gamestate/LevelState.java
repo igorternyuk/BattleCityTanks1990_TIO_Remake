@@ -67,6 +67,10 @@ public class LevelState extends GameState {
         this.entityManager = new EntityManager();
     }
 
+    public EntityManager getEntityManager() {
+        return this.entityManager;
+    }
+    
     public Map<EnemyTankIdentifier, BufferedImage> getEnemyTankSpriteSheetMap() {
         return this.enemyTankSpriteSheetMap;
     }
@@ -271,7 +275,7 @@ public class LevelState extends GameState {
         } else if(bonus.getType() == BonusType.CLOCK){
             
         }
-        bonus.destroy();
+        bonus.collect();
     }
 
     private void checkGameStatus() {

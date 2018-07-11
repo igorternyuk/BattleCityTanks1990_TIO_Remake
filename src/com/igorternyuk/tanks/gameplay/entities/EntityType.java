@@ -11,6 +11,7 @@ public enum EntityType {
     SPLASH,
     EXPLOSION,
     BONUS,
+    SCRORE_TEXT,
     PROTECTION,
     INDICATOR;
 }

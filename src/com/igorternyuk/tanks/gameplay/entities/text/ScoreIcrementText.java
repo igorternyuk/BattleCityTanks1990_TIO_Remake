@@ -1,47 +1,58 @@
-package com.igorternyuk.tanks.gameplay.entities.bonuses;
+package com.igorternyuk.tanks.gameplay.entities.text;
 
+import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
-import com.igorternyuk.tanks.gameplay.entities.text.ScoreIcrementText;
 import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.graphics.images.Sprite;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
 import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
 /**
  *
  * @author igor
  */
-public class Bonus extends Entity {
-
-    private BonusType type;
+public class ScoreIcrementText extends Entity {
+    
+    private static final double LIFE_TIME = 5;
+    private int score;
     private Sprite sprite;
+    private double timer;
 
-    public Bonus(LevelState level, BonusType type, double x, double y) {
-        super(level, EntityType.BONUS, x, y, 0, Direction.NORTH);
-        this.type = type;
+    public static Rectangle getSourceRectByScore(int score) {
+        boolean isScoreAcceptable = false;
+        for (int i = 100; i <= 500; i += 100) {
+            if (score == i) {
+                isScoreAcceptable = true;
+                break;
+            }
+        }
+        if (!isScoreAcceptable) {
+            score = 100;
+        }
+        Rectangle rect = new Rectangle((score / 100 - 1) * Game.TILE_SIZE, 0,
+                Game.TILE_SIZE, Game.TILE_SIZE);
+        return rect;
+    }
+
+    public ScoreIcrementText(LevelState level, int score, double x, double y) {
+        super(level, EntityType.SCRORE_TEXT, x, y, 0, Direction.NORTH);
+        this.score = score;
         BufferedImage image = SpriteSheetManager.getInstance().get(
-                SpriteSheetIdentifier.BONUS);
+                SpriteSheetIdentifier.SCORES);
         this.sprite = new Sprite(image, this.x, this.y, LevelState.SCALE);
-        this.sprite.setSourceRect(this.type.getSourceRect());
+        this.sprite.setSourceRect(getSourceRectByScore(this.score));
     }
 
-    public void collect() {
-        ScoreIcrementText text = new ScoreIcrementText(this.level, this.type.
-                getScore(), this.x, this.y);
-        text.startInfiniteBlinking(0.2);
-        this.level.getEntityManager().addEntity(text);
-        destroy();
+    public int getScore() {
+        return this.score;
     }
-
-    public BonusType getType() {
-        return this.type;
-    }
-
+    
     @Override
     public int getWidth() {
         return this.sprite.getWidth();
@@ -57,6 +68,10 @@ public class Bonus extends Entity {
         super.update(keyboardState, frameTime);
         this.sprite.setPosition(this.x, this.y);
         updateBlinkTimer(frameTime);
+        this.timer += frameTime;
+        if(this.timer > LIFE_TIME){
+            destroy();
+        }
     }
 
     @Override
@@ -67,5 +82,4 @@ public class Bonus extends Entity {
         super.draw(g);
         this.sprite.draw(g);
     }
-
 }

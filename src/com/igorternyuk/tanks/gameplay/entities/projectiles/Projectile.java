@@ -20,6 +20,8 @@ import java.awt.image.BufferedImage;
 public class Projectile extends Entity {
 
     private ProjectileType type;
+    private int damage = 25;
+    private boolean antiarmour = false;
     private Sprite sprite;
 
     public Projectile(LevelState level, ProjectileType projectileType, double x,
@@ -35,6 +37,22 @@ public class Projectile extends Entity {
     public ProjectileType getType() {
         return this.type;
     }
+    
+    public void setDamage(int damage){
+        this.damage = damage;
+    }
+
+    public int getDamage() {
+        return this.damage;
+    }
+
+    public boolean isAntiarmour() {
+        return this.antiarmour;
+    }
+
+    public void setAntiarmour(boolean antiarmour) {
+        this.antiarmour = antiarmour;
+    }
 
     @Override
     public boolean isAlive() {
@@ -44,6 +62,9 @@ public class Projectile extends Entity {
     public void explode(){
         Explosion explosion = new Explosion(this.level, ExplosionType.PROJECTILE,
                this.x, this.y);
+        int dx = (getWidth() - explosion.getWidth()) / 2;
+        int dy = (getHeight()- explosion.getHeight()) / 2;
+        explosion.setPosition(this.x + dx, this.y + dy);
         this.level.getEntityManager().addEntity(explosion);
         destroy();
     }

@@ -34,6 +34,10 @@ public class Bonus extends Entity {
         ScoreIcrementText text = new ScoreIcrementText(this.level, this.type.
                 getScore(), this.x, this.y);
         text.startInfiniteBlinking(0.2);
+        text.startInfiniteBlinking(0.2);
+        int dx = (getWidth() - text.getWidth()) / 2;
+        int dy = (getHeight()- text.getHeight()) / 2;
+        text.setPosition(this.x + dx, this.y + dy);
         this.level.getEntityManager().addEntity(text);
         destroy();
     }

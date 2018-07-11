@@ -208,7 +208,7 @@ public class LevelState extends GameState {
         /*Projectile projectile = new Projectile(this, ProjectileType.PLAYER, 13
                 * 2, 13 * 2, 0, Direction.WEST);
         this.entities.add(projectile);*/
-        Player tanque = new Player(this, PlayerTankType.REGULAR, 13 * 9, 13 * 9,
+        Player tanque = new Player(this, PlayerTankType.MIDDLE, 13 * 9, 13 * 9,
                 Direction.NORTH);
         this.player = tanque;
         this.entityManager.addEntity(tanque);

@@ -5,6 +5,7 @@ import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.explosion.Explosion;
 import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
+import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
 import com.igorternyuk.tanks.gamestate.LevelState;
 import java.awt.Point;
@@ -26,6 +27,9 @@ public abstract class Tank<T> extends AnimatedEntity<T>{
     protected void explode(){
         Explosion explosion = new Explosion(this.level, ExplosionType.TANK,
                this.x, this.y);
+        int dx = (getWidth() - explosion.getWidth()) / 2;
+        int dy = (getHeight()- explosion.getHeight()) / 2;
+        explosion.setPosition(this.x + dx, this.y + dy);
         this.level.getEntityManager().addEntity(explosion);
     }
 

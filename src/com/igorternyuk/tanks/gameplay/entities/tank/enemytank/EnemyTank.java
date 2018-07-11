@@ -3,6 +3,7 @@ package com.igorternyuk.tanks.gameplay.entities.tank.enemytank;
 import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
+import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
 import com.igorternyuk.tanks.gameplay.entities.tank.Heading;
@@ -33,6 +34,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             double y, Direction direction) {
         super(level, EntityType.ENEMY_TANK, x, y, type.getSpeed(), direction);
         this.number = number;
+        this.health = type.getHealth();
         checkIfBonus();
         loadAnimations();
         this.identifier = new EnemyTankIdentifier(calcColorDependingOnHealth(),
@@ -82,10 +84,14 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         Point departure = calcPointOfProjectileDeparture();
         int px = departure.x;
         int py = departure.y;
-        this.level.getEntities().add(
-                new Projectile(level, ProjectileType.ENEMY, px, py,
+        Projectile projectile = new Projectile(level, ProjectileType.ENEMY, px, py,
                         this.identifier.getType().getProjectileSpeed(),
-                        this.direction));
+                        this.direction);
+        projectile.setDamage(this.identifier.getType().getProjectileDamage());
+        if(this.identifier.getType() == EnemyTankType.HEAVY){
+            projectile.setAntiarmour(true);
+        }
+        this.level.getEntities().add(projectile);
     }
 
     @Override
@@ -107,6 +113,10 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         ScoreIcrementText text = new ScoreIcrementText(this.level, this.
                 getScore(), this.x, this.y);
         text.startInfiniteBlinking(0.2);
+        int dx = (getWidth() - text.getWidth()) / 2;
+        int dy = (getHeight()- text.getHeight()) / 2;
+        text.setPosition(this.x + dx, this.y + dy);
+        this.level.getEntityManager().addEntity(text);
         destroy();
     }
 

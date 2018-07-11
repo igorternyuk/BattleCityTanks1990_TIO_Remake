@@ -33,6 +33,8 @@ public class Player extends Tank {
     private boolean hasProtection = false;
     private double protectionTimer;
     private int lives = 5;
+    private double lastShootTimer;
+    private double shotDelay = 0.15;
 
     public Player(LevelState level, PlayerTankType type, double x, double y,
             Direction direction) {
@@ -48,9 +50,10 @@ public class Player extends Tank {
     public PlayerTankIdentifier getIdentifier() {
         return this.identifier;
     }
-    
-    public void takeScore(int scoreIncrement){
+
+    public void takeScore(int scoreIncrement) {
         this.score += scoreIncrement;
+        System.out.println("Taking score: " + this.score);
     }
 
     public int getScore() {
@@ -62,13 +65,18 @@ public class Player extends Tank {
         if (currType == PlayerTankType.HEAVY) {
             return;
         }
-        this.identifier.setType(currType.next());
+        setTankType(currType.next());
     }
 
     public void promoteToHeavy() {
-        this.identifier.setType(PlayerTankType.HEAVY);
+        setTankType(PlayerTankType.HEAVY);
     }
-
+    
+    private void setTankType(PlayerTankType tankType){
+        this.identifier.setType(tankType);
+        this.speed = tankType.getSpeed();
+    }
+    
     public void addProtection() {
         Protection protection = new Protection(this.level,
                 ProtectionType.REGULAR,
@@ -84,12 +92,12 @@ public class Player extends Tank {
     public int getLives() {
         return this.lives;
     }
-    
+
     @Override
-    public boolean isAlive(){
+    public boolean isAlive() {
         return this.lives > 0;
     }
-    
+
     @Override
     public final void loadAnimations() {
         this.level.getPlayerSpriteSheetMap().keySet().forEach(key -> {
@@ -110,34 +118,36 @@ public class Player extends Tank {
             return;
         }
         Point departure = calcPointOfProjectileDeparture();
-        this.level.getEntityManager().addEntity(
-                new Projectile(level, ProjectileType.ENEMY, departure.x,
-                        departure.y,
-                        this.identifier.getType().getProjectileSpeed(),
-                        this.direction));
-        if(this.identifier.getType() != PlayerTankType.MIDDLE){
-            this.canFire = false;
+        Projectile projectile = new Projectile(level, ProjectileType.ENEMY,
+                departure.x, departure.y,
+                this.identifier.getType().getProjectileSpeed(),
+                this.direction);
+        projectile.setDamage(this.identifier.getType().getProjectileDamage());
+        if(this.identifier.getType() == PlayerTankType.HEAVY){
+            projectile.setAntiarmour(true);
         }
+        this.level.getEntityManager().addEntity(projectile);
+        this.canFire = false;
     }
-    
+
     @Override
-    public void hit(int damage){
+    public void hit(int damage) {
         super.hit(damage);
-        if(!isAlive()){
+        if (!isAlive()) {
             explode();
         }
     }
-    
+
     @Override
-    protected void explode(){
+    protected void explode() {
         super.explode();
         --this.lives;
-        if(isAlive()){
+        if (isAlive()) {
             respawn();
         }
     }
-    
-    protected void respawn(){
+
+    protected void respawn() {
         this.health = 100;
         setPosition(this.respawnX, this.respawnY);
         this.identifier.setType(PlayerTankType.REGULAR);
@@ -183,8 +193,8 @@ public class Player extends Tank {
             fire();
         }
     }
-    
-    private void updateProtectionTimer(double frameTime){
+
+    private void updateProtectionTimer(double frameTime) {
         if (this.hasProtection) {
             this.protectionTimer += frameTime;
             //System.out.println("this.protectionTimer = " + this.protectionTimer);
@@ -209,5 +219,12 @@ public class Player extends Tank {
         }
         super.update(keyboardState, frameTime);
         updateProtectionTimer(frameTime);
+        if(this.identifier.getType() == PlayerTankType.MIDDLE && !this.canFire){
+            this.lastShootTimer += frameTime;
+            if(this.lastShootTimer >= this.shotDelay){
+                this.lastShootTimer = 0;
+                this.canFire = true;
+            }
+        }
     }
 }

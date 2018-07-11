@@ -7,20 +7,24 @@ import com.igorternyuk.tanks.gameplay.Game;
  * @author igor
  */
 public enum EnemyTankType {
-    REGULAR(4, 128, 100, 0 * Game.TILE_SIZE),
-    ARMORED_TROOP_CARRIER(8, 128, 200, 1 * Game.TILE_SIZE),
-    RAPID_FIRING(4, 256, 300, 2 * Game.TILE_SIZE),
-    HEAVY(4, 128, 400, 3 * Game.TILE_SIZE);
+    REGULAR(64, 80, 25, 25, 100, 0 * Game.TILE_SIZE),
+    ARMORED_TROOP_CARRIER(80, 128, 25, 25, 200, 1 * Game.TILE_SIZE),
+    RAPID_FIRING(80, 128, 25, 25, 300, 2 * Game.TILE_SIZE),
+    HEAVY(48, 80, 400, 100, 100, 3 * Game.TILE_SIZE);
 
     private double speed;
     private double projectileSpeed;
+    private int projectileDamage;
+    private int health;
     private int score;
     private int spriteSheetPositionY;
 
-    private EnemyTankType(double speed, double projectileSpeed, int score,
-            int positionY) {
+    private EnemyTankType(double speed, double projectileSpeed,
+            int projectileDamage, int health, int score, int positionY) {
         this.speed = speed;
         this.projectileSpeed = projectileSpeed;
+        this.projectileDamage = projectileDamage;
+        this.health = health;
         this.score = score;
         this.spriteSheetPositionY = positionY;
     }
@@ -31,6 +35,14 @@ public enum EnemyTankType {
 
     public double getProjectileSpeed() {
         return this.projectileSpeed;
+    }
+    
+    public int getProjectileDamage(){
+        return this.projectileDamage;
+    }
+
+    public int getHealth() {
+        return this.health;
     }
 
     public int getScore() {

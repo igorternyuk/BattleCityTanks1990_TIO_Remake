@@ -1,5 +1,6 @@
 package com.igorternyuk.tanks.gameplay.entities.projectiles;
 
+import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
@@ -30,7 +31,7 @@ public class Projectile extends Entity {
         this.type = projectileType;
         BufferedImage image = SpriteSheetManager.getInstance().get(
                 SpriteSheetIdentifier.PROJECTILE);
-        this.sprite = new Sprite(image, this.x, this.y, LevelState.SCALE);
+        this.sprite = new Sprite(image, this.x, this.y, Game.SCALE);
         updateSprite();
     }
 

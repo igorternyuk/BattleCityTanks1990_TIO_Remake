@@ -1,5 +1,6 @@
 package com.igorternyuk.tanks.gameplay.entities;
 
+import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.graphics.animations.AnimationManager;
 import com.igorternyuk.tanks.input.KeyboardState;
@@ -43,7 +44,7 @@ public abstract class AnimatedEntity<I> extends Entity {
     public void draw(Graphics2D g) {
         super.draw(g);
         this.animationManager.draw(g, (int) this.x, (int) this.y,
-                LevelState.SCALE, LevelState.SCALE);
+                Game.SCALE, Game.SCALE);
     }
 
 }

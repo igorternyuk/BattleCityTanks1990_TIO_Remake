@@ -42,10 +42,6 @@ public class LevelState extends GameState {
 
     private static final Font FONT_GAME_STATUS = new Font("Verdana", Font.BOLD,
             48);
-    public static final double SCALE = 2;
-    private static final int SCREEN_HALF_WIDTH = (int) (Game.WIDTH / 2 / SCALE);
-    private static final int SCREEN_HALF_HEIGHT =
-            (int) (Game.HEIGHT / 2 / SCALE);
     
     private Map<EnemyTankIdentifier, BufferedImage> enemyTankSpriteSheetMap;
     private Map<PlayerTankIdentifier, BufferedImage> playerSpriteSheetMap;

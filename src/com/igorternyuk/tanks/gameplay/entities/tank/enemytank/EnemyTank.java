@@ -3,6 +3,8 @@ package com.igorternyuk.tanks.gameplay.entities.tank.enemytank;
 import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
+import com.igorternyuk.tanks.gameplay.entities.bonuses.Bonus;
+import com.igorternyuk.tanks.gameplay.entities.bonuses.BonusType;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
@@ -15,6 +17,7 @@ import com.igorternyuk.tanks.graphics.animations.Animation;
 import com.igorternyuk.tanks.graphics.animations.AnimationPlayMode;
 import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Point;
+import java.util.Random;
 
 /**
  *
@@ -29,6 +32,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     private boolean bonus = false;
     private boolean gleaming = false;
     private double colorPlayingTimer;
+    private final Random random = new Random();
 
     public EnemyTank(LevelState level, int number, EnemyTankType type, double x,
             double y, Direction direction) {
@@ -43,8 +47,8 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     }
 
     private void checkIfBonus() {
-        for(int num: BONUS_TANKS_NUMBERS){
-            if(this.number == num){
+        for (int num : BONUS_TANKS_NUMBERS) {
+            if (this.number == num) {
                 this.bonus = true;
                 this.gleaming = true;
                 break;
@@ -84,11 +88,12 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         Point departure = calcPointOfProjectileDeparture();
         int px = departure.x;
         int py = departure.y;
-        Projectile projectile = new Projectile(level, ProjectileType.ENEMY, px, py,
-                        this.identifier.getType().getProjectileSpeed(),
-                        this.direction);
+        Projectile projectile = new Projectile(level, ProjectileType.ENEMY, px,
+                py,
+                this.identifier.getType().getProjectileSpeed(),
+                this.direction);
         projectile.setDamage(this.identifier.getType().getProjectileDamage());
-        if(this.identifier.getType() == EnemyTankType.HEAVY){
+        if (this.identifier.getType() == EnemyTankType.HEAVY) {
             projectile.setAntiarmour(true);
         }
         this.level.getEntities().add(projectile);
@@ -97,8 +102,8 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     @Override
     public void hit(int damage) {
         super.hit(damage);
-        if(isAlive()){
-            if(!this.bonus && this.identifier.getType() == EnemyTankType.HEAVY){
+        if (isAlive()) {
+            if (!this.bonus && this.identifier.getType() == EnemyTankType.HEAVY) {
                 this.identifier.setColor(calcColorDependingOnHealth());
                 updateAnimation();
             }
@@ -114,10 +119,22 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
                 getScore(), this.x, this.y);
         text.startInfiniteBlinking(0.2);
         int dx = (getWidth() - text.getWidth()) / 2;
-        int dy = (getHeight()- text.getHeight()) / 2;
+        int dy = (getHeight() - text.getHeight()) / 2;
         text.setPosition(this.x + dx, this.y + dy);
         this.level.getEntityManager().addEntity(text);
+        if (this.bonus) {
+            createBonus();
+        }
         destroy();
+    }
+
+    private void createBonus() {
+        int randX = this.random.nextInt(Game.TILES_IN_WIDTH) * Game.TILE_SIZE;
+        int randY = this.random.nextInt(Game.TILES_IN_HEIGHT) * Game.TILE_SIZE;
+        Bonus newBonus = new Bonus(this.level, BonusType.randomType(), randX,
+                randY);
+        newBonus.startInfiniteBlinking(0.4);
+        this.level.getEntityManager().addEntity(newBonus);
     }
 
     @Override

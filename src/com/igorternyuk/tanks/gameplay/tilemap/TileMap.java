@@ -201,12 +201,12 @@ public class TileMap {
                 int c = val % this.numTilesX;
                 BufferedImage image = this.tiles[r][c].getImage();
                 g.drawImage(image,
-                        (int) LevelState.SCALE * (col * this.tileSize
+                        (int) Game.SCALE * (col * this.tileSize
                         - (int) cameraX),
-                        (int) LevelState.SCALE * (row * this.tileSize
+                        (int) Game.SCALE * (row * this.tileSize
                         - (int) cameraY),
-                        (int) LevelState.SCALE * this.tileSize,
-                        (int) LevelState.SCALE * this.tileSize, null);
+                        (int) Game.SCALE * this.tileSize,
+                        (int) Game.SCALE * this.tileSize, null);
             }
         }
     }

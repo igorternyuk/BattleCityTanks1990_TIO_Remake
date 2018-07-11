@@ -45,7 +45,7 @@ public class ScoreIcrementText extends Entity {
         this.score = score;
         BufferedImage image = SpriteSheetManager.getInstance().get(
                 SpriteSheetIdentifier.SCORES);
-        this.sprite = new Sprite(image, this.x, this.y, LevelState.SCALE);
+        this.sprite = new Sprite(image, this.x, this.y, Game.SCALE);
         this.sprite.setSourceRect(getSourceRectByScore(this.score));
     }
 

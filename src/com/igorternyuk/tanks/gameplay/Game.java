@@ -11,6 +11,9 @@ import java.util.logging.Logger;
 import com.igorternyuk.tanks.utils.Time;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 
 /**
  *
@@ -73,12 +76,68 @@ public class Game implements Runnable {
                 gameStateManager.onKeyReleased(e.getKeyCode());
             }
         });
-        this.display.getWindow().addWindowListener(new WindowAdapter() {
+        this.display.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                //System.out.println("mx = " + e.getX() + " my = " + e.getY());
+                super.mouseMoved(e); //To change body of generated methods, choose Tools | Templates.
+                
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                super.mouseDragged(e); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                super.mouseWheelMoved(e); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                super.mouseExited(e); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                super.mouseEntered(e); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                System.out.println("mx = " + e.getX() + " my = " + e.getY());
+                super.mouseReleased(e); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                super.mousePressed(e); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                //System.out.println("mx = " + e.getX() + " my = " + e.getY());
+                super.mouseClicked(e); //To change body of generated methods, choose Tools | Templates.
+            }
+            
+        });
+        
+        this.display.addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                //System.out.println("mx = " + e.getX() + " my = " + e.getY());
+                super.mouseMoved(e); //To change body of generated methods, choose Tools | Templates.
+            }
+        });
+        this.display.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
                 onWindowCloseRequest();
             }
         });
+        
+        //this.display.ad
     }
 
     public void onWindowCloseRequest() {

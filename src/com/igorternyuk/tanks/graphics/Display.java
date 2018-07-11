@@ -8,6 +8,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
@@ -44,6 +46,7 @@ public class Display {
         this.window = new JFrame(title);
         this.canvas = new Canvas();
         this.canvas.setPreferredSize(new Dimension(width, height));
+        //this.canvas.
         this.canvas.setFocusable(true);
         this.canvas.requestFocus();
 
@@ -104,6 +107,14 @@ public class Display {
 
     public void addKeyListener(KeyListener listener) {
         this.canvas.addKeyListener(listener);
+    }
+    
+    public void addMouseListener(MouseListener listener){
+        this.canvas.addMouseListener(listener);
+    }
+    
+    public void addMouseMotionListener(MouseMotionListener listener){
+        this.canvas.addMouseMotionListener(listener);
     }
 
     public void addWindowListener(WindowListener listener) {

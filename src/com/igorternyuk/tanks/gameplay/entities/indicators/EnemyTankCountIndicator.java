@@ -7,6 +7,7 @@ import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.graphics.images.Sprite;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
+import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
 import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -24,7 +25,7 @@ public class EnemyTankCountIndicator extends Entity {
 
     public EnemyTankCountIndicator(LevelState level, double x, double y) {
         super(level, EntityType.INDICATOR, x, y, 0, Direction.NORTH);
-        BufferedImage image = this.level.getSpriteSheetManager().get(
+        BufferedImage image = SpriteSheetManager.getInstance().get(
                 SpriteSheetIdentifier.ENEMY_TANK_SIGN);
         this.sprite = new Sprite(image, this.x, this.y, LevelState.SCALE);
     }

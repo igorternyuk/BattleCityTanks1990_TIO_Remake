@@ -3,7 +3,8 @@ package com.igorternyuk.tanks.gamestate;
 import com.igorternyuk.tanks.gameplay.Game;
 import java.awt.Graphics2D;
 import com.igorternyuk.tanks.input.KeyboardState;
-import com.igorternyuk.tanks.resourcemanager.ResourceManager;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 
 /**
@@ -11,6 +12,10 @@ import java.util.Stack;
  * @author igor
  */
 public class GameStateManager {
+    public static final int MENU_STATE = 0;
+    public static final int LEVEL_STATE = 1;
+    public static final int CONSTRUCTION_STATE = 2;
+    
     private static GameStateManager instance;
     
     public static synchronized GameStateManager create(Game game){
@@ -21,48 +26,50 @@ public class GameStateManager {
     }
 
     private Game game;
-    private Stack<GameState> gameStates;
+    private List<GameState> gameStates;
+    private GameState currentGameState;
 
     public GameStateManager(Game game) {
         this.game = game;
-        this.gameStates = new Stack<>();
-        this.gameStates.push(new LevelState(this));
-        this.gameStates.push(new MenuState(this));
-        this.gameStates.peek().load();
+        this.gameStates = new ArrayList<>();
+        this.gameStates.add(MENU_STATE, new MenuState(this));
+        this.gameStates.add(LEVEL_STATE, new LevelState(this));
+        this.gameStates.add(CONSTRUCTION_STATE, new ConstructionState(this));
+        this.currentGameState = this.gameStates.get(MENU_STATE);
+        this.currentGameState.load();
     }
 
     public Game getGame() {
         return this.game;
     }
 
-    public void nextState() {
-        if (this.gameStates.size() >= 2) {
-            GameState currentState = this.gameStates.pop();
-            currentState.unload();
-            this.gameStates.peek().load();
+    public void setGameState(int index) {
+        if(this.currentGameState != null){
+            this.currentGameState.unload();
         }
+        this.currentGameState = this.gameStates.get(index);
+        this.currentGameState.load();
     }
 
     public void unloadAllGameStates() {
-        while (!this.gameStates.empty()) {
-            GameState currentState = this.gameStates.pop();
-            currentState.unload();
-        }
+        this.gameStates.forEach((state) -> {
+            state.unload();
+        });
     }
 
     public void onKeyPressed(int keyCode) {
-        this.gameStates.peek().onKeyPressed(keyCode);
+        this.currentGameState.onKeyPressed(keyCode);
     }
 
     public void onKeyReleased(int keyCode) {
-        this.gameStates.peek().onKeyReleased(keyCode);
+        this.currentGameState.onKeyReleased(keyCode);
     }
 
     public void update(KeyboardState keyboardState, double frameTime) {
-        this.gameStates.peek().update(keyboardState, frameTime);
+        this.currentGameState.update(keyboardState, frameTime);
     }
 
     public void draw(Graphics2D g) {
-        this.gameStates.peek().draw(g);
+        this.currentGameState.draw(g);
     }
 }

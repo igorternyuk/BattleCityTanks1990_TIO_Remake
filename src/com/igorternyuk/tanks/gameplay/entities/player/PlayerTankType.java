@@ -7,7 +7,7 @@ import com.igorternyuk.tanks.gameplay.Game;
  * @author igor
  */
 public enum PlayerTankType {
-    REGULAR(0, 8, 64, 25, 0 * Game.TILE_SIZE) {
+    REGULAR(0, 64, 64, 25, 0 * Game.TILE_SIZE) {
         @Override
         public boolean canRepeatFire() {
             return false;
@@ -18,7 +18,7 @@ public enum PlayerTankType {
             return PlayerTankType.LIGHT;
         }
     },
-    LIGHT(1, 8, 128, 25, 1 * Game.TILE_SIZE) {
+    LIGHT(1, 64, 128, 25, 1 * Game.TILE_SIZE) {
         @Override
         public boolean canRepeatFire() {
             return false;
@@ -29,7 +29,7 @@ public enum PlayerTankType {
             return PlayerTankType.MIDDLE;
         }
     },
-    MIDDLE(2, 8, 128, 25, 2 * Game.TILE_SIZE) {
+    MIDDLE(2, 64, 128, 25, 2 * Game.TILE_SIZE) {
         @Override
         public boolean canRepeatFire() {
             return true;
@@ -40,7 +40,7 @@ public enum PlayerTankType {
             return PlayerTankType.HEAVY;
         }
     },
-    HEAVY(3, 6, 64, 100, 3 * Game.TILE_SIZE) {
+    HEAVY(3, 64, 64, 100, 3 * Game.TILE_SIZE) {
         @Override
         public boolean canRepeatFire() {
             return false;

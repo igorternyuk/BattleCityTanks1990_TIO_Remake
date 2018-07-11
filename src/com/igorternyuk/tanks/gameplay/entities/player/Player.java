@@ -8,15 +8,12 @@ import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
 import com.igorternyuk.tanks.gameplay.entities.tank.Heading;
 import com.igorternyuk.tanks.gameplay.entities.tank.Tank;
 import com.igorternyuk.tanks.gameplay.entities.tank.TankColor;
-import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTankIdentifier;
 import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.graphics.animations.Animation;
 import com.igorternyuk.tanks.graphics.animations.AnimationPlayMode;
 import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
-import java.util.Map;
 
 /**
  *
@@ -27,8 +24,8 @@ public class Player extends Tank {
     private PlayerTankIdentifier identifier;
 
     public Player(LevelState level, PlayerTankType type, double x, double y,
-            double speed, Direction direction) {
-        super(level, EntityType.PLAYER_TANK, x, y, speed, direction);
+            Direction direction) {
+        super(level, EntityType.PLAYER_TANK, x, y, type.getSpeed(), direction);
         loadAnimations();
         this.identifier = new PlayerTankIdentifier(TankColor.YELLOW,
                 Heading.getHeading(direction), type);
@@ -41,11 +38,9 @@ public class Player extends Tank {
 
     @Override
     public final void loadAnimations() {
-        Map<PlayerTankIdentifier, BufferedImage> spriteSheetMap =
-                PlayerTankIdentifier.getSpriteSheetMap();
-        spriteSheetMap.keySet().forEach(key -> {
+        this.level.getPlayerSpriteSheetMap().keySet().forEach(key -> {
             this.animationManager.addAnimation(key, new Animation(
-                    spriteSheetMap.get(key), 0.5,
+                    this.level.getPlayerSpriteSheetMap().get(key), 0.5,
                     0, 0, Game.TILE_SIZE, Game.TILE_SIZE, 2, Game.TILE_SIZE
             ));
         });
@@ -57,7 +52,7 @@ public class Player extends Tank {
 
     @Override
     public void fire() {
-        if(!this.canFire){
+        if (!this.canFire) {
             return;
         }
         Point departure = calcPointOfProjectileDeparture();

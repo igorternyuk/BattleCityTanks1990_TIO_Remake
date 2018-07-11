@@ -7,6 +7,7 @@ import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.graphics.animations.Animation;
 import com.igorternyuk.tanks.graphics.animations.AnimationPlayMode;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
+import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
 import java.awt.image.BufferedImage;
 
 /**
@@ -33,10 +34,10 @@ public class Splash extends AnimatedEntity<SplashType>{
         BufferedImage spriteSheet;
         if (this.splashType == SplashType.BONUS
              || this.splashType == SplashType.NEW_ENEMY_TANK) {
-            spriteSheet = this.level.getSpriteSheetManager().get(
+            spriteSheet = SpriteSheetManager.getInstance().get(
                     SpriteSheetIdentifier.SPLASH);
         } else {
-            spriteSheet = this.level.getSpriteSheetManager().get(
+            spriteSheet = SpriteSheetManager.getInstance().get(
                     SpriteSheetIdentifier.EMPTY);
         }
         for (SplashType animType : SplashType.values()) {

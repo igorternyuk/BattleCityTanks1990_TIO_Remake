@@ -32,7 +32,7 @@ public class MenuState extends GameState {
 
     public MenuState(GameStateManager gsm) {
         super(gsm);
-        this.options = new String[]{"Play", "Quit"};
+        this.options = new String[]{"Play", "Construction", "Quit"};
     }
 
     @Override
@@ -69,7 +69,10 @@ public class MenuState extends GameState {
     private void select(int index) {
         switch (index) {
             case 0:
-                this.gameStateManager.nextState();
+                this.gameStateManager.setGameState(GameStateManager.LEVEL_STATE);
+                break;
+            case 1:
+                this.gameStateManager.setGameState(GameStateManager.CONSTRUCTION_STATE);
                 break;
             default:
                 this.gameStateManager.getGame().onWindowCloseRequest();

@@ -4,17 +4,19 @@ import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.GameStatus;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
-import com.igorternyuk.tanks.gameplay.entities.EntityType;
+import com.igorternyuk.tanks.gameplay.entities.EntityManager;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.Bonus;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.BonusType;
 import com.igorternyuk.tanks.gameplay.entities.explosion.Explosion;
 import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
-import com.igorternyuk.tanks.gameplay.entities.indicators.EnemyTankCountIndicator;
 import com.igorternyuk.tanks.gameplay.entities.player.Player;
+import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankIdentifier;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankType;
-import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
-import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
+import com.igorternyuk.tanks.gameplay.entities.tank.Alliance;
+import com.igorternyuk.tanks.gameplay.entities.tank.Heading;
+import com.igorternyuk.tanks.gameplay.entities.tank.TankColor;
 import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTank;
+import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTankIdentifier;
 import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTankType;
 import com.igorternyuk.tanks.gameplay.entities.tank.protection.Protection;
 import com.igorternyuk.tanks.gameplay.entities.tank.protection.ProtectionType;
@@ -27,10 +29,12 @@ import com.igorternyuk.tanks.input.KeyboardState;
 import com.igorternyuk.tanks.resourcemanager.ImageIdentifier;
 import com.igorternyuk.tanks.utils.Painter;
 import java.awt.Font;
+import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -44,24 +48,44 @@ public class LevelState extends GameState {
     private static final int SCREEN_HALF_WIDTH = (int) (Game.WIDTH / 2 / SCALE);
     private static final int SCREEN_HALF_HEIGHT =
             (int) (Game.HEIGHT / 2 / SCALE);
+    
+    private Map<EnemyTankIdentifier, BufferedImage> enemyTankSpriteSheetMap;
+    private Map<PlayerTankIdentifier, BufferedImage> playerSpriteSheetMap;
+    private SpriteSheetManager spriteSheetManager;
+    
     private TileMap tileMap;
     private TextureAtlas atlas;
-    private SpriteSheetManager spriteSheetManager;
-    //private Player player;
-    private List<Entity> entities = new ArrayList<>();
+    
     private Player player;
+    private EntityManager entityManager;
     private GameStatus gameStatus = GameStatus.PLAY;
     private boolean loaded = false;
 
     public LevelState(GameStateManager gsm) {
         super(gsm);
-        this.spriteSheetManager = SpriteSheetManager.getInstance();
+        this.entityManager = new EntityManager();
+    }
+
+    public Map<EnemyTankIdentifier, BufferedImage> getEnemyTankSpriteSheetMap() {
+        return this.enemyTankSpriteSheetMap;
+    }
+
+    public Map<PlayerTankIdentifier, BufferedImage> getPlayerSpriteSheetMap() {
+        return this.playerSpriteSheetMap;
     }
 
     public SpriteSheetManager getSpriteSheetManager() {
         return this.spriteSheetManager;
     }
 
+    /*public Player getPlayer() {
+        return this.player;
+    }*/
+
+    public GameStatus getGameStatus() {
+        return this.gameStatus;
+    }
+    
     public boolean isLoaded() {
         return this.loaded;
     }
@@ -79,7 +103,7 @@ public class LevelState extends GameState {
     }
 
     public List<Entity> getEntities() {
-        return this.entities;
+        return this.entityManager.getAllEntities();
     }
 
     @Override
@@ -90,18 +114,67 @@ public class LevelState extends GameState {
         this.atlas = new TextureAtlas(this.resourceManager.getImage(
                 ImageIdentifier.TEXTURE_ATLAS));
         loadSprites();
+        loadTankSpriteSheetMaps();
         startNewGame();
         this.loaded = true;
     }
 
     private void loadSprites() {
+        this.spriteSheetManager = SpriteSheetManager.getInstance();
         for (SpriteSheetIdentifier identifier : SpriteSheetIdentifier.values()) {
             this.spriteSheetManager.put(identifier, this.atlas);
         }
     }
+    
+    private void loadTankSpriteSheetMaps(){
+        
+        this.enemyTankSpriteSheetMap = new HashMap<>();
+        this.playerSpriteSheetMap = new HashMap<>();
+        for (TankColor color : TankColor.values()) {
+            for (Alliance alliance : Alliance.values()) {
+                Point topLeft = color.
+                        getOffsetFromTankSpriteSheetTopLeftCorner();
+                topLeft.x += alliance.
+                        getOffsetFromSameColorTankSpriteSheetTopLeftCorner().x;
+                topLeft.y += alliance.
+                        getOffsetFromSameColorTankSpriteSheetTopLeftCorner().y;
+                
+                for (Heading heading : Heading.values()) {
+                    for (EnemyTankType type : EnemyTankType.values()) {
+                        int dx = heading.getSpriteSheetPositionX();
+                        int dy = type.getSpriteSheetPositionY();
+                        EnemyTankIdentifier key = new EnemyTankIdentifier(color,
+                                heading, type);
+                        BufferedImage spriteSheet = spriteSheetManager.get(
+                                SpriteSheetIdentifier.TANK);
+                        BufferedImage sprite = spriteSheet.getSubimage(topLeft.x
+                                + dx, topLeft.y + dy,
+                                2 * Game.TILE_SIZE, Game.TILE_SIZE);
+                        enemyTankSpriteSheetMap.put(key, sprite);
+                    }
+                    
+                    for (PlayerTankType type : PlayerTankType.values()) {
+                        int dx = heading.getSpriteSheetPositionX();
+                        int dy = type.getSpriteSheetPositionY();
+                        PlayerTankIdentifier key = new PlayerTankIdentifier(color,
+                                heading, type);
+                        SpriteSheetManager manager = SpriteSheetManager.
+                                getInstance();
+                        BufferedImage spriteSheet = manager.get(
+                                SpriteSheetIdentifier.TANK);
+                        BufferedImage sprite = spriteSheet.getSubimage(topLeft.x
+                                + dx, topLeft.y + dy,
+                                2 * Game.TILE_SIZE, Game.TILE_SIZE);
+                        playerSpriteSheetMap.put(key, sprite);
+                    }                        
+                }
+            }
+        }
+    
+    }
 
     private void startNewGame() {
-        this.entities.clear();
+        this.entityManager.removeAllEntities();
         createEntities();
         gameStatus = GameStatus.PLAY;
     }
@@ -109,13 +182,21 @@ public class LevelState extends GameState {
     private void createEntities() {
         Explosion explosion = new Explosion(this, ExplosionType.TANK,
                 64, 64);
-        this.entities.add(explosion);
+        this.entityManager.addEntity(explosion);
         /*Splash s = new Splash(this, SplashType.BONUS, 0, 0);
         this.entities.add(s);*/
 
         Bonus bonus = new Bonus(this, BonusType.CLOCK, 13 * 5, 13 * 2);
         bonus.startInfiniteBlinking(0.25);
-        this.entities.add(bonus);
+        this.entityManager.addEntity(bonus);
+        
+        Bonus bonus1 = new Bonus(this, BonusType.GRENADE, 13 * 7, 13 * 2);
+        bonus1.startInfiniteBlinking(0.25);
+        this.entityManager.addEntity(bonus1);
+        
+        Bonus bonus2 = new Bonus(this, BonusType.GUN, 13 * 9, 13 * 2);
+        bonus2.startInfiniteBlinking(0.25);
+        this.entityManager.addEntity(bonus2);
 
         /*EnemyTankCountIndicator indicator = new EnemyTankCountIndicator(this,
                 0, 0);
@@ -130,26 +211,22 @@ public class LevelState extends GameState {
                 * 2, 13 * 2, 0, Direction.WEST);
         this.entities.add(projectile);*/
         Player tanque = new Player(this, PlayerTankType.HEAVY, 13 * 9, 13 * 9,
-                64, Direction.NORTH);
+                Direction.NORTH);
         this.player = tanque;
         tanque.attachChild(protection);
-        this.entities.add(tanque);
+        this.entityManager.addEntity(tanque);
+        
+        EnemyTank tank = new EnemyTank(this, EnemyTankType.HEAVY, 13 * 11, 13 * 11,
+                Direction.NORTH);
+        tank.setGleaming(true);
+        this.entityManager.addEntity(tank);
+        //TODO create EntityManager
     }
 
     @Override
     public void unload() {
         //this.player = null;
         this.tileMap = null;
-    }
-
-    private void updateEntities(KeyboardState keyboardState, double frameTime) {
-        //Remove the dead entities
-        //this.entities.removeIf(e -> e != this.player && !e.isAlive());
-
-        //Update all entitites
-        for (int i = this.entities.size() - 1; i >= 0; --i) {
-            this.entities.get(i).update(keyboardState, frameTime);
-        }
     }
 
     private void checkCollisions() {
@@ -172,12 +249,6 @@ public class LevelState extends GameState {
     @Override
     public void onKeyReleased(int keyCode) {
         switch (keyCode) {
-            /*case KeyEvent.VK_F:
-                this.player.resetAlreadyFired();
-                break;
-            case KeyEvent.VK_R:
-                this.player.setCanScratch(true);
-                break;*/
             case KeyEvent.VK_SPACE:
                 togglePause();
                 break;
@@ -214,7 +285,7 @@ public class LevelState extends GameState {
             return;
         }
         //System.out.println("numEntities.size() = " + this.entities.size());
-        updateEntities(keyboardState, frameTime);
+        this.entityManager.update(keyboardState, frameTime);
         checkCollisions();
         checkGameStatus();
     }
@@ -227,14 +298,7 @@ public class LevelState extends GameState {
         /*if (this.tileMap != null) {
             this.tileMap.draw(g);
         }*/
-
-        for (int i = this.entities.size() - 1; i >= 0; --i) {
-            this.entities.get(i).draw(g);
-        }
-
-        BufferedImage im = this.spriteSheetManager.fetchDigitSprite(2);
-        g.drawImage(im, 200, 100, im.getWidth() * 2, 2 * im.getHeight(), null);
-
+        this.entityManager.draw(g);
         drawGameStatus(g);
 
     }

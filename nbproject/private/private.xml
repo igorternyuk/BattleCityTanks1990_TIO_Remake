@@ -15,6 +15,7 @@
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/tank/Alliance.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/graphics/animations/AnimationManager.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/graphics/images/TextureAtlas.java</file>
+            <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/player/Player.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/graphics/spritesheets/SpriteSheetManager.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/tank/Tank.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gamestate/LevelState.java</file>
@@ -28,6 +29,7 @@
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/bonuses/Bonus.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/graphics/images/Background.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gamestate/GameState.java</file>
+            <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/utils/Images.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/tank/TankColor.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/graphics/animations/Animation.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/graphics/Display.java</file>

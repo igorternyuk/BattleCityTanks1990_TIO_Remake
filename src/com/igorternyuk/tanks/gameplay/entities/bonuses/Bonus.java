@@ -6,6 +6,7 @@ import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.graphics.images.Sprite;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
+import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
 import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -22,7 +23,7 @@ public class Bonus extends Entity {
     public Bonus(LevelState level, BonusType type, double x, double y) {
         super(level, EntityType.BONUS, x, y, 0, Direction.NORTH);
         this.type = type;
-        BufferedImage image = this.level.getSpriteSheetManager().get(
+        BufferedImage image = SpriteSheetManager.getInstance().get(
                 SpriteSheetIdentifier.BONUS);
         this.sprite = new Sprite(image, this.x, this.y, LevelState.SCALE);
         this.sprite.setSourceRect(this.type.getSourceRect());

@@ -13,38 +13,45 @@ import com.igorternyuk.tanks.graphics.animations.Animation;
 import com.igorternyuk.tanks.graphics.animations.AnimationPlayMode;
 import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Point;
-import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
-import java.util.Map;
 
 /**
  *
  * @author igor
  */
 public class EnemyTank extends Tank<EnemyTankIdentifier> {
-
+    private static final double COLOR_CHANGING_PERIOD = 0.1;
     private EnemyTankIdentifier identifier;
+    private boolean gleaming = false;
+    private double colorPlayingTimer;
+    
 
     public EnemyTank(LevelState level, EnemyTankType type, double x, double y,
-            double speed, Direction direction) {
-        super(level, EntityType.ENEMY_TANK, x, y, speed, direction);
+            Direction direction) {
+        super(level, EntityType.ENEMY_TANK, x, y, type.getSpeed(), direction);
         loadAnimations();
         this.identifier = new EnemyTankIdentifier(TankColor.YELLOW,
                 Heading.getHeading(direction), type);
         updateAnimation();
     }
 
+    public boolean isGleaming() {
+        return gleaming;
+    }
+
+    public void setGleaming(boolean gleaming) {
+        this.gleaming = gleaming;
+    }
+    
     public EnemyTankIdentifier getIdentifier() {
         return this.identifier;
     }
 
     @Override
     public final void loadAnimations() {
-        Map<EnemyTankIdentifier, BufferedImage> spriteSheetMap =
-                EnemyTankIdentifier.getSpriteSheetMap();
-        spriteSheetMap.keySet().forEach(key -> {
+        
+        this.level.getEnemyTankSpriteSheetMap().keySet().forEach(key -> {
             this.animationManager.addAnimation(key, new Animation(
-                    spriteSheetMap.get(key), 0.5,
+                    this.level.getEnemyTankSpriteSheetMap().get(key), 0.5,
                     0, 0, Game.TILE_SIZE, Game.TILE_SIZE, 2, Game.TILE_SIZE
             ));
         });
@@ -57,10 +64,10 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     @Override
     public void fire() {
         Point departure = calcPointOfProjectileDeparture();
-        int x = departure.x;
-        int y = departure.y;
+        int px = departure.x;
+        int py = departure.y;
         this.level.getEntities().add(
-                new Projectile(level, ProjectileType.ENEMY, x, y,
+                new Projectile(level, ProjectileType.ENEMY, px, py,
                         this.identifier.getType().getProjectileSpeed(),
                         this.direction));
     }
@@ -74,6 +81,16 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
         super.update(keyboardState, frameTime);
+        if(this.gleaming){
+            //System.out.println("this.colorPlayingTimer = " + this.colorPlayingTimer);
+            this.colorPlayingTimer += frameTime;
+            if(this.colorPlayingTimer >= COLOR_CHANGING_PERIOD){
+                TankColor currColor = this.identifier.getColor();
+                this.identifier.setColor(currColor.next());
+                this.colorPlayingTimer = 0;
+            }
+        }
+        updateAnimation();
         
     }
 

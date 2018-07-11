@@ -7,6 +7,7 @@ import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.graphics.animations.Animation;
 import com.igorternyuk.tanks.graphics.animations.AnimationPlayMode;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
+import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
 import java.awt.image.BufferedImage;
 
 /**
@@ -31,13 +32,13 @@ public class Explosion extends AnimatedEntity<ExplosionType> {
         System.out.println("Loading explosion animation...");
         BufferedImage spriteSheet;
         if (this.explosionType == ExplosionType.PROJECTILE) {
-            spriteSheet = this.level.getSpriteSheetManager().get(
+            spriteSheet = SpriteSheetManager.getInstance().get(
                     SpriteSheetIdentifier.PROJECTILE_EXPLOSION);
         } else if (this.explosionType == ExplosionType.TANK) {
-            spriteSheet = this.level.getSpriteSheetManager().get(
+            spriteSheet = SpriteSheetManager.getInstance().get(
                     SpriteSheetIdentifier.TANK_EXPLOSION);
         } else {
-            spriteSheet = this.level.getSpriteSheetManager().get(
+            spriteSheet = SpriteSheetManager.getInstance().get(
                     SpriteSheetIdentifier.EMPTY);
         }
         for (ExplosionType animType : ExplosionType.values()) {

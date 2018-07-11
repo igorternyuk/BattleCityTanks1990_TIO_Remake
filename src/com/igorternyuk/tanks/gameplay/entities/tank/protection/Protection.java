@@ -7,6 +7,7 @@ import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.graphics.animations.Animation;
 import com.igorternyuk.tanks.graphics.animations.AnimationPlayMode;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
+import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
@@ -29,10 +30,10 @@ public class Protection extends AnimatedEntity<ProtectionType>{
     public final void loadAnimations() {
         BufferedImage spriteSheet;
         if(this.type == ProtectionType.REGULAR){
-            spriteSheet = this.level.getSpriteSheetManager().get(
+            spriteSheet = SpriteSheetManager.getInstance().get(
                     SpriteSheetIdentifier.TANK_PROTECTION);
         } else {
-            spriteSheet = this.level.getSpriteSheetManager().get(
+            spriteSheet = SpriteSheetManager.getInstance().get(
                     SpriteSheetIdentifier.EMPTY);
         }
         

@@ -29,7 +29,7 @@ public class SpriteSheetManager {
 
     public void put(SpriteSheetIdentifier identifier, TextureAtlas atlas) {
         this.spriteSheets.put(identifier, atlas.cutOut(identifier.
-                getBoundingRect()));
+                getBoundingRect(), identifier.getColorToFilter()));
     }
 
     public void remove(SpriteSheetIdentifier identifier) {

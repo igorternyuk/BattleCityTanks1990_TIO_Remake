@@ -13,7 +13,6 @@ import java.awt.event.MouseEvent;
 public class ConstructionState extends GameState {
 
     private int[][] tileMap = new int[Game.TILES_IN_HEIGHT][Game.TILES_IN_WIDTH];
-
     public ConstructionState(GameStateManager gsm) {
         super(gsm);
     }
@@ -50,7 +49,7 @@ public class ConstructionState extends GameState {
 
     @Override
     public void draw(Graphics2D g) {
-        g.setColor(Color.gray);
+        g.setColor(Color.white);
         for (int i = 0; i < 2 * Game.TILES_IN_WIDTH; ++i) {
             g.drawLine(i * Game.HALF_TILE_SIZE * 2, 0, i * Game.HALF_TILE_SIZE
                     * 2,

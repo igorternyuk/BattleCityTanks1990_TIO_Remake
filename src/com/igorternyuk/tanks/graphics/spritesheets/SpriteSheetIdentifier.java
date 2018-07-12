@@ -1,5 +1,6 @@
 package com.igorternyuk.tanks.graphics.spritesheets;
 
+import java.awt.Color;
 import java.awt.Rectangle;
 
 /**
@@ -7,35 +8,38 @@ import java.awt.Rectangle;
  * @author igor
  */
 public enum SpriteSheetIdentifier {
-    EAGLE(304,32,32,16),
-    TANK(0,0,256,256),
-    TILE(256, 0, 80, 88),
-    PROJECTILE(323, 102, 27, 4),
-    PROJECTILE_EXPLOSION(256, 128, 48, 16),
-    TANK_EXPLOSION(304, 128, 64, 32),
-    TANK_PROTECTION(256, 144, 32, 16),
-    BONUS(256, 112, 112, 16),
-    SPLASH(256, 96, 64, 16),
-    SCORES(288, 160, 80, 16),
-    DIGITS(327, 183, 40, 16),
-    PAUSE(288,176,40,8),
-    GAME_OVER(288,184,32,16),
-    LEVEL_FLAG(376,184,16,16),
-    ENEMY_TANK_SIGN(320,192,8,8),
-    RIGHT_PANEL(368,0,32,240),
-    EMPTY(288, 48, 16, 16);
+    EAGLE(new Rectangle(304,32,32,16), new Color(0xFFFFFFFF)),
+    TANK(new Rectangle(0,0,256,256), new Color(0xFF000001)),
+    SMALL_TILES(new Rectangle(256, 64, 32, 24), new Color(0xFF000001)),
+    LARGE_TILES(new Rectangle(256, 0, 48, 64), new Color(0xFF000001)),
+    PROJECTILE(new Rectangle(323, 102, 27, 4), new Color(0xFF000001)),
+    PROJECTILE_EXPLOSION(new Rectangle(256, 128, 48, 16), new Color(0xFF000001)),
+    TANK_EXPLOSION(new Rectangle(304, 128, 64, 32), new Color(0xFF000001)),
+    TANK_PROTECTION(new Rectangle(256, 144, 32, 16), new Color(0xFF000001)),
+    BONUS(new Rectangle(256, 112, 112, 16), new Color(0xFF000001)),
+    SPLASH(new Rectangle(256, 96, 64, 16), new Color(0xFF000001)),
+    SCORES(new Rectangle(288, 160, 80, 16), new Color(0xFF000001)),
+    DIGITS(new Rectangle(327, 183, 40, 16), new Color(0xFFFFFFFF)),
+    PAUSE(new Rectangle(288,176,40,8), new Color(0xFF000001)),
+    GAME_OVER(new Rectangle(288,184,32,16), new Color(0xFF000001)),
+    STAGE_FLAG(new Rectangle(376,184,16,16), new Color(0xFF000001)),
+    ENEMY_TANK_SIGN(new Rectangle(320,192,8,8), new Color(0xFFFFFFFF)),
+    RIGHT_PANEL(new Rectangle(368,0,32,240), new Color(0xFF000001)),
+    EMPTY(new Rectangle(288, 48, 16, 16), new Color(0xFFFFFFFF));
 
     private Rectangle boundingRect;
+    private Color colorToFilter;
     
-    private SpriteSheetIdentifier(int x, int y, int width, int height){
-        this.boundingRect = new Rectangle(x, y, width, height);
-    }
-    
-    private SpriteSheetIdentifier(Rectangle boundingRect){
-        this.boundingRect = boundingRect;
+    private SpriteSheetIdentifier(Rectangle rect, Color colorToFilter){
+        this.boundingRect = rect;
+        this.colorToFilter = colorToFilter;
     }
     
     public Rectangle getBoundingRect(){
         return this.boundingRect;
+    }
+
+    public Color getColorToFilter() {
+        return this.colorToFilter;
     }
 }

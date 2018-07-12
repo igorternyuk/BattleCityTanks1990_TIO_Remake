@@ -1,5 +1,7 @@
 package com.igorternyuk.tanks.resourcemanager;
 
+import com.igorternyuk.tanks.utils.Images;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.HashMap;
@@ -13,11 +15,11 @@ import javax.imageio.ImageIO;
  * @author igor
  */
 public class ResourceManager {
-    
+
     private static ResourceManager instance;
-    
-    public static synchronized ResourceManager getInstance(){
-        if(instance == null){
+
+    public static synchronized ResourceManager getInstance() {
+        if (instance == null) {
             instance = new ResourceManager();
         }
         return instance;
@@ -41,6 +43,8 @@ public class ResourceManager {
         }
         if (image != null) {
             this.images.put(identifier, image);
+            /*this.images.put(identifier, Images.imageToBufferedImage(Images.
+                    makeColorTransparent(image, Color.black)));*/
             return true;
         } else {
             return false;

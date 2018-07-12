@@ -8,7 +8,8 @@ import java.awt.Rectangle;
  * @author igor
  */
 public enum TileType {
-    EMPTY(0, new Rectangle(280, 136, Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE)) {
+    EMPTY(0, new Rectangle(3 * Game.HALF_TILE_SIZE, 1 * Game.HALF_TILE_SIZE,
+            Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE)) {
         @Override
         public boolean isDestroyable() {
             return false;
@@ -19,7 +20,8 @@ public enum TileType {
             return true;
         }
     },
-    BRICKS(1, new Rectangle(256, 128, Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE)) {
+    BRICKS(1, new Rectangle(0 * Game.HALF_TILE_SIZE, 0 * Game.HALF_TILE_SIZE,
+            Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE)) {
         @Override
         public boolean isDestroyable() {
             return true;
@@ -30,7 +32,8 @@ public enum TileType {
             return false;
         }
     },
-    METAL(2, new Rectangle(256, 136, Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE)) {
+    METAL(2, new Rectangle(0 * Game.HALF_TILE_SIZE, 1 * Game.HALF_TILE_SIZE,
+            Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE)) {
         @Override
         public boolean isDestroyable() {
             return true;
@@ -41,7 +44,8 @@ public enum TileType {
             return false;
         }
     },
-    WATER(3, new Rectangle(256, 144, 3 * Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE)) {
+    WATER(3, new Rectangle(0 * Game.HALF_TILE_SIZE, 2 * Game.HALF_TILE_SIZE,
+            3 * Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE)) {
         @Override
         public boolean isDestroyable() {
             return false;
@@ -52,7 +56,8 @@ public enum TileType {
             return false;
         }
     },
-    BUSH(4, new Rectangle(264, 136, Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE)) {
+    BUSH(4, new Rectangle(1 * Game.HALF_TILE_SIZE, 1 * Game.HALF_TILE_SIZE,
+            Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE)) {
         @Override
         public boolean isDestroyable() {
             return false;
@@ -63,7 +68,8 @@ public enum TileType {
             return true;
         }
     },
-    ICE(5, new Rectangle(272, 136, Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE)) {
+    ICE(5, new Rectangle(2 * Game.HALF_TILE_SIZE, 1 * Game.HALF_TILE_SIZE,
+            Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE)) {
         @Override
         public boolean isDestroyable() {
             return false;
@@ -75,14 +81,15 @@ public enum TileType {
         }
     };
 
-    public static TileType getFromNumber(int number){
-        if(number < 0 || number > TileType.values().length){
+    public static TileType getFromNumber(int number) {
+        if (number < 0 || number > TileType.values().length) {
             number = 0;
         }
         return TileType.values()[number];
     }
 
     public abstract boolean isDestroyable();
+
     public abstract boolean isPassable();
 
     private int number;

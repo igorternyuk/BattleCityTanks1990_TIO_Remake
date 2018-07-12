@@ -109,7 +109,7 @@ public class LevelState extends GameState {
     public void load() {
         System.out.println("Level state loading...");
         this.resourceManager.loadImage(ImageIdentifier.TEXTURE_ATLAS,
-                "/images/texture_atlas.png");
+                "/images/texture_atlas_black.png");
         this.atlas = new TextureAtlas(this.resourceManager.getImage(
                 ImageIdentifier.TEXTURE_ATLAS));
         loadSprites();
@@ -222,7 +222,9 @@ public class LevelState extends GameState {
 
     @Override
     public void unload() {
-        //this.player = null;
+        for (SpriteSheetIdentifier identifier : SpriteSheetIdentifier.values()) {
+            this.spriteSheetManager.remove(identifier);
+        }
         this.tileMap = null;
     }
 

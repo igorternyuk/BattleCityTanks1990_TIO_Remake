@@ -8,27 +8,27 @@ import java.util.Random;
  *
  * @author igor
  */
-public enum BonusType {
-    TANK_PROTECTION,
-    CLOCK,
+public enum PowerUpType {
+    HELMET,
+    TIMER,
     SHOVEL,
     STAR,
     GRENADE,
-    EXTRA_LIFE,
+    TANK,
     GUN;
     
     private static final Random random = new Random();
     
-    public static BonusType randomType(){
-        int randNumber = random.nextInt(BonusType.values().length);
-        return BonusType.values()[randNumber];
+    public static PowerUpType randomType(){
+        int randNumber = random.nextInt(PowerUpType.values().length);
+        return PowerUpType.values()[randNumber];
     }
     
     private Rectangle sourceRect;
     private int score;
     
 
-    private BonusType() {
+    private PowerUpType() {
         this.sourceRect = new Rectangle(this.ordinal() * Game.TILE_SIZE, 0,
                 Game.TILE_SIZE, Game.TILE_SIZE);
         this.score = 500;
@@ -41,6 +41,4 @@ public enum BonusType {
     public int getScore(){
         return this.score;
     }
-    
-    
 }

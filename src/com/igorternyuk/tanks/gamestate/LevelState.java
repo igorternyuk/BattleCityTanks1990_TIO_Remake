@@ -6,8 +6,8 @@ import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityManager;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
-import com.igorternyuk.tanks.gameplay.entities.bonuses.Bonus;
-import com.igorternyuk.tanks.gameplay.entities.bonuses.BonusType;
+import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUp;
+import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUpType;
 import com.igorternyuk.tanks.gameplay.entities.player.Player;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankIdentifier;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankType;
@@ -179,19 +179,19 @@ public class LevelState extends GameState {
     }
 
     private void createEntities() {
-        Bonus bonus0 = new Bonus(this, BonusType.EXTRA_LIFE, 13 * 5, 13 * 2);
+        PowerUp bonus0 = new PowerUp(this, PowerUpType.TANK, 13 * 5, 13 * 2);
         bonus0.startInfiniteBlinking(0.4);
         this.entityManager.addEntity(bonus0);
         
-        Bonus bonus1 = new Bonus(this, BonusType.TANK_PROTECTION, 13 * 7, 13 * 2);
+        PowerUp bonus1 = new PowerUp(this, PowerUpType.HELMET, 13 * 7, 13 * 2);
         bonus1.startInfiniteBlinking(0.4);
         this.entityManager.addEntity(bonus1);
         
-        Bonus bonus2 = new Bonus(this, BonusType.GUN, 13 * 9, 13 * 2);
+        PowerUp bonus2 = new PowerUp(this, PowerUpType.GUN, 13 * 9, 13 * 2);
         bonus2.startInfiniteBlinking(0.4);
         this.entityManager.addEntity(bonus2);
         
-        Bonus bonus3 = new Bonus(this, BonusType.STAR, 13 * 11, 13 * 2);
+        PowerUp bonus3 = new PowerUp(this, PowerUpType.STAR, 13 * 11, 13 * 2);
         bonus3.startInfiniteBlinking(0.4);
         this.entityManager.addEntity(bonus3);
 
@@ -210,11 +210,11 @@ public class LevelState extends GameState {
         this.player = tanque;
         this.entityManager.addEntity(tanque);
         
-        EnemyTank tank = new EnemyTank(this, 4, EnemyTankType.ARMORED_TROOP_CARRIER, 13 * 11, 13 * 11,
+        EnemyTank tank = new EnemyTank(this, 4, EnemyTankType.FAST, 13 * 11, 13 * 11,
                 Direction.NORTH);
         this.entityManager.addEntity(tank);
         
-        EnemyTank tank2 = new EnemyTank(this, 7, EnemyTankType.HEAVY, 13 * 13, 13 * 13,
+        EnemyTank tank2 = new EnemyTank(this, 7, EnemyTankType.ARMORED, 13 * 13, 13 * 13,
                 Direction.NORTH);
         this.entityManager.addEntity(tank2);
         //TODO create EntityManager
@@ -249,7 +249,7 @@ public class LevelState extends GameState {
         List<Entity> bonuses = this.entityManager.getEntitiesByType(
                 EntityType.BONUS);
         for(int i = 0; i < bonuses.size(); ++i){
-            Bonus bonus = (Bonus)bonuses.get(i);
+            PowerUp bonus = (PowerUp)bonuses.get(i);
             if(this.player.collides(bonus)){
                 onBonusCollected(bonus);
                 break;
@@ -257,28 +257,28 @@ public class LevelState extends GameState {
         }
     }
     
-    private void onBonusCollected(Bonus bonus){
-        if(bonus.getType() == BonusType.EXTRA_LIFE){
+    private void onBonusCollected(PowerUp bonus){
+        if(bonus.getType() == PowerUpType.TANK){
             System.out.println("health = " + this.player.getHealth());
             this.player.gainExtraLife();
             System.out.println("Tank collected");
             System.out.println("Gained extra life health = " + this.player.getHealth());
-        } else if(bonus.getType() == BonusType.STAR){
+        } else if(bonus.getType() == PowerUpType.STAR){
             this.player.promote();
             System.out.println("Star collected");
-        } else if(bonus.getType() == BonusType.GUN){
+        } else if(bonus.getType() == PowerUpType.GUN){
             System.out.println("Gun collected");
             this.player.promoteToHeavy();
             System.out.println("Promoted to heavy");
-        } else if(bonus.getType() == BonusType.TANK_PROTECTION){
+        } else if(bonus.getType() == PowerUpType.HELMET){
             System.out.println("Helmet collected");
             this.player.addProtection();
             System.out.println("Protection added");
-        } else if(bonus.getType() == BonusType.GRENADE){
+        } else if(bonus.getType() == PowerUpType.GRENADE){
             
-        } else if(bonus.getType() == BonusType.SHOVEL){
+        } else if(bonus.getType() == PowerUpType.SHOVEL){
             
-        } else if(bonus.getType() == BonusType.CLOCK){
+        } else if(bonus.getType() == PowerUpType.TIMER){
             
         }
         this.player.takeScore(bonus.getScore());

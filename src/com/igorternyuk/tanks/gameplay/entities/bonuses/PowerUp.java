@@ -17,12 +17,12 @@ import java.awt.image.BufferedImage;
  *
  * @author igor
  */
-public class Bonus extends Entity {
+public class PowerUp extends Entity {
 
-    private BonusType type;
+    private PowerUpType type;
     private Sprite sprite;
 
-    public Bonus(LevelState level, BonusType type, double x, double y) {
+    public PowerUp(LevelState level, PowerUpType type, double x, double y) {
         super(level, EntityType.BONUS, x, y, 0, Direction.NORTH);
         this.type = type;
         BufferedImage image = SpriteSheetManager.getInstance().get(
@@ -43,7 +43,7 @@ public class Bonus extends Entity {
         destroy();
     }
 
-    public BonusType getType() {
+    public PowerUpType getType() {
         return this.type;
     }
     

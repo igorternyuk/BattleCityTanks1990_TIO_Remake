@@ -3,8 +3,8 @@ package com.igorternyuk.tanks.gameplay.entities.tank.enemytank;
 import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
-import com.igorternyuk.tanks.gameplay.entities.bonuses.Bonus;
-import com.igorternyuk.tanks.gameplay.entities.bonuses.BonusType;
+import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUp;
+import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUpType;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
@@ -93,7 +93,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
                 this.identifier.getType().getProjectileSpeed(),
                 this.direction);
         projectile.setDamage(this.identifier.getType().getProjectileDamage());
-        if (this.identifier.getType() == EnemyTankType.HEAVY) {
+        if (this.identifier.getType() == EnemyTankType.ARMORED) {
             projectile.setAntiarmour(true);
         }
         this.level.getEntities().add(projectile);
@@ -103,7 +103,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     public void hit(int damage) {
         super.hit(damage);
         if (isAlive()) {
-            if (!this.bonus && this.identifier.getType() == EnemyTankType.HEAVY) {
+            if (!this.bonus && this.identifier.getType() == EnemyTankType.ARMORED) {
                 this.identifier.setColor(calcColorDependingOnHealth());
                 updateAnimation();
             }
@@ -131,7 +131,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     private void createBonus() {
         int randX = this.random.nextInt(Game.TILES_IN_WIDTH) * Game.TILE_SIZE;
         int randY = this.random.nextInt(Game.TILES_IN_HEIGHT) * Game.TILE_SIZE;
-        Bonus newBonus = new Bonus(this.level, BonusType.randomType(), randX,
+        PowerUp newBonus = new PowerUp(this.level, PowerUpType.randomType(), randX,
                 randY);
         newBonus.startInfiniteBlinking(0.4);
         this.level.getEntityManager().addEntity(newBonus);

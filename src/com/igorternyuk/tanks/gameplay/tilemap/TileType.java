@@ -93,18 +93,18 @@ public enum TileType {
     public abstract boolean isPassable();
 
     private int number;
-    private Rectangle spriteSheet;
+    private Rectangle boundingRect;
 
     private TileType(int number, Rectangle spriteSheet) {
         this.number = number;
-        this.spriteSheet = spriteSheet;
+        this.boundingRect = spriteSheet;
     }
 
     public int getNumber() {
         return this.number;
     }
 
-    public Rectangle getSpriteSheet() {
-        return this.spriteSheet;
+    public Rectangle getBoundingRect() {
+        return this.boundingRect;
     }
 }

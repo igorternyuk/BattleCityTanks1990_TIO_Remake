@@ -27,8 +27,7 @@ public class Files {
             }
         } catch (FileNotFoundException ex) {
             Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
+        }        
     }
 
     public static int[][] loadMapFromFile(String pathToFile) {
@@ -36,7 +35,7 @@ public class Files {
         try (BufferedReader br = new BufferedReader(new InputStreamReader(
                 Files.class.getResourceAsStream(pathToFile)))) {
             String currentLine;
-            String delimeter = "//s+";
+            String delimeter = "\\s+";
             int row = 0;
             while ((currentLine = br.readLine()) != null) {
                 String[] tokens = currentLine.split(delimeter);

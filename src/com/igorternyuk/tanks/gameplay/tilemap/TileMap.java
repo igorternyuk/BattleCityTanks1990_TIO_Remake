@@ -1,13 +1,20 @@
 package com.igorternyuk.tanks.gameplay.tilemap;
 
-import com.igorternyuk.tanks.resourcemanager.ResourceManager;
+import com.igorternyuk.tanks.gameplay.Game;
+import com.igorternyuk.tanks.gameplay.entities.Entity;
+import com.igorternyuk.tanks.gameplay.entities.EntityType;
+import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
+import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
+import com.igorternyuk.tanks.input.KeyboardState;
+import com.igorternyuk.tanks.utils.Files;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -15,64 +22,105 @@ import java.util.logging.Logger;
  */
 public class TileMap {
 
-    private int[][] map;
-    private int tileSize;
-    private int numRows, numCols;
-    private int width, height;
+    private int[][] map = new int[Game.TILES_IN_HEIGHT][Game.TILES_IN_WIDTH];
+    private BufferedImage spriteSheet;
+    private Map<TileType, Tile> tiles = new HashMap<>();
+    private List<Point> eagleProtectionTilePositions = new ArrayList<>();
+    private List<Point> bushTilePositions = new ArrayList<>();
+    private List<Point> waterTilePositions = new ArrayList<>();
+    private Map<Point, Integer> metalTileHealthMap = new HashMap<>();
+    private boolean mapLoaded = false;
 
-
-    public TileMap(ResourceManager resourceManager, int tileSize) {
-        this.tileSize = tileSize;
+    public TileMap() {
+        loadSpriteSheet();
+        createTilesOfAllTypes();
     }
 
-    public int getTileSize() {
-        return this.tileSize;
+    public void loadMap(String pathToMapFile) {
+        this.map = Files.loadMapFromFile(pathToMapFile);
+        calculateBushTilePositions();
+        this.mapLoaded = true;
+        System.out.println("The tile map for level 1 was successfully loaded");
     }
 
-    public int getWidth() {
-        return this.width;
+    public TileType get(int row, int col) {
+        if (!areCoordinatesValid(row, col)) {
+            throw new IllegalArgumentException(
+                    "Row or column index is out of game field bounds");
+        }
+        return TileType.getFromNumber(this.map[row][col]);
     }
 
-    public int getHeight() {
-        return this.height;
-    }
-
-    private boolean areCoordinatesValid(int row, int col) {
+    public boolean areCoordinatesValid(int row, int col) {
         return row >= 0 && row < this.map.length
                 && col >= 0 && col < this.map[row].length;
     }
 
-    public void loadMap(String pathToMapFile) {
+    public void handleCollision(Entity entity) {
+        EntityType entityType = entity.getEntityType();
+        if (entityType == EntityType.PLAYER_TANK) {
 
-        try (BufferedReader bufferedReader = new BufferedReader(
-                new InputStreamReader(this.getClass().getResourceAsStream(
-                        pathToMapFile)));) {
-            this.numCols = Integer.parseInt(bufferedReader.readLine());
-            this.numRows = Integer.parseInt(bufferedReader.readLine());
-            this.width = this.numCols * this.tileSize;
-            this.height = this.numRows * this.tileSize;
-            this.map = new int[this.numRows][this.numCols];
-            System.out.println("numRows = " + numRows);
-            System.out.println("numCols = " + numCols);
-            String delimeter = "\\s+";
-            for (int row = 0; row < this.numRows; ++row) {
-                String currentLine = bufferedReader.readLine();
-                String[] values = currentLine.split(delimeter);
-                for (int col = 0; col < this.numCols; ++col) {
-                    int val = Integer.parseInt(values[col]);
-                    
-                }
-            }
+        } else if (entityType == EntityType.ENEMY_TANK) {
 
-        } catch (IOException | NumberFormatException ex) {
-            Logger.getLogger(TileMap.class.getName()).
-                    log(Level.SEVERE, null, ex);
+        } else if (entityType == EntityType.PROJECTILE) {
+
         }
     }
 
-    public void loadTileSet(String pathToTileSetFile) {
+    private void loadSpriteSheet() {
+        SpriteSheetManager spriteSheetManager = SpriteSheetManager.getInstance();
+        this.spriteSheet = spriteSheetManager.get(
+                SpriteSheetIdentifier.SMALL_TILES);
+    }
+
+    private void createTilesOfAllTypes() {
+        for (TileType tileType : TileType.values()) {
+            Rectangle boundingRect = tileType.getBoundingRect();
+            BufferedImage sprite = this.spriteSheet.getSubimage(boundingRect.x,
+                    boundingRect.y, boundingRect.width, boundingRect.height);
+            Tile tile = new Tile(tileType, sprite, Game.SCALE);
+            this.tiles.put(tileType, tile);
+        }
+    }
+
+    public void calculateBushTilePositions() {
+        for (int row = 0; row < this.map.length; ++row) {
+            for (int col = 0; col < this.map[row].length; ++col) {
+                TileType currTileType = get(row, col);
+                if (currTileType == TileType.BUSH) {
+                    Point bushPosition = new Point(col * Game.HALF_TILE_SIZE,
+                            row * Game.HALF_TILE_SIZE);
+                    this.bushTilePositions.add(bushPosition);
+                }
+            }
+        }
+    }
+
+    public void update(KeyboardState keyboardState, double frameTime) {
+
     }
 
     public void draw(Graphics2D g) {
+        if (!this.mapLoaded) {
+            return;
+        }
+        for (int row = 0; row < this.map.length; ++row) {
+            for (int col = 0; col < this.map[row].length; ++col) {
+                TileType currTileType = get(row, col);
+                Tile currTile = this.tiles.get(currTileType);
+                if(currTileType == TileType.BUSH){
+                    continue;
+                }
+                currTile.draw(g, col * Game.HALF_TILE_SIZE, row
+                        * Game.HALF_TILE_SIZE);
+            }
+        }
+    }
+    
+    public void drawBushes(Graphics2D g){
+        final Tile bushTile = this.tiles.get(TileType.BUSH);
+        this.bushTilePositions.forEach((position) -> {
+            bushTile.draw(g, position.x, position.y);
+        });
     }
 }

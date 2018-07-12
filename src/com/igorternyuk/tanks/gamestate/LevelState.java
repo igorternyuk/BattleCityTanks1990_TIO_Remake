@@ -44,20 +44,22 @@ public class LevelState extends GameState {
     private static final Font FONT_GAME_STATUS = new Font("Verdana", Font.BOLD,
             48);
     
+    private TextureAtlas atlas;
+    private SpriteSheetManager spriteSheetManager;
     private Map<EnemyTankIdentifier, BufferedImage> enemyTankSpriteSheetMap;
     private Map<PlayerTankIdentifier, BufferedImage> playerSpriteSheetMap;
-    private SpriteSheetManager spriteSheetManager;
-    
+        
     private TileMap tileMap;
-    private TextureAtlas atlas;
-    
+        
     private Player player;
     private EntityManager entityManager;
+    
     private GameStatus gameStatus = GameStatus.PLAY;
     private boolean loaded = false;
 
     public LevelState(GameStateManager gsm) {
         super(gsm);
+        
         this.entityManager = new EntityManager();
     }
 
@@ -114,6 +116,8 @@ public class LevelState extends GameState {
                 ImageIdentifier.TEXTURE_ATLAS));
         loadSprites();
         loadTankSpriteSheetMaps();
+        this.tileMap = new TileMap();
+        this.tileMap.loadMap("/tilemap/level1.map");
         startNewGame();
         this.loaded = true;
     }
@@ -179,45 +183,10 @@ public class LevelState extends GameState {
     }
 
     private void createEntities() {
-        PowerUp bonus0 = new PowerUp(this, PowerUpType.TANK, 13 * 5, 13 * 2);
-        bonus0.startInfiniteBlinking(0.4);
-        this.entityManager.addEntity(bonus0);
-        
-        PowerUp bonus1 = new PowerUp(this, PowerUpType.HELMET, 13 * 7, 13 * 2);
-        bonus1.startInfiniteBlinking(0.4);
-        this.entityManager.addEntity(bonus1);
-        
-        PowerUp bonus2 = new PowerUp(this, PowerUpType.GUN, 13 * 9, 13 * 2);
-        bonus2.startInfiniteBlinking(0.4);
-        this.entityManager.addEntity(bonus2);
-        
-        PowerUp bonus3 = new PowerUp(this, PowerUpType.STAR, 13 * 11, 13 * 2);
-        bonus3.startInfiniteBlinking(0.4);
-        this.entityManager.addEntity(bonus3);
-
-        /*EnemyTankCountIndicator indicator = new EnemyTankCountIndicator(this,
-                0, 0);
-        indicator.setTankCount(17);
-        this.entities.add(indicator);
-         */
-        //this.entities.add(protection);
-
-        /*Projectile projectile = new Projectile(this, ProjectileType.PLAYER, 13
-                * 2, 13 * 2, 0, Direction.WEST);
-        this.entities.add(projectile);*/
-        Player tanque = new Player(this, PlayerTankType.MIDDLE, 13 * 9, 13 * 9,
+        Player tanque = new Player(this, PlayerTankType.MIDDLE, 5 * 16, 12 * 16,
                 Direction.NORTH);
         this.player = tanque;
         this.entityManager.addEntity(tanque);
-        
-        EnemyTank tank = new EnemyTank(this, 4, EnemyTankType.FAST, 13 * 11, 13 * 11,
-                Direction.NORTH);
-        this.entityManager.addEntity(tank);
-        
-        EnemyTank tank2 = new EnemyTank(this, 7, EnemyTankType.ARMORED, 13 * 13, 13 * 13,
-                Direction.NORTH);
-        this.entityManager.addEntity(tank2);
-        //TODO create EntityManager
     }
 
     @Override
@@ -340,13 +309,11 @@ public class LevelState extends GameState {
 
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
-        if (!this.loaded) {
-            return;
-        }
-        if (this.gameStatus != GameStatus.PLAY /*|| this.player == null*/) {
+        if (!this.loaded || this.gameStatus != GameStatus.PLAY) {
             return;
         }
         //System.out.println("numEntities.size() = " + this.entities.size());
+        this.tileMap.update(keyboardState, frameTime);
         this.entityManager.update(keyboardState, frameTime);
         checkCollisions();
         checkBonuses();
@@ -361,7 +328,9 @@ public class LevelState extends GameState {
         /*if (this.tileMap != null) {
             this.tileMap.draw(g);
         }*/
+        this.tileMap.draw(g);
         this.entityManager.draw(g);
+        this.tileMap.drawBushes(g);
         drawGameStatus(g);
 
     }

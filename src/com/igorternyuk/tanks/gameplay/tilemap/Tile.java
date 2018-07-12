@@ -1,5 +1,6 @@
 package com.igorternyuk.tanks.gameplay.tilemap;
 
+import com.igorternyuk.tanks.utils.Images;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
@@ -15,7 +16,7 @@ public class Tile {
 
     public Tile(TileType type, BufferedImage image, double scale) {
         this.type = type;
-        this.image = image;
+        this.image = Images.resizeImage(image, scale);
         this.scale = scale;
     }
 
@@ -26,9 +27,14 @@ public class Tile {
     public TileType getType() {
         return this.type;
     }
-    
-    public void draw(Graphics2D g, int x, int y){
-        
+
+    public double getScale() {
+        return this.scale;
+    }
+
+    public void draw(Graphics2D g, int x, int y) {
+        g.drawImage(this.image, (int) (x * this.scale), (int) (y * this.scale),
+                null);
     }
 
 }

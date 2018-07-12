@@ -1,5 +1,6 @@
 package com.igorternyuk.tanks.gameplay.tilemap;
 
+import com.igorternyuk.tanks.input.KeyboardState;
 import com.igorternyuk.tanks.utils.Images;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -10,9 +11,9 @@ import java.awt.image.BufferedImage;
  */
 public class Tile {
 
-    private BufferedImage image;
-    private TileType type;
-    private double scale;
+    protected BufferedImage image;
+    protected TileType type;
+    protected double scale;
 
     public Tile(TileType type, BufferedImage image, double scale) {
         this.type = type;
@@ -30,6 +31,10 @@ public class Tile {
 
     public double getScale() {
         return this.scale;
+    }
+    
+    public void update(KeyboardState keyboardState, double frameTime){
+        
     }
 
     public void draw(Graphics2D g, int x, int y) {

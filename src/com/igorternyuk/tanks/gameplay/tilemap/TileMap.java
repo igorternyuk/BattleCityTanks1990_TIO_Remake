@@ -27,8 +27,8 @@ public class TileMap {
     private Map<TileType, Tile> tiles = new HashMap<>();
     private List<Point> eagleProtectionTilePositions = new ArrayList<>();
     private List<Point> bushTilePositions = new ArrayList<>();
-    private List<Point> waterTilePositions = new ArrayList<>();
     private Map<Point, Integer> metalTileHealthMap = new HashMap<>();
+    private boolean hasWaterTiles = false;
     private boolean mapLoaded = false;
 
     public TileMap() {
@@ -55,6 +55,10 @@ public class TileMap {
         return row >= 0 && row < this.map.length
                 && col >= 0 && col < this.map[row].length;
     }
+    
+    public void activateProtection(){
+        
+    }
 
     public void handleCollision(Entity entity) {
         EntityType entityType = entity.getEntityType();
@@ -78,7 +82,12 @@ public class TileMap {
             Rectangle boundingRect = tileType.getBoundingRect();
             BufferedImage sprite = this.spriteSheet.getSubimage(boundingRect.x,
                     boundingRect.y, boundingRect.width, boundingRect.height);
-            Tile tile = new Tile(tileType, sprite, Game.SCALE);
+            Tile tile;
+            if(tileType == TileType.WATER){
+                tile = new WaterTile(tileType, sprite, Game.SCALE);
+            } else {
+                tile = new Tile(tileType, sprite, Game.SCALE);
+            }
             this.tiles.put(tileType, tile);
         }
     }
@@ -91,13 +100,17 @@ public class TileMap {
                     Point bushPosition = new Point(col * Game.HALF_TILE_SIZE,
                             row * Game.HALF_TILE_SIZE);
                     this.bushTilePositions.add(bushPosition);
+                } else if(currTileType == TileType.WATER){
+                    this.hasWaterTiles = true;
                 }
             }
         }
     }
 
     public void update(KeyboardState keyboardState, double frameTime) {
-
+        if(this.hasWaterTiles){
+            this.tiles.get(TileType.WATER).update(keyboardState, frameTime);
+        }
     }
 
     public void draw(Graphics2D g) {

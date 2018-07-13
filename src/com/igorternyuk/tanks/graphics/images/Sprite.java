@@ -20,10 +20,9 @@ public class Sprite extends Image {
     public Sprite(BufferedImage image, double x, double y, double scale) {
         super(image, x, y);
         this.scale = scale;
-        setSourceRect(new Rectangle(0, 0, this.image.getWidth(), this.image.
-                getHeight()));
+        setSourceRect(new Rectangle(0, 0, (int) (this.image.getWidth()
+                / this.scale), (int)(this.image.getHeight() / this.scale)));
         setPosition(x, y);
-        
         setScale(scale);
     }
 
@@ -32,6 +31,10 @@ public class Sprite extends Image {
         super.setPosition(x, y);
         this.destX = (int) (x * this.scale);
         this.destY = (int) (y * this.scale);
+    }
+
+    public BufferedImage getCurrentImageFragment() {
+        return this.currentImageFragment;
     }
 
     public Rectangle getSourceRect() {
@@ -49,8 +52,8 @@ public class Sprite extends Image {
         this.scale = scale;
         scaleCurrentImageFragment(scale);
     }
-    
-    private void scaleCurrentImageFragment(double scale){
+
+    private void scaleCurrentImageFragment(double scale) {
         this.currentImageFragment = Images.
                 resizeImage(this.currentImageFragment, scale);
     }

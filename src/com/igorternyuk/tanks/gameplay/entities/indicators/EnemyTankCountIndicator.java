@@ -10,6 +10,7 @@ import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
 import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
 /**
@@ -28,6 +29,7 @@ public class EnemyTankCountIndicator extends Entity {
         BufferedImage image = SpriteSheetManager.getInstance().get(
                 SpriteSheetIdentifier.ENEMY_TANK_SIGN);
         this.sprite = new Sprite(image, this.x, this.y, Game.SCALE);
+        this.sprite.setSourceRect(new Rectangle(0, 0, 8, 8));
     }
 
     public int getTankCount() {

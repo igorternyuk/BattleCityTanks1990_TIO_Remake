@@ -16,6 +16,7 @@ public abstract class Entity {
 
     protected LevelState level;
     protected EntityType entityType;
+    protected double absX, absY;
     protected double x, y;
     protected double speed;
     protected Direction direction;
@@ -41,6 +42,30 @@ public abstract class Entity {
 
     public EntityType getEntityType() {
         return this.entityType;
+    }
+    
+     public double getX() {
+        return this.x;
+    }
+
+    public double getY() {
+        return this.y;
+    }
+
+    public double left() {
+        return this.x;
+    }
+
+    public double top() {
+        return this.y;
+    }
+
+    public double right() {
+        return this.x + getWidth();
+    }
+
+    public double bottom() {
+        return this.y + getHeight();
     }
 
     public void attachChild(Entity child) {
@@ -114,28 +139,9 @@ public abstract class Entity {
         this.y = y;
     }
 
-    public double getX() {
-        return this.x;
-    }
-
-    public double getY() {
-        return this.y;
-    }
-
-    public double left() {
-        return this.x;
-    }
-
-    public double top() {
-        return this.y;
-    }
-
-    public double right() {
-        return this.x + getWidth();
-    }
-
-    public double bottom() {
-        return this.y + getHeight();
+    public void setAbsolutePosition(double x, double y){
+        this.absX = x;
+        this.absY = y;
     }
 
     public void startBlinking(double blinkPeriod, double duration) {

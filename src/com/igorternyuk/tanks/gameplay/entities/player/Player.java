@@ -80,8 +80,7 @@ public class Player extends Tank {
     
     public void addProtection() {
         Protection protection = new Protection(this.level,
-                ProtectionType.REGULAR,
-                this.x, this.y);
+                ProtectionType.REGULAR, this.x, this.y);
         attachChild(protection);
         this.hasProtection = true;
     }

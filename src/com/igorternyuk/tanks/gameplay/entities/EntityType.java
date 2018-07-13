@@ -14,5 +14,6 @@ public enum EntityType {
     BONUS,
     SCRORE_TEXT,
     PROTECTION,
-    INDICATOR;
+    INDICATOR,
+    RIGHT_PANEL;
 }

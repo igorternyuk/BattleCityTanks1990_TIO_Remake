@@ -21,14 +21,16 @@ import java.awt.event.MouseEvent;
 public class Game implements Runnable {
 
     public static final int WIDTH = 480;
-    public static final int HEIGHT = 416;
+    public static final int HEIGHT = 480;
     public static final int HALF_WIDTH = WIDTH / 2;
     public static final int HALF_HEIGHT = HEIGHT / 2;
     public static final int TILE_SIZE = 16;
     public static final int HALF_TILE_SIZE = TILE_SIZE / 2;
     public static final double SCALE = 2;
-    public static final int TILES_IN_WIDTH = (int)(WIDTH / SCALE / HALF_TILE_SIZE);
-    public static final int TILES_IN_HEIGHT = (int)(HEIGHT / SCALE / HALF_TILE_SIZE);
+    public static final int TILES_IN_WIDTH = (int) ((WIDTH - 4 * TILE_SIZE)
+            / SCALE / HALF_TILE_SIZE);
+    public static final int TILES_IN_HEIGHT = (int) ((HEIGHT - 4 * TILE_SIZE)
+            / SCALE / HALF_TILE_SIZE);
     private static final String TITLE = "JTanks";
     private static final int CLEAR_COLOR = 0xff000000;
     private static final int NUM_BUFFERS = 4;
@@ -36,7 +38,6 @@ public class Game implements Runnable {
     private static final float FRAME_TIME = Time.SECOND / FPS;
     private static final float FRAME_TIME_IN_SECONDS = 1 / FPS;
     private static final long IDLE_TIME = 1;
-    
 
     private boolean running = false;
     private Thread gameThread;
@@ -48,20 +49,20 @@ public class Game implements Runnable {
     public Game() {
         init();
     }
-    
-    private void init(){
+
+    private void init() {
         createDisplay();
         addInputListeners();
         gameStateManager.setGame(this);
     }
-    
-    private void createDisplay(){
+
+    private void createDisplay() {
         this.display = Display.create(WIDTH, HEIGHT, TITLE, NUM_BUFFERS,
                 CLEAR_COLOR);
         this.graphics = this.display.getGraphics();
     }
-    
-    private void addInputListeners(){
+
+    private void addInputListeners() {
         this.keyboardState = new KeyboardState();
         this.display.addInputListener(this.keyboardState);
         this.display.addKeyListener(new KeyAdapter() {
@@ -79,16 +80,14 @@ public class Game implements Runnable {
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                System.out.println("mx = " + e.getX() + " my = " + e.getY());
                 gameStateManager.onMouseReleased(e);
             }
 
         });
-        
+
         this.display.addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
-                System.out.println("mx = " + e.getX() + " my = " + e.getY());
                 gameStateManager.onMouseMoved(e);
             }
         });

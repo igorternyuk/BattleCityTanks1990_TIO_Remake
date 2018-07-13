@@ -9,6 +9,8 @@ import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUp;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUpType;
 import com.igorternyuk.tanks.gameplay.entities.eagle.Eagle;
+import com.igorternyuk.tanks.gameplay.entities.indicators.EnemyTankCountIndicator;
+import com.igorternyuk.tanks.gameplay.entities.indicators.GameInfoPanel;
 import com.igorternyuk.tanks.gameplay.entities.player.Player;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankIdentifier;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankType;
@@ -48,6 +50,8 @@ public class LevelState extends GameState {
             * Game.HALF_TILE_SIZE, 24 * Game.HALF_TILE_SIZE);
     private static final Point PLAYER_RESPAWN_POSITION = new Point(8
             * Game.HALF_TILE_SIZE, 24 * Game.HALF_TILE_SIZE);
+    private static final Point RIGHT_PANEL_POSITION = new Point(26
+            * Game.HALF_TILE_SIZE, 0 * Game.HALF_TILE_SIZE);
 
     private TextureAtlas atlas;
     private SpriteSheetManager spriteSheetManager;
@@ -59,7 +63,7 @@ public class LevelState extends GameState {
     private Player player;
     private Eagle eagle;
     private EntityManager entityManager;
-
+    private GameInfoPanel rightPanel;
     private GameStatus gameStatus = GameStatus.PLAY;
     private boolean loaded = false;
 
@@ -84,9 +88,10 @@ public class LevelState extends GameState {
         return this.spriteSheetManager;
     }
 
-    /*public Player getPlayer() {
+    public Player getPlayer() {
         return this.player;
-    }*/
+    }
+
     public GameStatus getGameStatus() {
         return this.gameStatus;
     }
@@ -100,11 +105,11 @@ public class LevelState extends GameState {
     }
 
     public int getMapWidth() {
-        return 13 * 16;
+        return Game.TILES_IN_WIDTH * Game.TILE_SIZE;
     }
 
     public int getMapHeight() {
-        return 13 * 16;
+        return Game.TILES_IN_HEIGHT * Game.TILE_SIZE;
     }
 
     public List<Entity> getEntities() {
@@ -122,63 +127,9 @@ public class LevelState extends GameState {
         loadTankSpriteSheetMaps();
         this.tileMap = new TileMap();
         this.tileMap.loadMap("/tilemap/level1.map");
+
         startNewGame();
         this.loaded = true;
-    }
-
-    private void loadSprites() {
-        this.spriteSheetManager = SpriteSheetManager.getInstance();
-        for (SpriteSheetIdentifier identifier : SpriteSheetIdentifier.values()) {
-            this.spriteSheetManager.put(identifier, this.atlas);
-        }
-    }
-
-    private void loadTankSpriteSheetMaps() {
-
-        this.enemyTankSpriteSheetMap = new HashMap<>();
-        this.playerSpriteSheetMap = new HashMap<>();
-        for (TankColor color : TankColor.values()) {
-            for (Alliance alliance : Alliance.values()) {
-                Point topLeft = color.
-                        getOffsetFromTankSpriteSheetTopLeftCorner();
-                topLeft.x += alliance.
-                        getOffsetFromSameColorTankSpriteSheetTopLeftCorner().x;
-                topLeft.y += alliance.
-                        getOffsetFromSameColorTankSpriteSheetTopLeftCorner().y;
-
-                for (Heading heading : Heading.values()) {
-                    for (EnemyTankType type : EnemyTankType.values()) {
-                        int dx = heading.getSpriteSheetPositionX();
-                        int dy = type.getSpriteSheetPositionY();
-                        EnemyTankIdentifier key = new EnemyTankIdentifier(color,
-                                heading, type);
-                        BufferedImage spriteSheet = spriteSheetManager.get(
-                                SpriteSheetIdentifier.TANK);
-                        BufferedImage sprite = spriteSheet.getSubimage(topLeft.x
-                                + dx, topLeft.y + dy,
-                                2 * Game.TILE_SIZE, Game.TILE_SIZE);
-                        enemyTankSpriteSheetMap.put(key, sprite);
-                    }
-
-                    for (PlayerTankType type : PlayerTankType.values()) {
-                        int dx = heading.getSpriteSheetPositionX();
-                        int dy = type.getSpriteSheetPositionY();
-                        PlayerTankIdentifier key = new PlayerTankIdentifier(
-                                color,
-                                heading, type);
-                        SpriteSheetManager manager = SpriteSheetManager.
-                                getInstance();
-                        BufferedImage spriteSheet = manager.get(
-                                SpriteSheetIdentifier.TANK);
-                        BufferedImage sprite = spriteSheet.getSubimage(topLeft.x
-                                + dx, topLeft.y + dy,
-                                2 * Game.TILE_SIZE, Game.TILE_SIZE);
-                        playerSpriteSheetMap.put(key, sprite);
-                    }
-                }
-            }
-        }
-
     }
 
     private void startNewGame() {
@@ -196,6 +147,9 @@ public class LevelState extends GameState {
         this.entityManager.addEntity(tanque);
         this.eagle = new Eagle(this, EAGLE_POSITION.x, EAGLE_POSITION.y);
         this.entityManager.addEntity(eagle);
+        this.rightPanel = new GameInfoPanel(this, RIGHT_PANEL_POSITION.x,
+                RIGHT_PANEL_POSITION.y);
+        this.entityManager.addEntity(this.rightPanel);
     }
 
     @Override
@@ -213,7 +167,7 @@ public class LevelState extends GameState {
                 EntityType.ENEMY_TANK);
         for (int i = projectiles.size() - 1; i >= 0; --i) {
             Projectile projectile = (Projectile) projectiles.get(i);
-            if(projectile.collides(this.eagle)){
+            if (projectile.collides(this.eagle)) {
                 this.eagle.kill();
                 continue;
             }
@@ -346,6 +300,61 @@ public class LevelState extends GameState {
         this.entityManager.draw(g);
         this.tileMap.drawBushes(g);
         drawGameStatus(g);
+
+    }
+
+    private void loadSprites() {
+        this.spriteSheetManager = SpriteSheetManager.getInstance();
+        for (SpriteSheetIdentifier identifier : SpriteSheetIdentifier.values()) {
+            this.spriteSheetManager.put(identifier, this.atlas);
+        }
+    }
+
+    private void loadTankSpriteSheetMaps() {
+
+        this.enemyTankSpriteSheetMap = new HashMap<>();
+        this.playerSpriteSheetMap = new HashMap<>();
+        for (TankColor color : TankColor.values()) {
+            for (Alliance alliance : Alliance.values()) {
+                Point topLeft = color.
+                        getOffsetFromTankSpriteSheetTopLeftCorner();
+                topLeft.x += alliance.
+                        getOffsetFromSameColorTankSpriteSheetTopLeftCorner().x;
+                topLeft.y += alliance.
+                        getOffsetFromSameColorTankSpriteSheetTopLeftCorner().y;
+
+                for (Heading heading : Heading.values()) {
+                    for (EnemyTankType type : EnemyTankType.values()) {
+                        int dx = heading.getSpriteSheetPositionX();
+                        int dy = type.getSpriteSheetPositionY();
+                        EnemyTankIdentifier key = new EnemyTankIdentifier(color,
+                                heading, type);
+                        BufferedImage spriteSheet = spriteSheetManager.get(
+                                SpriteSheetIdentifier.TANK);
+                        BufferedImage sprite = spriteSheet.getSubimage(topLeft.x
+                                + dx, topLeft.y + dy,
+                                2 * Game.TILE_SIZE, Game.TILE_SIZE);
+                        enemyTankSpriteSheetMap.put(key, sprite);
+                    }
+
+                    for (PlayerTankType type : PlayerTankType.values()) {
+                        int dx = heading.getSpriteSheetPositionX();
+                        int dy = type.getSpriteSheetPositionY();
+                        PlayerTankIdentifier key = new PlayerTankIdentifier(
+                                color,
+                                heading, type);
+                        SpriteSheetManager manager = SpriteSheetManager.
+                                getInstance();
+                        BufferedImage spriteSheet = manager.get(
+                                SpriteSheetIdentifier.TANK);
+                        BufferedImage sprite = spriteSheet.getSubimage(topLeft.x
+                                + dx, topLeft.y + dy,
+                                2 * Game.TILE_SIZE, Game.TILE_SIZE);
+                        playerSpriteSheetMap.put(key, sprite);
+                    }
+                }
+            }
+        }
 
     }
 

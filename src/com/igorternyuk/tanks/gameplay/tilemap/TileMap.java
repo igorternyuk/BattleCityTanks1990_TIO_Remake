@@ -35,6 +35,14 @@ public class TileMap {
         loadSpriteSheet();
         createTilesOfAllTypes();
     }
+    
+    public Map<TileType, Tile> getAllTiles(){
+        if(this.mapLoaded){
+            return this.tiles;
+        } else {
+            return new HashMap<>();
+        }
+    }
 
     public void loadMap(String pathToMapFile) {
         this.map = Files.loadMapFromFile(pathToMapFile);

@@ -136,6 +136,15 @@ public class LevelState extends GameState {
         startNewGame();
         this.loaded = true;
     }
+    
+    @Override
+    public void unload() {
+        for (SpriteSheetIdentifier identifier : SpriteSheetIdentifier.values()) {
+            this.spriteSheetManager.remove(identifier);
+        }
+        this.resourceManager.unloadImage(ImageIdentifier.TEXTURE_ATLAS);
+        this.tileMap = null;
+    }
 
     private void startNewGame() {
         this.entityManager.removeAllEntities();
@@ -158,13 +167,7 @@ public class LevelState extends GameState {
         this.entityManager.addEntity(this.rightPanel);
     }
 
-    @Override
-    public void unload() {
-        for (SpriteSheetIdentifier identifier : SpriteSheetIdentifier.values()) {
-            this.spriteSheetManager.remove(identifier);
-        }
-        this.tileMap = null;
-    }
+    
 
     private void checkCollisions() {
         List<Entity> projectiles = this.entityManager.getEntitiesByType(

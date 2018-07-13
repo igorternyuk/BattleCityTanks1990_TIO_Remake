@@ -4,6 +4,7 @@ import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
+import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
 import com.igorternyuk.tanks.gameplay.entities.tank.Heading;
@@ -140,7 +141,7 @@ public class Player extends Tank {
 
     @Override
     protected void explode() {
-        super.explode();
+        super.explode(ExplosionType.BIG);
         --this.lives;
         if (isAlive()) {
             respawn();

@@ -32,10 +32,10 @@ public class Explosion extends AnimatedEntity<ExplosionType> {
     public final void loadAnimations() {
         System.out.println("Loading explosion animation...");
         BufferedImage spriteSheet;
-        if (this.explosionType == ExplosionType.PROJECTILE) {
+        if (this.explosionType == ExplosionType.SMALL) {
             spriteSheet = SpriteSheetManager.getInstance().get(
                     SpriteSheetIdentifier.PROJECTILE_EXPLOSION);
-        } else if (this.explosionType == ExplosionType.TANK) {
+        } else if (this.explosionType == ExplosionType.BIG) {
             spriteSheet = SpriteSheetManager.getInstance().get(
                     SpriteSheetIdentifier.TANK_EXPLOSION);
         } else {

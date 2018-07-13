@@ -1,6 +1,7 @@
 package com.igorternyuk.tanks.gameplay.entities;
 
 import com.igorternyuk.tanks.gameplay.entities.player.Player;
+import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
@@ -13,12 +14,13 @@ import java.util.Map;
  * @author igor
  */
 public class EntityManager {
-
+    private LevelState level;
     private List<Entity> entities = new ArrayList<>();
     private Map<EntityType, List<Entity>> entitiesByType = new HashMap();
     private Player player;
     
-    public EntityManager(){
+    public EntityManager(LevelState level){
+        this.level = level;
         for(EntityType type: EntityType.values()){
             entitiesByType.put(type, new ArrayList<>());
         }
@@ -36,6 +38,8 @@ public class EntityManager {
         List<Entity> lista = this.entitiesByType.get(entity.getEntityType());
         lista.add(entity);
     }
+    
+    
     
     public void removeEntity(Entity entity){
         this.entities.remove(entity);
@@ -76,8 +80,12 @@ public class EntityManager {
     }
 
     public void draw(Graphics2D g) {
+        this.entitiesByType.get(EntityType.EAGLE).get(0).draw(g);
         for (int i = this.entities.size() - 1; i >= 0; --i) {
-            this.entities.get(i).draw(g);
+            Entity entity = this.entities.get(i);
+            if(entity.getEntityType() != EntityType.EAGLE){
+                entity.draw(g);
+            }
         }
     }
 }

@@ -19,4 +19,9 @@ public class Painter {
                 getWidth();
         g.drawString(text, (Game.WIDTH - textWidth) / 2, height);
     }
+
+    public static void drawNumber(Graphics2D g, int number, Color color, int x,
+            int y) {
+
+    }
 }

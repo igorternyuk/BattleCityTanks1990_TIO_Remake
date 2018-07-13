@@ -8,6 +8,7 @@ import com.igorternyuk.tanks.gameplay.entities.EntityManager;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUp;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUpType;
+import com.igorternyuk.tanks.gameplay.entities.eagle.Eagle;
 import com.igorternyuk.tanks.gameplay.entities.player.Player;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankIdentifier;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankType;
@@ -43,30 +44,34 @@ public class LevelState extends GameState {
 
     private static final Font FONT_GAME_STATUS = new Font("Verdana", Font.BOLD,
             48);
-    
+    private static final Point EAGLE_POSITION = new Point(12
+            * Game.HALF_TILE_SIZE, 24 * Game.HALF_TILE_SIZE);
+    private static final Point PLAYER_RESPAWN_POSITION = new Point(8
+            * Game.HALF_TILE_SIZE, 24 * Game.HALF_TILE_SIZE);
+
     private TextureAtlas atlas;
     private SpriteSheetManager spriteSheetManager;
     private Map<EnemyTankIdentifier, BufferedImage> enemyTankSpriteSheetMap;
     private Map<PlayerTankIdentifier, BufferedImage> playerSpriteSheetMap;
-        
+
     private TileMap tileMap;
-        
+
     private Player player;
+    private Eagle eagle;
     private EntityManager entityManager;
-    
+
     private GameStatus gameStatus = GameStatus.PLAY;
     private boolean loaded = false;
 
     public LevelState(GameStateManager gsm) {
         super(gsm);
-        
-        this.entityManager = new EntityManager();
+        this.entityManager = new EntityManager(this);
     }
 
     public EntityManager getEntityManager() {
         return this.entityManager;
     }
-    
+
     public Map<EnemyTankIdentifier, BufferedImage> getEnemyTankSpriteSheetMap() {
         return this.enemyTankSpriteSheetMap;
     }
@@ -82,11 +87,10 @@ public class LevelState extends GameState {
     /*public Player getPlayer() {
         return this.player;
     }*/
-
     public GameStatus getGameStatus() {
         return this.gameStatus;
     }
-    
+
     public boolean isLoaded() {
         return this.loaded;
     }
@@ -128,9 +132,9 @@ public class LevelState extends GameState {
             this.spriteSheetManager.put(identifier, this.atlas);
         }
     }
-    
-    private void loadTankSpriteSheetMaps(){
-        
+
+    private void loadTankSpriteSheetMaps() {
+
         this.enemyTankSpriteSheetMap = new HashMap<>();
         this.playerSpriteSheetMap = new HashMap<>();
         for (TankColor color : TankColor.values()) {
@@ -141,7 +145,7 @@ public class LevelState extends GameState {
                         getOffsetFromSameColorTankSpriteSheetTopLeftCorner().x;
                 topLeft.y += alliance.
                         getOffsetFromSameColorTankSpriteSheetTopLeftCorner().y;
-                
+
                 for (Heading heading : Heading.values()) {
                     for (EnemyTankType type : EnemyTankType.values()) {
                         int dx = heading.getSpriteSheetPositionX();
@@ -155,11 +159,12 @@ public class LevelState extends GameState {
                                 2 * Game.TILE_SIZE, Game.TILE_SIZE);
                         enemyTankSpriteSheetMap.put(key, sprite);
                     }
-                    
+
                     for (PlayerTankType type : PlayerTankType.values()) {
                         int dx = heading.getSpriteSheetPositionX();
                         int dy = type.getSpriteSheetPositionY();
-                        PlayerTankIdentifier key = new PlayerTankIdentifier(color,
+                        PlayerTankIdentifier key = new PlayerTankIdentifier(
+                                color,
                                 heading, type);
                         SpriteSheetManager manager = SpriteSheetManager.
                                 getInstance();
@@ -169,11 +174,11 @@ public class LevelState extends GameState {
                                 + dx, topLeft.y + dy,
                                 2 * Game.TILE_SIZE, Game.TILE_SIZE);
                         playerSpriteSheetMap.put(key, sprite);
-                    }                        
+                    }
                 }
             }
         }
-    
+
     }
 
     private void startNewGame() {
@@ -183,10 +188,14 @@ public class LevelState extends GameState {
     }
 
     private void createEntities() {
-        Player tanque = new Player(this, PlayerTankType.MIDDLE, 5 * 16, 12 * 16,
-                Direction.NORTH);
+        Player tanque = new Player(this, PlayerTankType.MIDDLE,
+                PLAYER_RESPAWN_POSITION.x, PLAYER_RESPAWN_POSITION.y,
+                Direction.NORTH
+        );
         this.player = tanque;
         this.entityManager.addEntity(tanque);
+        this.eagle = new Eagle(this, EAGLE_POSITION.x, EAGLE_POSITION.y);
+        this.entityManager.addEntity(eagle);
     }
 
     @Override
@@ -202,53 +211,58 @@ public class LevelState extends GameState {
                 EntityType.PROJECTILE);
         List<Entity> enemyTanks = this.entityManager.getEntitiesByType(
                 EntityType.ENEMY_TANK);
-        for(int i = projectiles.size() - 1; i >= 0; --i){
-            for(int j = enemyTanks.size() - 1; j >= 0; --j){
-                Projectile projectile = (Projectile)projectiles.get(i);
-                EnemyTank enemyTank = (EnemyTank)enemyTanks.get(j);
-                if(projectile.collides(enemyTank)){
+        for (int i = projectiles.size() - 1; i >= 0; --i) {
+            Projectile projectile = (Projectile) projectiles.get(i);
+            if(projectile.collides(this.eagle)){
+                this.eagle.kill();
+                continue;
+            }
+            for (int j = enemyTanks.size() - 1; j >= 0; --j) {
+                EnemyTank enemyTank = (EnemyTank) enemyTanks.get(j);
+                if (projectile.collides(enemyTank)) {
                     enemyTank.hit(25);
                     projectile.explode();
                 }
             }
         }
     }
-    
-    private void checkBonuses(){
+
+    private void checkBonuses() {
         List<Entity> bonuses = this.entityManager.getEntitiesByType(
                 EntityType.BONUS);
-        for(int i = 0; i < bonuses.size(); ++i){
-            PowerUp bonus = (PowerUp)bonuses.get(i);
-            if(this.player.collides(bonus)){
+        for (int i = 0; i < bonuses.size(); ++i) {
+            PowerUp bonus = (PowerUp) bonuses.get(i);
+            if (this.player.collides(bonus)) {
                 onBonusCollected(bonus);
                 break;
             }
         }
     }
-    
-    private void onBonusCollected(PowerUp bonus){
-        if(bonus.getType() == PowerUpType.TANK){
+
+    private void onBonusCollected(PowerUp bonus) {
+        if (bonus.getType() == PowerUpType.TANK) {
             System.out.println("health = " + this.player.getHealth());
             this.player.gainExtraLife();
             System.out.println("Tank collected");
-            System.out.println("Gained extra life health = " + this.player.getHealth());
-        } else if(bonus.getType() == PowerUpType.STAR){
+            System.out.println("Gained extra life health = " + this.player.
+                    getHealth());
+        } else if (bonus.getType() == PowerUpType.STAR) {
             this.player.promote();
             System.out.println("Star collected");
-        } else if(bonus.getType() == PowerUpType.GUN){
+        } else if (bonus.getType() == PowerUpType.GUN) {
             System.out.println("Gun collected");
             this.player.promoteToHeavy();
             System.out.println("Promoted to heavy");
-        } else if(bonus.getType() == PowerUpType.HELMET){
+        } else if (bonus.getType() == PowerUpType.HELMET) {
             System.out.println("Helmet collected");
             this.player.addProtection();
             System.out.println("Protection added");
-        } else if(bonus.getType() == PowerUpType.GRENADE){
-            
-        } else if(bonus.getType() == PowerUpType.SHOVEL){
-            
-        } else if(bonus.getType() == PowerUpType.TIMER){
-            
+        } else if (bonus.getType() == PowerUpType.GRENADE) {
+
+        } else if (bonus.getType() == PowerUpType.SHOVEL) {
+
+        } else if (bonus.getType() == PowerUpType.TIMER) {
+
         }
         this.player.takeScore(bonus.getScore());
         bonus.collect();
@@ -283,17 +297,17 @@ public class LevelState extends GameState {
                 break;
         }
     }
-    
+
     @Override
-    public void onMouseReleased(MouseEvent e){
-        
+    public void onMouseReleased(MouseEvent e) {
+
     }
-    
+
     @Override
-    public void onMouseMoved(MouseEvent e){
-        
+    public void onMouseMoved(MouseEvent e) {
+
     }
-    
+
     private void togglePause() {
         if (this.gameStatus == GameStatus.PLAY) {
             this.gameStatus = GameStatus.PAUSED;
@@ -335,5 +349,4 @@ public class LevelState extends GameState {
 
     }
 
-    
 }

@@ -1,5 +1,7 @@
 package com.igorternyuk.tanks.gameplay.entities;
 
+import com.igorternyuk.tanks.gameplay.entities.explosion.Explosion;
+import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
 import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Graphics2D;
@@ -81,13 +83,22 @@ public abstract class Entity {
     public void destroy() {
         this.health = 0;
     }
-
+    
     public void hit(int damage) {
         this.health -= damage;
     }
 
     public int getHealth() {
         return this.health;
+    }
+    
+    protected void explode(ExplosionType explosionType){
+        Explosion explosion = new Explosion(this.level, explosionType,
+               this.x, this.y);
+        int dx = (getWidth() - explosion.getWidth()) / 2;
+        int dy = (getHeight()- explosion.getHeight()) / 2;
+        explosion.setPosition(this.x + dx, this.y + dy);
+        this.level.getEntityManager().addEntity(explosion);
     }
 
     public void setDirection(Direction direction) {

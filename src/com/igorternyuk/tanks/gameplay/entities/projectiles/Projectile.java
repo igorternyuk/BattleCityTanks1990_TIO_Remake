@@ -61,12 +61,7 @@ public class Projectile extends Entity {
     }
     
     public void explode(){
-        Explosion explosion = new Explosion(this.level, ExplosionType.PROJECTILE,
-               this.x, this.y);
-        int dx = (getWidth() - explosion.getWidth()) / 2;
-        int dy = (getHeight()- explosion.getHeight()) / 2;
-        explosion.setPosition(this.x + dx, this.y + dy);
-        this.level.getEntityManager().addEntity(explosion);
+        super.explode(ExplosionType.SMALL);
         destroy();
     }
 

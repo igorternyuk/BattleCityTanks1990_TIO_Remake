@@ -5,6 +5,7 @@ import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUp;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUpType;
+import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
@@ -110,6 +111,11 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         } else {
             explode();
         }
+    }
+    
+    protected void explodeWithGrenade(){
+        super.explode();
+        destroy();
     }
 
     @Override

@@ -9,7 +9,6 @@ import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUp;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUpType;
 import com.igorternyuk.tanks.gameplay.entities.eagle.Eagle;
-import com.igorternyuk.tanks.gameplay.entities.indicators.EnemyTankCountIndicator;
 import com.igorternyuk.tanks.gameplay.entities.indicators.GameInfoPanel;
 import com.igorternyuk.tanks.gameplay.entities.player.Player;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankIdentifier;
@@ -67,12 +66,17 @@ public class LevelState extends GameState {
     private GameInfoPanel rightPanel;
     private GameStatus gameStatus = GameStatus.PLAY;
     private boolean loaded = false;
+    int stageNumber = 1;
 
     public LevelState(GameStateManager gsm) {
         super(gsm);
         this.entityManager = new EntityManager(this);
     }
 
+    public int getStageNumber() {
+        return this.stageNumber;
+    }
+    
     public EntityManager getEntityManager() {
         return this.entityManager;
     }
@@ -299,8 +303,6 @@ public class LevelState extends GameState {
         this.entityManager.draw(g);
         this.tileMap.drawBushes(g);
         drawGameStatus(g);
-        //Painter.drawNumber(g, 1234056789, Color.white, 0, 0, 2);
-
     }
 
     private void loadSprites() {

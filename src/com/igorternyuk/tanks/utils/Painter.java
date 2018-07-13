@@ -13,8 +13,8 @@ import java.awt.image.BufferedImage;
  */
 public class Painter {
 
-    private static final Color DIGIT_DEFAULT_COLOR = new Color(0, 0, 1);
-    private static final Color DIGIT_BACKGROUND_COLOR = new Color(99, 99, 99);
+    public static final Color DIGIT_DEFAULT_COLOR = new Color(0, 0, 1);
+    public static final Color DIGIT_BACKGROUND_COLOR = new Color(99, 99, 99);
 
     public static void drawCenteredString(Graphics2D g, String text, Font font,
             Color color, int height) {
@@ -35,22 +35,26 @@ public class Painter {
             int digit = Integer.valueOf(String.valueOf(chars[i]));
             BufferedImage digitImage = Images.resizeImage(spriteSheetManager.
                     fetchDigitSprite(digit), scale);
-
-            BufferedImage imageWithTransparentDigits = Images.
-                    imageToBufferedImage(Images.makeColorTransparent(digitImage,
-                            DIGIT_DEFAULT_COLOR));
-            BufferedImage imageWithColoredDigits = Images.imageToBufferedImage(
-                    Images.changeTransparentColor(imageWithTransparentDigits,
-                            color));
-            BufferedImage imageWithTransparentBackground = Images.
-                    imageToBufferedImage(Images.makeColorTransparent(
-                            imageWithColoredDigits, DIGIT_BACKGROUND_COLOR));
-            BufferedImage desiredImage = Images.imageToBufferedImage(Images.
-                    changeTransparentColor(imageWithTransparentBackground,
-                            Color.black));
-            g.drawImage(desiredImage, x + i
-                    * (int) (Game.HALF_TILE_SIZE * scale), y, null);
+            
+            if (color.equals(DIGIT_DEFAULT_COLOR)) {
+                g.drawImage(digitImage, x + i
+                        * (int) (Game.HALF_TILE_SIZE * scale), y, null);
+            } else {
+                BufferedImage imageWithTransparentDigits = Images.
+                        imageToBufferedImage(Images.makeColorTransparent(
+                                digitImage, DIGIT_DEFAULT_COLOR));
+                BufferedImage imageWithColoredDigits = Images.
+                        imageToBufferedImage(Images.changeTransparentColor(
+                                imageWithTransparentDigits, color));
+                BufferedImage imageWithTransparentBackground = Images.
+                        imageToBufferedImage(Images.makeColorTransparent(
+                                imageWithColoredDigits, DIGIT_BACKGROUND_COLOR));
+                BufferedImage desiredImage = Images.imageToBufferedImage(Images.
+                        changeTransparentColor(imageWithTransparentBackground,
+                                Color.black));
+                g.drawImage(desiredImage, x + i
+                        * (int) (Game.HALF_TILE_SIZE * scale), y, null);
+            }
         }
-        spriteSheetManager.fetchDigitSprite(y);
     }
 }

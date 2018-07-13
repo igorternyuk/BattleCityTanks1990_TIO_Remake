@@ -47,7 +47,7 @@ public class SpriteSheetManager {
                     "The spritesheet with digits was not loaded");
         }
         if (digit < 0 || digit > 9) {
-            throw new IllegalArgumentException("The digit is out of 0..9 range");
+            throw new IllegalArgumentException("The digit " + digit + " is out of 0..9 range");
         }
         BufferedImage digitSpriteSheet = this.spriteSheets.
                 get(SpriteSheetIdentifier.DIGITS);

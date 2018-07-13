@@ -10,6 +10,8 @@ import com.igorternyuk.tanks.graphics.images.Sprite;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
 import com.igorternyuk.tanks.input.KeyboardState;
+import com.igorternyuk.tanks.utils.Painter;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
@@ -34,7 +36,8 @@ public class GameInfoPanel extends Entity {
         this.enemyIndicator = new EnemyTankCountIndicator(level, 0, 0);
         this.enemyIndicator.setTankCount(20);
         this.attachChild(this.enemyIndicator);
-        this.enemyIndicator.setPosition(Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE * 3);
+        this.enemyIndicator.setPosition(Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE
+                * 3);
     }
 
     @Override
@@ -57,6 +60,24 @@ public class GameInfoPanel extends Entity {
     public void draw(Graphics2D g) {
         this.sprite.draw(g);
         super.draw(g);
+        Painter.drawNumber(g, this.player.getLives(),
+                Painter.DIGIT_DEFAULT_COLOR,
+                (int) (28 * Game.HALF_TILE_SIZE * Game.SCALE),
+                (int) (18 * Game.HALF_TILE_SIZE * Game.SCALE), Game.SCALE);
+        g.drawImage(SpriteSheetManager.getInstance().get(
+                SpriteSheetIdentifier.GRAY_TILE), (int) (28
+                * Game.HALF_TILE_SIZE * Game.SCALE), (int) (21
+                * Game.HALF_TILE_SIZE * Game.SCALE), null);
+        Painter.drawNumber(g, this.level.getStageNumber(),
+                Painter.DIGIT_DEFAULT_COLOR,
+                (int) (27 * Game.HALF_TILE_SIZE * Game.SCALE),
+                (int) (25 * Game.HALF_TILE_SIZE * Game.SCALE), Game.SCALE);
+        if(this.level.getStageNumber() < 10){
+          g.drawImage(SpriteSheetManager.getInstance().get(
+                SpriteSheetIdentifier.GRAY_TILE), (int) (28
+                * Game.HALF_TILE_SIZE * Game.SCALE), (int) (25
+                * Game.HALF_TILE_SIZE * Game.SCALE), null);  
+        }
     }
 
 }

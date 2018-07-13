@@ -29,6 +29,7 @@ import java.awt.Graphics2D;
 import com.igorternyuk.tanks.input.KeyboardState;
 import com.igorternyuk.tanks.resourcemanager.ImageIdentifier;
 import com.igorternyuk.tanks.utils.Painter;
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
@@ -294,13 +295,11 @@ public class LevelState extends GameState {
         if (!this.loaded) {
             return;
         }
-        /*if (this.tileMap != null) {
-            this.tileMap.draw(g);
-        }*/
         this.tileMap.draw(g);
         this.entityManager.draw(g);
         this.tileMap.drawBushes(g);
         drawGameStatus(g);
+        //Painter.drawNumber(g, 1234056789, Color.white, 0, 0, 2);
 
     }
 

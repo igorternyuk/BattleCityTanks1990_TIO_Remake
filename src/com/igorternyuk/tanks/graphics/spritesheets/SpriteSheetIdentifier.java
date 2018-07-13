@@ -19,7 +19,7 @@ public enum SpriteSheetIdentifier {
     BONUS(new Rectangle(256, 112, 112, 16), new Color(0xFF000001)),
     SPLASH(new Rectangle(256, 96, 64, 16), new Color(0xFF000001)),
     SCORES(new Rectangle(288, 160, 80, 16), new Color(0xFF000001)),
-    DIGITS(new Rectangle(327, 183, 40, 16), new Color(0xFFFFFFFF)),
+    DIGITS(new Rectangle(328, 184, 40, 16), new Color(0xFFFFFFFF)),
     PAUSE(new Rectangle(288,176,40,8), new Color(0xFF000001)),
     GAME_OVER(new Rectangle(288,184,32,16), new Color(0xFF000001)),
     STAGE_FLAG(new Rectangle(376,184,16,16), new Color(0xFF000001)),

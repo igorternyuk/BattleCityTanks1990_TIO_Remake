@@ -32,10 +32,34 @@ public class Images {
         return resizeImage(source, newWidth, newHeight);
     }
 
+    public static Image changeTransparentColor(final BufferedImage source,
+            final Color colorToReplaceWith) {
+        final ImageFilter filter = new RGBImageFilter() {
+
+            @Override
+            public int filterRGB(int x, int y, int rgb) {
+                //System.out.println("x = " + x + " y = " + y + " rgb = " + String.format("0x%08X", rgb));
+                //System.out.println("marker = " + String.format("0x%08X", markerRGB));
+                //System.out.println("(rgb | 0xFF000000) = " + String.format("0x%08X", (rgb | 0xFF000000)));
+                if ((rgb | 0xFF000000) == 0xFF000000) {
+                    //System.out.println("making transparent marker = " + String.format("0x%08X", markerRGB));
+                    return colorToReplaceWith.getRGB();
+                } else {
+                    //System.out.println("NOthing to do");
+                    return rgb;
+                }
+            }
+        };
+
+        final ImageProducer ip = new FilteredImageSource(source.getSource(),
+                filter);
+        return Toolkit.getDefaultToolkit().createImage(ip);
+    }
+
     public static Image makeColorTransparent(final BufferedImage image,
             final Color color) {
         final ImageFilter filter = new RGBImageFilter() {
-            
+
             public int markerRGB = color.getRGB() | 0xFF000000;
 
             @Override

@@ -11,6 +11,7 @@ import com.igorternyuk.tanks.input.KeyboardState;
 import com.igorternyuk.tanks.resourcemanager.ImageIdentifier;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -38,8 +39,10 @@ public class ConstructionState extends GameState {
         public void draw(Graphics2D g) {
             if (this.tile.getType() == TileType.EMPTY) {
                 g.setColor(Color.red);
-                g.drawRect(this.boundingRect.x * 2 - 1, this.boundingRect.y * 2 - 1,
-                        this.boundingRect.width + 1, this.boundingRect.height + 1);
+                g.drawRect(this.boundingRect.x * 2 - 1, this.boundingRect.y * 2
+                        - 1,
+                        this.boundingRect.width + 1, this.boundingRect.height
+                        + 1);
             }
             this.tile.draw(g, this.boundingRect.x, this.boundingRect.y);
         }
@@ -52,10 +55,15 @@ public class ConstructionState extends GameState {
     private boolean loaded = false;
     private boolean tileSelected = false;
     private TileType selectedTileType;
+    private Point selectedTileDrawPosition = new Point();
 
     public ConstructionState(GameStateManager gsm) {
         super(gsm);
-
+        Rectangle r = new Rectangle(216,92,16,16);
+        if(r.inside(220, 96)){
+            System.out.println("INSIDE!!!");
+        }
+        
     }
 
     private void fillButtonArray() {
@@ -112,12 +120,60 @@ public class ConstructionState extends GameState {
 
     @Override
     public void onMouseReleased(MouseEvent e) {
+        System.out.println("Mouse released!!!");
+        int releasedButton = e.getButton();
+        if (releasedButton == MouseEvent.BUTTON3) {
+            saveMapToFile();
+            System.out.println("The map was successfully saved to the file");
+            return;
+        }
+        if (!this.tileSelected) {
+            System.out.println("Selecting tiles");
+            Point clickedPoint = new Point(e.getX() / 2, e.getY() / 2);
+            System.out.println("clicked point p = " + clickedPoint);
+            for (int i = 0; i < this.buttons.size(); ++i) {
+                TileButton currButton = this.buttons.get(i);
+                System.out.println("Curr btn rect = " + currButton.boundingRect);
+                int rx = currButton.boundingRect.x;
+                int ry = currButton.boundingRect.y;
+                int cpx = clickedPoint.x;
+                int cpy = clickedPoint.y;
+                System.out.println("cpx >= rx " + (cpx >= rx));
+                System.out.println("cpx <= rx + 16 " + (cpx <= rx + 16));
+                System.out.println("cpy >= ry " + (cpy >= ry));
+                System.out.println("cpy <= ry + 16 " + (cpy <= ry + 16));
+                if(cpx >= rx && cpx <= rx + 16 && cpy >= ry && cpy <= ry + 16){
+                    TileType currButtonTileType = currButton.tile.getType();
+                    this.selectedTileType = currButtonTileType;
+                    this.tileSelected = true;
+                    break;
+                }
+                
+                /*if (currButton.boundingRect.inside(clickedPoint.x, clickedPoint.y)) {
+                    TileType currButtonTileType = currButton.tile.getType();
+                    this.selectedTileType = currButtonTileType;
+                    break;
+                }*/
+            }
+        } else {
+            int row = e.getY() / 2 / Game.HALF_TILE_SIZE;
+            int col = e.getX() / 2 / Game.HALF_TILE_SIZE;
+            this.tileMap.set(row, col, this.selectedTileType);
+            this.tileSelected = false;
+        }
+    }
 
+    private void saveMapToFile() {
+        this.tileMap.saveMapToFile();
     }
 
     @Override
     public void onMouseMoved(MouseEvent e) {
-
+        if (this.tileSelected) {
+            selectedTileDrawPosition.x = e.getX();
+            selectedTileDrawPosition.y = e.getY();
+            System.out.println("tile seleceted pos = " + selectedTileDrawPosition);
+        }
     }
 
     @Override
@@ -129,7 +185,14 @@ public class ConstructionState extends GameState {
         tileMap.drawBushes(g);
         drawGrid(g);
         this.buttons.forEach(btn -> btn.draw(g));
-
+        if (this.tileSelected) {
+            Tile currTile = this.tileMap.getAllTiles().
+                    get(this.selectedTileType);
+            currTile.draw(g, this.selectedTileDrawPosition.x / 2,
+                    this.selectedTileDrawPosition.y / 2);
+            //g.setColor(Color.green);
+            //g.fillRect(this.selectedTileDrawPosition.x, this.selectedTileDrawPosition.y, 16, 16);
+        }
     }
 
     private void drawGrid(Graphics2D g) {

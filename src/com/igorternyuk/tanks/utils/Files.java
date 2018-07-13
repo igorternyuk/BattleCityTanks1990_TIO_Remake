@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 public class Files {
 
     public static void writeMapToFile(String pathToFile, int[][] map) {
+        
         try(PrintWriter writer = new PrintWriter(pathToFile)) {
             for(int row = 0; row < map.length; ++row){
                 for(int col = 0; col < map[row].length; ++col){

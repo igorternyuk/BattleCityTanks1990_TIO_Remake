@@ -25,10 +25,12 @@ public class TileMap {
     private int[][] map = new int[Game.TILES_IN_HEIGHT][Game.TILES_IN_WIDTH];
     private BufferedImage spriteSheet;
     private Map<TileType, Tile> tiles = new HashMap<>();
+    private List<Point> tankAppearancePositions = new ArrayList<>();
     private List<Point> eagleProtectionTilePositions = new ArrayList<>();
     private List<Point> bushTilePositions = new ArrayList<>();
     private Map<Point, Integer> metalTileHealthMap = new HashMap<>();
     private boolean hasWaterTiles = false;
+    private String pathToTheCurrentMapFile;
     private boolean mapLoaded = false;
 
     public TileMap() {
@@ -47,8 +49,13 @@ public class TileMap {
     public void loadMap(String pathToMapFile) {
         this.map = Files.loadMapFromFile(pathToMapFile);
         calculateBushTilePositions();
+        pathToTheCurrentMapFile = pathToMapFile;
         this.mapLoaded = true;
         System.out.println("The tile map for level 1 was successfully loaded");
+    }
+    
+    public void saveMapToFile(){
+        Files.writeMapToFile(/*this.pathToTheCurrentMapFile*/"/home/igor/Рабочий стол/level2.map", this.map);
     }
 
     public TileType get(int row, int col) {
@@ -58,7 +65,15 @@ public class TileMap {
         }
         return TileType.getFromNumber(this.map[row][col]);
     }
-
+    
+    public void set(int row, int col, TileType tileType){
+        if (!areCoordinatesValid(row, col)) {
+            throw new IllegalArgumentException(
+                    "Row or column index is out of game field bounds");
+        }
+        this.map[row][col] = tileType.getNumber();
+    }
+    
     public boolean areCoordinatesValid(int row, int col) {
         return row >= 0 && row < this.map.length
                 && col >= 0 && col < this.map[row].length;

@@ -45,7 +45,7 @@ public class ScoreIcrementText extends Entity {
         this.score = score;
         BufferedImage image = SpriteSheetManager.getInstance().get(
                 SpriteSheetIdentifier.SCORES);
-        this.sprite = new Sprite(image, this.x, this.y, Game.SCALE);
+        this.sprite = new Sprite(image, x, y, Game.SCALE);
         this.sprite.setSourceRect(getSourceRectByScore(this.score));
     }
 
@@ -66,7 +66,7 @@ public class ScoreIcrementText extends Entity {
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
         super.update(keyboardState, frameTime);
-        this.sprite.setPosition(this.x, this.y);
+        this.sprite.setPosition(getX(), getY());
         updateBlinkTimer(frameTime);
         this.timer += frameTime;
         if(this.timer > LIFE_TIME){

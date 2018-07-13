@@ -105,11 +105,11 @@ public class LevelState extends GameState {
     }
 
     public int getMapWidth() {
-        return Game.TILES_IN_WIDTH * Game.TILE_SIZE;
+        return Game.TILES_IN_WIDTH * Game.HALF_TILE_SIZE;
     }
 
     public int getMapHeight() {
-        return Game.TILES_IN_HEIGHT * Game.TILE_SIZE;
+        return Game.TILES_IN_HEIGHT * Game.HALF_TILE_SIZE;
     }
 
     public List<Entity> getEntities() {
@@ -144,6 +144,7 @@ public class LevelState extends GameState {
                 Direction.NORTH
         );
         this.player = tanque;
+        this.player.addProtection();
         this.entityManager.addEntity(tanque);
         this.eagle = new Eagle(this, EAGLE_POSITION.x, EAGLE_POSITION.y);
         this.entityManager.addEntity(eagle);

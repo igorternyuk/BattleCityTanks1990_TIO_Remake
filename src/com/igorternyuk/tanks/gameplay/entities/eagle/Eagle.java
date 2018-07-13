@@ -9,6 +9,7 @@ import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.graphics.images.Sprite;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
+import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
@@ -51,7 +52,14 @@ public class Eagle extends Entity{
     }
     
     @Override
+    public void update(KeyboardState keyboardState, double frameTime){
+        super.update(keyboardState, frameTime);
+        this.sprite.update(keyboardState, frameTime);
+    }
+    
+    @Override
     public void draw(Graphics2D g){
+        super.draw(g);
         this.sprite.draw(g);
     }
 }

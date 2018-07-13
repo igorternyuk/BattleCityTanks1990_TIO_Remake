@@ -29,7 +29,8 @@ public class EnemyTankCountIndicator extends Entity {
         BufferedImage image = SpriteSheetManager.getInstance().get(
                 SpriteSheetIdentifier.ENEMY_TANK_SIGN);
         this.sprite = new Sprite(image, this.x, this.y, Game.SCALE);
-        this.sprite.setSourceRect(new Rectangle(0, 0, 8, 8));
+        this.sprite.setSourceRect(new Rectangle(0, 0, Game.HALF_TILE_SIZE,
+                Game.HALF_TILE_SIZE));
     }
 
     public int getTankCount() {
@@ -67,14 +68,14 @@ public class EnemyTankCountIndicator extends Entity {
         super.draw(g);
         for (int i = 0; i < this.rows; ++i) {
             for (int j = 0; j < TANK_SIGNS_IN_ROW; ++j) {
-                double posX = this.x + j * Game.HALF_TILE_SIZE;
-                double posY = this.y + i * Game.HALF_TILE_SIZE;
+                double posX = getX() + j * Game.HALF_TILE_SIZE;
+                double posY = getY() + i * Game.HALF_TILE_SIZE;
                 this.sprite.setPosition(posX, posY);
                 this.sprite.draw(g);
             }
         }
         if (this.tankCount % TANK_SIGNS_IN_ROW == 1) {
-            this.sprite.setPosition(this.x, this.y + this.rows
+            this.sprite.setPosition(getX(), getY() + this.rows
                     * Game.HALF_TILE_SIZE);
             this.sprite.draw(g);
         }

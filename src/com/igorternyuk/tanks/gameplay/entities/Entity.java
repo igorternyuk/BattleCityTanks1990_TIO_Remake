@@ -16,7 +16,6 @@ public abstract class Entity {
 
     protected LevelState level;
     protected EntityType entityType;
-    protected double absX, absY;
     protected double x, y;
     protected double speed;
     protected Direction direction;
@@ -28,6 +27,7 @@ public abstract class Entity {
     protected double blinkingTimer;
     protected double blinkingDuration;
     protected boolean needToDraw = true;
+    protected Entity parent = null;
     protected List<Entity> children = new ArrayList<>();
 
     public Entity(LevelState level, EntityType type, double x, double y,
@@ -45,34 +45,48 @@ public abstract class Entity {
     }
     
      public double getX() {
-        return this.x;
+        return (this.parent != null) ? (this.parent.getX() + this.x) : this.x;
     }
 
     public double getY() {
-        return this.y;
+        return (this.parent != null) ? (this.parent.getY() + this.y) : this.y;
     }
 
     public double left() {
-        return this.x;
+        return getX();
     }
 
     public double top() {
-        return this.y;
+        return getY();
     }
 
     public double right() {
-        return this.x + getWidth();
+        return getX() + getWidth();
     }
 
     public double bottom() {
-        return this.y + getHeight();
+        return getY() + getHeight();
+    }
+    
+    public final void setParent(Entity parent){
+        this.parent = parent;
+    }
+    
+    public final void removeParent(){
+        this.parent = null;
+    }
+    
+    public final boolean hasParent(){
+        return this.parent != null;
     }
 
-    public void attachChild(Entity child) {
+    public final void attachChild(Entity child) {
+        child.setParent(this);
         this.children.add(child);
     }
 
-    public void detachChild(Entity child) {
+    public final void detachChild(Entity child) {
+        child.removeParent();
         this.children.remove(child);
     }
 
@@ -137,11 +151,6 @@ public abstract class Entity {
     public void setPosition(double x, double y){
         this.x = x;
         this.y = y;
-    }
-
-    public void setAbsolutePosition(double x, double y){
-        this.absX = x;
-        this.absY = y;
     }
 
     public void startBlinking(double blinkPeriod, double duration) {
@@ -229,7 +238,7 @@ public abstract class Entity {
 
     public void update(KeyboardState keyboardState, double frameTime) {
         this.children.forEach(child -> {
-            child.setPosition(this.x, this.y);
+            //child.setPosition(this.x, this.y);
             child.update(keyboardState, frameTime);
         });
     }

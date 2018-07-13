@@ -33,9 +33,8 @@ public class GameInfoPanel extends Entity {
         this.sprite.setSourceRect(new Rectangle(0, 0, 32, 240));
         this.enemyIndicator = new EnemyTankCountIndicator(level, 0, 0);
         this.enemyIndicator.setTankCount(20);
-        this.enemyIndicator.setPosition(x + Game.HALF_TILE_SIZE, y + 48
-                * Game.HALF_TILE_SIZE);
         this.attachChild(this.enemyIndicator);
+        this.enemyIndicator.setPosition(Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE * 3);
     }
 
     @Override

@@ -4,7 +4,6 @@ import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
-import com.igorternyuk.tanks.gameplay.entities.explosion.Explosion;
 import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
 import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.graphics.images.Sprite;
@@ -90,7 +89,7 @@ public class Projectile extends Entity {
     public void update(KeyboardState keyboardState, double frameTime) {
         super.update(keyboardState, frameTime);
         move(frameTime);
-        this.sprite.setPosition(this.x, this.y);
+        this.sprite.setPosition(getX(), getY());
     }
 
     @Override

@@ -38,7 +38,7 @@ public class PowerUp extends Entity {
         text.startInfiniteBlinking(0.2);
         int dx = (getWidth() - text.getWidth()) / 2;
         int dy = (getHeight()- text.getHeight()) / 2;
-        text.setPosition(this.x + dx, this.y + dy);
+        text.setPosition(getX() + dx, getY() + dy);
         this.level.getEntityManager().addEntity(text);
         destroy();
     }
@@ -64,7 +64,7 @@ public class PowerUp extends Entity {
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
         super.update(keyboardState, frameTime);
-        this.sprite.setPosition(this.x, this.y);
+        this.sprite.setPosition(getX(), getY());
         updateBlinkTimer(frameTime);
     }
 

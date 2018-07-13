@@ -10,6 +10,8 @@ import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
 import com.igorternyuk.tanks.gameplay.entities.tank.Heading;
 import com.igorternyuk.tanks.gameplay.entities.tank.Tank;
 import com.igorternyuk.tanks.gameplay.entities.tank.TankColor;
+import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTank;
+import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTankType;
 import com.igorternyuk.tanks.gameplay.entities.tank.protection.Protection;
 import com.igorternyuk.tanks.gameplay.entities.tank.protection.ProtectionType;
 import com.igorternyuk.tanks.gamestate.LevelState;
@@ -18,7 +20,10 @@ import com.igorternyuk.tanks.graphics.animations.AnimationPlayMode;
 import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -36,6 +41,7 @@ public class Player extends Tank {
     private int lives = 5;
     private double lastShootTimer;
     private double shotDelay = 0.15;
+    private Map<EnemyTankType, Integer> killedEnemyTanks = new HashMap<>();
 
     public Player(LevelState level, PlayerTankType type, double x, double y,
             Direction direction) {
@@ -50,6 +56,17 @@ public class Player extends Tank {
 
     public PlayerTankIdentifier getIdentifier() {
         return this.identifier;
+    }
+
+    public Map<EnemyTankType, Integer> getKilledEnemyTanks() {
+        return Collections.unmodifiableMap(this.killedEnemyTanks);
+    }
+
+    public void registerKilledTank(EnemyTank enemyTank) {
+        int killedTanksEithSuchType = this.killedEnemyTanks.get(enemyTank.
+                getType());
+        this.killedEnemyTanks.put(enemyTank.getType(), killedTanksEithSuchType
+                + 1);
     }
 
     public void takeScore(int scoreIncrement) {
@@ -72,15 +89,15 @@ public class Player extends Tank {
     public void promoteToHeavy() {
         setTankType(PlayerTankType.HEAVY);
     }
-    
-    private void setTankType(PlayerTankType tankType){
+
+    private void setTankType(PlayerTankType tankType) {
         this.identifier.setType(tankType);
         this.speed = tankType.getSpeed();
     }
-    
+
     public void addProtection() {
         Protection protection = new Protection(this.level,
-                ProtectionType.REGULAR, this.x, this.y);
+                ProtectionType.REGULAR, 0, 0);
         attachChild(protection);
         this.hasProtection = true;
     }
@@ -123,7 +140,7 @@ public class Player extends Tank {
                 this.identifier.getType().getProjectileSpeed(),
                 this.direction);
         projectile.setDamage(this.identifier.getType().getProjectileDamage());
-        if(this.identifier.getType() == PlayerTankType.HEAVY){
+        if (this.identifier.getType() == PlayerTankType.HEAVY) {
             projectile.setAntiarmour(true);
         }
         this.level.getEntityManager().addEntity(projectile);
@@ -151,6 +168,8 @@ public class Player extends Tank {
         this.health = 100;
         setPosition(this.respawnX, this.respawnY);
         this.identifier.setType(PlayerTankType.REGULAR);
+        this.killedEnemyTanks.clear();
+        addProtection();
     }
 
     private void setProperAnimation() {
@@ -219,9 +238,9 @@ public class Player extends Tank {
         }
         super.update(keyboardState, frameTime);
         updateProtectionTimer(frameTime);
-        if(this.identifier.getType() == PlayerTankType.MIDDLE && !this.canFire){
+        if (this.identifier.getType() == PlayerTankType.MIDDLE && !this.canFire) {
             this.lastShootTimer += frameTime;
-            if(this.lastShootTimer >= this.shotDelay){
+            if (this.lastShootTimer >= this.shotDelay) {
                 this.lastShootTimer = 0;
                 this.canFire = true;
             }

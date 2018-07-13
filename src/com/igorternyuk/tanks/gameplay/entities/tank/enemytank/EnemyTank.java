@@ -5,8 +5,6 @@ import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUp;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUpType;
-import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
-import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
 import com.igorternyuk.tanks.gameplay.entities.tank.Heading;
@@ -46,7 +44,11 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
                 Heading.getHeading(direction), type);
         updateAnimation();
     }
-
+    
+    public EnemyTankType getType(){
+        return this.identifier.getType();
+    }
+    
     private void checkIfBonus() {
         for (int num : BONUS_TANKS_NUMBERS) {
             if (this.number == num) {
@@ -122,11 +124,11 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     protected void explode() {
         super.explode();
         ScoreIcrementText text = new ScoreIcrementText(this.level, this.
-                getScore(), this.x, this.y);
+                getScore(), getX(), getY());
         text.startInfiniteBlinking(0.2);
         int dx = (getWidth() - text.getWidth()) / 2;
         int dy = (getHeight() - text.getHeight()) / 2;
-        text.setPosition(this.x + dx, this.y + dy);
+        text.setPosition(getX() + dx, getY() + dy);
         this.level.getEntityManager().addEntity(text);
         if (this.bonus) {
             createBonus();

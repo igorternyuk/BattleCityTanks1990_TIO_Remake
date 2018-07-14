@@ -3,6 +3,7 @@ package com.igorternyuk.tanks.gameplay.tilemap;
 import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
+import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
 import com.igorternyuk.tanks.input.KeyboardState;
@@ -106,7 +107,7 @@ public class TileMap {
     }
 
     public void activateProtection() {
-
+        
     }
 
     public void handleCollision(Entity entity) {
@@ -197,6 +198,9 @@ public class TileMap {
     private void setEagleProtectionPositions() {
         for (int row = 23; row < 26; ++row) {
             for (int col = 11; col < 15; ++col) {
+                if(row > 23 && (col == 12 || col == 13)){
+                    continue;
+                }
                 this.eagleProtectionTilePositions.add(
                         new Point(col * Game.HALF_TILE_SIZE, row
                                 * Game.HALF_TILE_SIZE));

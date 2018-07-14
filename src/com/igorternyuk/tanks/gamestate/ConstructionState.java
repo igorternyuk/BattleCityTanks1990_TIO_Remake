@@ -104,7 +104,8 @@ public class ConstructionState extends GameState {
     private boolean loaded = false;
     private boolean tileSelected = false;
     private TileType selectedTileType;
-    private List<Point> nonAcceptablePositions = new ArrayList<>();
+    private List<Point> enemyTankAppearancePositions = new ArrayList<>();
+    private List<Point> eagleProtectionPositions = new ArrayList<>();
     private Point selectedTileDrawPosition = new Point();
 
     public ConstructionState(GameStateManager gsm) {
@@ -165,8 +166,10 @@ public class ConstructionState extends GameState {
         }
         tileMap = new TileMap();
         tileMap.loadMap("/tilemap/level1.map");
-        this.nonAcceptablePositions.addAll(this.tileMap.getEagleProtectionPositions());
-        this.nonAcceptablePositions.addAll(this.tileMap.getEnemyTankAppearencePositions());
+        this.enemyTankAppearancePositions.addAll(this.tileMap.
+                getEnemyTankAppearencePositions());
+        this.eagleProtectionPositions.addAll(this.tileMap.
+                getEagleProtectionPositions());
         fillTileButtonArray();
         fillButtonArray();
         loaded = true;
@@ -209,11 +212,11 @@ public class ConstructionState extends GameState {
                 break;
             }
         }
-        
-        Point clickedPoint = new Point((int)(e.getX() / Game.SCALE),
-                (int)(e.getY() / 2));
-        
-        if (!this.tileSelected) {           
+
+        Point clickedPoint = new Point((int) (e.getX() / Game.SCALE),
+                (int) (e.getY() / 2));
+
+        if (!this.tileSelected) {
             for (int i = 0; i < this.tileButtons.size(); ++i) {
                 TileButton currButton = this.tileButtons.get(i);
                 if (currButton.boundingRect.inside(clickedPoint.x,
@@ -225,7 +228,7 @@ public class ConstructionState extends GameState {
                 }
             }
         } else {
-            if(!checkIfClickPositionAcceptable(clickedPoint)){
+            if (!checkIfClickPositionAcceptable(clickedPoint)) {
                 return;
             }
             int row = (int) (e.getY() / Game.SCALE / Game.HALF_TILE_SIZE);
@@ -235,22 +238,40 @@ public class ConstructionState extends GameState {
     }
 
     private boolean checkIfClickPositionAcceptable(Point clickPosition) {
-
-        //Check if click was in the field bounds
-        if (!this.tileMap.checkIfPointIsInTheMapBounds(clickPosition)) {
-            return false;
-        }
-
-        //Check tank appearence positions
-        for (int i = 0; i < this.nonAcceptablePositions.size(); ++i){
-            Point point = this.nonAcceptablePositions.get(i);
-            Rectangle appearanceTileBoundingRect = new Rectangle(
-                    point.x, point.y, Game.TILE_SIZE, Game.TILE_SIZE);
-            if(appearanceTileBoundingRect.contains(clickPosition)){
-                return false;
+        return this.tileMap.checkIfPointIsInTheMapBounds(clickPosition)
+                && !checkIfInEagleProtectionArea(clickPosition)
+                && !checkIfInEnemyAppearancePositions(clickPosition)
+                && !checkIfInEagleArea(clickPosition);
+    }
+    
+    private boolean checkIfInEagleProtectionArea(Point pos){
+        for (int i = 0; i < this.eagleProtectionPositions.size(); ++i) {
+            Point point = this.eagleProtectionPositions.get(i);
+            Rectangle currTileBoundingRect = new Rectangle(
+                    point.x, point.y, Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE);
+            if (currTileBoundingRect.contains(pos)) {
+                return true;
             }
         }
-        return true;
+        return false;
+    }
+    
+    private boolean checkIfInEnemyAppearancePositions(Point pos){
+        for (int i = 0; i < this.enemyTankAppearancePositions.size(); ++i) {
+            Point point = this.enemyTankAppearancePositions.get(i);
+            Rectangle currTileBoundingRect = new Rectangle(
+                    point.x, point.y, Game.TILE_SIZE, Game.TILE_SIZE);
+            if (currTileBoundingRect.contains(pos)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private boolean checkIfInEagleArea(Point pos){
+        Rectangle eagleArea = new Rectangle(LevelState.EAGLE_POSITION.x,
+            LevelState.EAGLE_POSITION.y, Game.TILE_SIZE, Game.TILE_SIZE);
+        return eagleArea.contains(pos);
     }
 
     private void saveMapToFile() {
@@ -276,13 +297,13 @@ public class ConstructionState extends GameState {
         drawGrid(g);
         drawAllButtons(g);
     }
-    
-    private void drawTileMap(Graphics2D g){
+
+    private void drawTileMap(Graphics2D g) {
         tileMap.draw(g);
         tileMap.drawBushes(g);
     }
-    
-    private void drawSelectedTile(Graphics2D g){
+
+    private void drawSelectedTile(Graphics2D g) {
         if (this.tileSelected) {
             Tile currTile = this.tileMap.getAllTiles().
                     get(this.selectedTileType);
@@ -290,8 +311,8 @@ public class ConstructionState extends GameState {
                     this.selectedTileDrawPosition.y);
         }
     }
-    
-    private void highlightForbiddenTiles(Graphics2D g){
+
+    private void highlightForbiddenTiles(Graphics2D g) {
         g.setColor(Color.red);
         this.tileMap.getEagleProtectionPositions().forEach((p) -> {
             g.fillRect((int) (p.x * Game.SCALE), (int) (p.y * Game.SCALE),
@@ -306,7 +327,7 @@ public class ConstructionState extends GameState {
                     (int) (Game.TILE_SIZE * Game.SCALE));
         });
     }
-    
+
     private void drawGrid(Graphics2D g) {
         g.setColor(GRID_COLOR);
         for (int i = 0; i <= Game.TILES_IN_WIDTH; ++i) {
@@ -322,8 +343,8 @@ public class ConstructionState extends GameState {
                     (int) (i * Game.HALF_TILE_SIZE * Game.SCALE));
         }
     }
-    
-    private void drawAllButtons(Graphics2D g){
+
+    private void drawAllButtons(Graphics2D g) {
         this.tileButtons.forEach(btn -> btn.draw(g));
         this.buttons.forEach(btn -> btn.draw(g));
     }

@@ -9,7 +9,7 @@ import java.awt.Rectangle;
  */
 public enum TileType {
     EMPTY(0, new Rectangle(3 * Game.HALF_TILE_SIZE, 1 * Game.HALF_TILE_SIZE,
-            Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE)) {
+            Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE), "Empty") {
         @Override
         public boolean isDestroyable() {
             return false;
@@ -21,7 +21,7 @@ public enum TileType {
         }
     },
     BRICKS(1, new Rectangle(0 * Game.HALF_TILE_SIZE, 0 * Game.HALF_TILE_SIZE,
-            Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE)) {
+            Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE), "Bricks") {
         @Override
         public boolean isDestroyable() {
             return true;
@@ -33,7 +33,7 @@ public enum TileType {
         }
     },
     METAL(2, new Rectangle(0 * Game.HALF_TILE_SIZE, 1 * Game.HALF_TILE_SIZE,
-            Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE)) {
+            Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE), "Metal") {
         @Override
         public boolean isDestroyable() {
             return true;
@@ -45,7 +45,7 @@ public enum TileType {
         }
     },
     WATER(3, new Rectangle(0 * Game.HALF_TILE_SIZE, 2 * Game.HALF_TILE_SIZE,
-            3 * Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE)) {
+            3 * Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE), "Water") {
         @Override
         public boolean isDestroyable() {
             return false;
@@ -57,7 +57,7 @@ public enum TileType {
         }
     },
     BUSH(4, new Rectangle(1 * Game.HALF_TILE_SIZE, 1 * Game.HALF_TILE_SIZE,
-            Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE)) {
+            Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE), "Bushes") {
         @Override
         public boolean isDestroyable() {
             return false;
@@ -69,7 +69,7 @@ public enum TileType {
         }
     },
     ICE(5, new Rectangle(2 * Game.HALF_TILE_SIZE, 1 * Game.HALF_TILE_SIZE,
-            Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE)) {
+            Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE), "Ice") {
         @Override
         public boolean isDestroyable() {
             return false;
@@ -94,10 +94,12 @@ public enum TileType {
 
     private int number;
     private Rectangle boundingRect;
+    private String description;
 
-    private TileType(int number, Rectangle spriteSheet) {
+    private TileType(int number, Rectangle spriteSheet, String description) {
         this.number = number;
         this.boundingRect = spriteSheet;
+        this.description = description;
     }
 
     public int getNumber() {
@@ -106,5 +108,9 @@ public enum TileType {
 
     public Rectangle getBoundingRect() {
         return this.boundingRect;
+    }
+    
+    public String getDescription(){
+        return this.description;
     }
 }

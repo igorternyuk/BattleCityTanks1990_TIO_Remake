@@ -28,7 +28,6 @@ import java.awt.Graphics2D;
 import com.igorternyuk.tanks.input.KeyboardState;
 import com.igorternyuk.tanks.resourcemanager.ImageIdentifier;
 import com.igorternyuk.tanks.utils.Painter;
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
@@ -43,11 +42,10 @@ import java.util.Map;
  * @author igor
  */
 public class LevelState extends GameState {
-
-    private static final Font FONT_GAME_STATUS = new Font("Verdana", Font.BOLD,
-            48);
-    private static final Point EAGLE_POSITION = new Point(12
+    protected static final Point EAGLE_POSITION = new Point(12
             * Game.HALF_TILE_SIZE, 24 * Game.HALF_TILE_SIZE);
+    private static final Font FONT_GAME_STATUS = new Font("Verdana", Font.BOLD,
+            48);    
     private static final Point PLAYER_RESPAWN_POSITION = new Point(8
             * Game.HALF_TILE_SIZE, 24 * Game.HALF_TILE_SIZE);
     private static final Point RIGHT_PANEL_POSITION = new Point(26

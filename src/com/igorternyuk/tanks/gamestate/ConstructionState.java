@@ -28,25 +28,34 @@ public class ConstructionState extends GameState {
 
     private static final Font BUTTON_TEXT_FONT =
             new Font("Arial", Font.BOLD, 18);
+    private static final Font TILE_BUTTON_LABEL_FONT = new Font("Verdana",
+            Font.ITALIC, 12);
+    private static final Color TILE_BUTTON_LABEL_COLOR = new Color(0,148,255);
     private static final Color GRID_COLOR = new Color(127, 127, 127);
 
     private class TileButton {
 
         private Rectangle boundingRect;
         private Tile tile;
+        private String label;
 
         public TileButton(Rectangle boundingRect, Tile tile) {
             this.boundingRect = boundingRect;
             this.tile = tile;
+            this.label = this.tile.getType().getDescription();
         }
 
         public void draw(Graphics2D g) {
+            g.setColor(new Color(0,148,255));
+            g.setFont(TILE_BUTTON_LABEL_FONT);
+            g.drawString(label, (int) (this.boundingRect.x * Game.SCALE - Game.HALF_TILE_SIZE),
+                    (int) (this.boundingRect.y * Game.SCALE - Game.TILE_SIZE));
             if (this.tile.getType() == TileType.EMPTY) {
                 g.setColor(Color.red);
-                g.drawRect(this.boundingRect.x * 2 - 1, this.boundingRect.y * 2
-                        - 1,
-                        this.boundingRect.width + 1, this.boundingRect.height
-                        + 1);
+                g.drawRect((int) (this.boundingRect.x * Game.SCALE - 1),
+                        (int) (this.boundingRect.y * Game.SCALE - 1),
+                        this.boundingRect.width + 1,
+                        this.boundingRect.height + 1);
             }
             this.tile.draw(g, this.boundingRect.x, this.boundingRect.y);
         }
@@ -98,11 +107,6 @@ public class ConstructionState extends GameState {
 
     public ConstructionState(GameStateManager gsm) {
         super(gsm);
-        Rectangle r = new Rectangle(216, 92, 16, 16);
-        if (r.inside(220, 96)) {
-            System.out.println("INSIDE!!!");
-        }
-
     }
 
     private void fillTileButtonArray() {
@@ -111,13 +115,12 @@ public class ConstructionState extends GameState {
         for (int i = 0; i < allTypes.length; ++i) {
             int x = Game.TILES_IN_WIDTH * Game.HALF_TILE_SIZE
                     + Game.HALF_TILE_SIZE;
-            int y = Game.HALF_TILE_SIZE + i * (Game.TILE_SIZE + 5);
+            int y = 2 * Game.TILE_SIZE * (i + 1);
             int w = Game.TILE_SIZE;
             int h = Game.TILE_SIZE;
             Rectangle rect = new Rectangle(x, y, w, h);
             System.out.println("rect " + i + " = " + rect);
             tileButtons.add(new TileButton(rect, allTiles.get(allTypes[i])));
-
         }
     }
 
@@ -160,6 +163,7 @@ public class ConstructionState extends GameState {
         }
         tileMap = new TileMap();
         tileMap.loadMap("/tilemap/level1.map");
+        System.out.println("eagle protection pos = " + this.tileMap.getEaglePositions().size());
         fillTileButtonArray();
         fillButtonArray();
         loaded = true;
@@ -235,7 +239,6 @@ public class ConstructionState extends GameState {
             int row = (int) (e.getY() / Game.SCALE / Game.HALF_TILE_SIZE);
             int col = (int) (e.getX() / Game.SCALE / Game.HALF_TILE_SIZE);
             this.tileMap.set(row, col, this.selectedTileType);
-
         }
     }
 
@@ -246,8 +249,8 @@ public class ConstructionState extends GameState {
     @Override
     public void onMouseMoved(MouseEvent e) {
         if (this.tileSelected) {
-            selectedTileDrawPosition.x = e.getX();
-            selectedTileDrawPosition.y = e.getY();
+            selectedTileDrawPosition.x = (int) (e.getX() / Game.SCALE);
+            selectedTileDrawPosition.y = (int) (e.getY() / Game.SCALE);
             ///System.out.println("tile seleceted pos = " + selectedTileDrawPosition);
         }
     }
@@ -266,23 +269,42 @@ public class ConstructionState extends GameState {
         if (this.tileSelected) {
             Tile currTile = this.tileMap.getAllTiles().
                     get(this.selectedTileType);
-            currTile.draw(g, this.selectedTileDrawPosition.x / 2,
-                    this.selectedTileDrawPosition.y / 2);
+            currTile.draw(g, this.selectedTileDrawPosition.x,
+                    this.selectedTileDrawPosition.y);
             //g.setColor(Color.green);
             //g.fillRect(this.selectedTileDrawPosition.x, this.selectedTileDrawPosition.y, 16, 16);
         }
+        
+        g.setColor(Color.yellow);
+        this.tileMap.getEaglePositions().forEach((p) -> {
+            g.fillRect((int)(p.x * Game.SCALE), (int)(p.y * Game.SCALE),
+                    (int)(Game.HALF_TILE_SIZE * Game.SCALE),
+                    (int)(Game.HALF_TILE_SIZE * Game.SCALE));
+        });
+        
+        g.setColor(Color.red);
+        this.tileMap.getEnemyTankAppearencePositions().forEach(p -> {
+            g.fillRect((int)(p.x * Game.SCALE), (int)(p.y * Game.SCALE),
+                    (int)(Game.TILE_SIZE * Game.SCALE),
+                    (int)(Game.TILE_SIZE * Game.SCALE));
+        });
+        
+        
     }
 
     private void drawGrid(Graphics2D g) {
         g.setColor(GRID_COLOR);
-        for (int i = 0; i < Game.TILES_IN_WIDTH; ++i) {
-            g.drawLine(i * Game.HALF_TILE_SIZE * 2, 0, i * Game.HALF_TILE_SIZE
-                    * 2,
-                    Game.TILES_IN_HEIGHT * Game.HALF_TILE_SIZE * 2);
+        for (int i = 0; i <= Game.TILES_IN_WIDTH; ++i) {
+            g.drawLine((int) (i * Game.HALF_TILE_SIZE * Game.SCALE), 0,
+                    (int) (i * Game.HALF_TILE_SIZE * Game.SCALE),
+                    (int) (Game.TILES_IN_HEIGHT * Game.HALF_TILE_SIZE
+                    * Game.SCALE));
         }
-        for (int i = 0; i < Game.TILES_IN_HEIGHT; ++i) {
-            g.drawLine(0, i * Game.HALF_TILE_SIZE * 2, Game.TILES_IN_WIDTH
-                    * Game.HALF_TILE_SIZE * 2, i * Game.HALF_TILE_SIZE * 2);
+        for (int i = 0; i <= Game.TILES_IN_HEIGHT; ++i) {
+            g.drawLine(0, (int) (i * Game.HALF_TILE_SIZE * Game.SCALE),
+                    (int) (Game.TILES_IN_WIDTH * Game.HALF_TILE_SIZE
+                    * Game.SCALE),
+                    (int) (i * Game.HALF_TILE_SIZE * Game.SCALE));
         }
     }
 }

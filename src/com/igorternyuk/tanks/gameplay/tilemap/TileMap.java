@@ -12,6 +12,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,12 +24,11 @@ import java.util.Map;
 public class TileMap {
 
     private int[][] map = new int[Game.TILES_IN_HEIGHT][Game.TILES_IN_WIDTH];
-    private List<Point> tankAppearancePositions = new ArrayList<>();
+    private List<Point> enemyTankAppearancePositions = new ArrayList<>();
     private List<Point> eagleProtectionTilePositions = new ArrayList<>();
     private BufferedImage spriteSheet;
     private Map<TileType, Tile> tiles = new HashMap<>();
     private List<Point> bushTilePositions = new ArrayList<>();
-    private Map<Point, Integer> metalTileHealthMap = new HashMap<>();
     private boolean hasWaterTiles = false;
     private String pathToTheCurrentMapFile;
     private boolean mapLoaded = false;
@@ -42,20 +42,24 @@ public class TileMap {
 
     public Map<TileType, Tile> getAllTiles() {
         if (this.mapLoaded) {
-            return this.tiles;
+            return Collections.unmodifiableMap(this.tiles);
         } else {
             return new HashMap<>();
         }
     }
 
-    
-
-    public List<Point> getEnemyTankAppearencePositions() {
-        return this.tankAppearancePositions;
+    public boolean checkIfPointIsInTheMapBounds(Point position) {
+        int row = position.x / Game.HALF_TILE_SIZE;
+        int col = position.y / Game.HALF_TILE_SIZE;
+        return areCoordinatesValid(row, col);
     }
 
-    public List<Point> getEaglePositions() {
-        return this.eagleProtectionTilePositions;
+    public List<Point> getEnemyTankAppearencePositions() {
+        return Collections.unmodifiableList(this.enemyTankAppearancePositions);
+    }
+
+    public List<Point> getEagleProtectionPositions() {
+        return Collections.unmodifiableList(this.eagleProtectionTilePositions);
     }
 
     public void loadMap(String pathToMapFile) {
@@ -85,10 +89,10 @@ public class TileMap {
         }
         Point selectedPoint = new Point(col * Game.HALF_TILE_SIZE,
                 row * Game.HALF_TILE_SIZE);
-        if(tileType == TileType.BUSH){
+        if (tileType == TileType.BUSH) {
             this.bushTilePositions.add(selectedPoint);
         } else {
-            if(this.map[col][row] == TileType.BUSH.getNumber()){
+            if (this.map[col][row] == TileType.BUSH.getNumber()) {
                 this.bushTilePositions.remove(selectedPoint);
             }
         }
@@ -177,34 +181,26 @@ public class TileMap {
 
     public void drawBushes(Graphics2D g) {
         final Tile bushTile = this.tiles.get(TileType.BUSH);
-        for(int i = this.bushTilePositions.size() - 1; i >= 0; --i){
+        for (int i = this.bushTilePositions.size() - 1; i >= 0; --i) {
             Point pos = this.bushTilePositions.get(i);
             bushTile.draw(g, pos.x, pos.y);
         }
     }
-    
+
     private void setEnemyTankAppearancePositions() {
-        this.tankAppearancePositions.add(new Point(0, 0));
-        this.tankAppearancePositions.add(new Point(6 * Game.TILE_SIZE, 0));
-        this.tankAppearancePositions.add(new Point(12 * Game.TILE_SIZE, 0));
+        for (int i = 0; i < 3; ++i) {
+            this.enemyTankAppearancePositions.add(new Point(6 * i
+                    * Game.TILE_SIZE, 0));
+        }
     }
 
     private void setEagleProtectionPositions() {
-        this.eagleProtectionTilePositions.add(
-                new Point(11 * Game.HALF_TILE_SIZE, 23 * Game.HALF_TILE_SIZE));
-        this.eagleProtectionTilePositions.add(
-                new Point(11 * Game.HALF_TILE_SIZE, 24 * Game.HALF_TILE_SIZE));
-        this.eagleProtectionTilePositions.add(
-                new Point(11 * Game.HALF_TILE_SIZE, 25 * Game.HALF_TILE_SIZE));
-        this.eagleProtectionTilePositions.add(
-                new Point(12 * Game.HALF_TILE_SIZE, 23 * Game.HALF_TILE_SIZE));
-        this.eagleProtectionTilePositions.add(
-                new Point(13 * Game.HALF_TILE_SIZE, 23 * Game.HALF_TILE_SIZE));
-        this.eagleProtectionTilePositions.add(
-                new Point(14 * Game.HALF_TILE_SIZE, 23 * Game.HALF_TILE_SIZE));
-        this.eagleProtectionTilePositions.add(
-                new Point(14 * Game.HALF_TILE_SIZE, 24 * Game.HALF_TILE_SIZE));
-        this.eagleProtectionTilePositions.add(
-                new Point(14 * Game.HALF_TILE_SIZE, 25 * Game.HALF_TILE_SIZE));
+        for (int row = 23; row < 26; ++row) {
+            for (int col = 11; col < 15; ++col) {
+                this.eagleProtectionTilePositions.add(
+                        new Point(col * Game.HALF_TILE_SIZE, row
+                                * Game.HALF_TILE_SIZE));
+            }
+        }
     }
 }

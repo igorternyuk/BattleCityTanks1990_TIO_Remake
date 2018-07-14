@@ -30,7 +30,7 @@ public class ConstructionState extends GameState {
             new Font("Arial", Font.BOLD, 18);
     private static final Font TILE_BUTTON_LABEL_FONT = new Font("Verdana",
             Font.ITALIC, 12);
-    private static final Color TILE_BUTTON_LABEL_COLOR = new Color(0,148,255);
+    private static final Color TILE_BUTTON_LABEL_COLOR = new Color(0, 148, 255);
     private static final Color GRID_COLOR = new Color(127, 127, 127);
 
     private class TileButton {
@@ -46,9 +46,10 @@ public class ConstructionState extends GameState {
         }
 
         public void draw(Graphics2D g) {
-            g.setColor(new Color(0,148,255));
+            g.setColor(TILE_BUTTON_LABEL_COLOR);
             g.setFont(TILE_BUTTON_LABEL_FONT);
-            g.drawString(label, (int) (this.boundingRect.x * Game.SCALE - Game.HALF_TILE_SIZE),
+            g.drawString(label, (int) (this.boundingRect.x * Game.SCALE
+                    - Game.HALF_TILE_SIZE),
                     (int) (this.boundingRect.y * Game.SCALE - Game.TILE_SIZE));
             if (this.tile.getType() == TileType.EMPTY) {
                 g.setColor(Color.red);
@@ -103,6 +104,7 @@ public class ConstructionState extends GameState {
     private boolean loaded = false;
     private boolean tileSelected = false;
     private TileType selectedTileType;
+    private List<Point> nonAcceptablePositions = new ArrayList<>();
     private Point selectedTileDrawPosition = new Point();
 
     public ConstructionState(GameStateManager gsm) {
@@ -163,7 +165,8 @@ public class ConstructionState extends GameState {
         }
         tileMap = new TileMap();
         tileMap.loadMap("/tilemap/level1.map");
-        System.out.println("eagle protection pos = " + this.tileMap.getEaglePositions().size());
+        this.nonAcceptablePositions.addAll(this.tileMap.getEagleProtectionPositions());
+        this.nonAcceptablePositions.addAll(this.tileMap.getEnemyTankAppearencePositions());
         fillTileButtonArray();
         fillButtonArray();
         loaded = true;
@@ -206,40 +209,48 @@ public class ConstructionState extends GameState {
                 break;
             }
         }
-
-        if (!this.tileSelected) {
-            System.out.println("Selecting tiles");
-            Point clickedPoint = new Point(e.getX() / 2, e.getY() / 2);
-            System.out.println("clicked point p = " + clickedPoint);
+        
+        Point clickedPoint = new Point((int)(e.getX() / Game.SCALE),
+                (int)(e.getY() / 2));
+        
+        if (!this.tileSelected) {           
             for (int i = 0; i < this.tileButtons.size(); ++i) {
                 TileButton currButton = this.tileButtons.get(i);
-                System.out.println("Curr btn rect = " + currButton.boundingRect);
-                int rx = currButton.boundingRect.x;
-                int ry = currButton.boundingRect.y;
-                int cpx = clickedPoint.x;
-                int cpy = clickedPoint.y;
-                /* System.out.println("cpx >= rx " + (cpx >= rx));
-                System.out.println("cpx <= rx + 16 " + (cpx <= rx + 16));
-                System.out.println("cpy >= ry " + (cpy >= ry));
-                System.out.println("cpy <= ry + 16 " + (cpy <= ry + 16));*/
-                if (cpx >= rx && cpx <= rx + 16 && cpy >= ry && cpy <= ry + 16) {
+                if (currButton.boundingRect.inside(clickedPoint.x,
+                        clickedPoint.y)) {
                     TileType currButtonTileType = currButton.tile.getType();
                     this.selectedTileType = currButtonTileType;
                     this.tileSelected = true;
                     break;
                 }
-
-                /*if (currButton.boundingRect.inside(clickedPoint.x, clickedPoint.y)) {
-                    TileType currButtonTileType = currButton.tile.getType();
-                    this.selectedTileType = currButtonTileType;
-                    break;
-                }*/
             }
         } else {
+            if(!checkIfClickPositionAcceptable(clickedPoint)){
+                return;
+            }
             int row = (int) (e.getY() / Game.SCALE / Game.HALF_TILE_SIZE);
             int col = (int) (e.getX() / Game.SCALE / Game.HALF_TILE_SIZE);
             this.tileMap.set(row, col, this.selectedTileType);
         }
+    }
+
+    private boolean checkIfClickPositionAcceptable(Point clickPosition) {
+
+        //Check if click was in the field bounds
+        if (!this.tileMap.checkIfPointIsInTheMapBounds(clickPosition)) {
+            return false;
+        }
+
+        //Check tank appearence positions
+        for (int i = 0; i < this.nonAcceptablePositions.size(); ++i){
+            Point point = this.nonAcceptablePositions.get(i);
+            Rectangle appearanceTileBoundingRect = new Rectangle(
+                    point.x, point.y, Game.TILE_SIZE, Game.TILE_SIZE);
+            if(appearanceTileBoundingRect.contains(clickPosition)){
+                return false;
+            }
+        }
+        return true;
     }
 
     private void saveMapToFile() {
@@ -251,7 +262,6 @@ public class ConstructionState extends GameState {
         if (this.tileSelected) {
             selectedTileDrawPosition.x = (int) (e.getX() / Game.SCALE);
             selectedTileDrawPosition.y = (int) (e.getY() / Game.SCALE);
-            ///System.out.println("tile seleceted pos = " + selectedTileDrawPosition);
         }
     }
 
@@ -260,38 +270,43 @@ public class ConstructionState extends GameState {
         if (!this.loaded) {
             return;
         }
+        drawTileMap(g);
+        drawSelectedTile(g);
+        highlightForbiddenTiles(g);
+        drawGrid(g);
+        drawAllButtons(g);
+    }
+    
+    private void drawTileMap(Graphics2D g){
         tileMap.draw(g);
         tileMap.drawBushes(g);
-        drawGrid(g);
-        this.tileButtons.forEach(btn -> btn.draw(g));
-        this.buttons.forEach(btn -> btn.draw(g));
-        //this.buttons.forEach(Button::draw);
+    }
+    
+    private void drawSelectedTile(Graphics2D g){
         if (this.tileSelected) {
             Tile currTile = this.tileMap.getAllTiles().
                     get(this.selectedTileType);
             currTile.draw(g, this.selectedTileDrawPosition.x,
                     this.selectedTileDrawPosition.y);
-            //g.setColor(Color.green);
-            //g.fillRect(this.selectedTileDrawPosition.x, this.selectedTileDrawPosition.y, 16, 16);
         }
-        
-        g.setColor(Color.yellow);
-        this.tileMap.getEaglePositions().forEach((p) -> {
-            g.fillRect((int)(p.x * Game.SCALE), (int)(p.y * Game.SCALE),
-                    (int)(Game.HALF_TILE_SIZE * Game.SCALE),
-                    (int)(Game.HALF_TILE_SIZE * Game.SCALE));
+    }
+    
+    private void highlightForbiddenTiles(Graphics2D g){
+        g.setColor(Color.red);
+        this.tileMap.getEagleProtectionPositions().forEach((p) -> {
+            g.fillRect((int) (p.x * Game.SCALE), (int) (p.y * Game.SCALE),
+                    (int) (Game.HALF_TILE_SIZE * Game.SCALE),
+                    (int) (Game.HALF_TILE_SIZE * Game.SCALE));
         });
-        
+
         g.setColor(Color.red);
         this.tileMap.getEnemyTankAppearencePositions().forEach(p -> {
-            g.fillRect((int)(p.x * Game.SCALE), (int)(p.y * Game.SCALE),
-                    (int)(Game.TILE_SIZE * Game.SCALE),
-                    (int)(Game.TILE_SIZE * Game.SCALE));
+            g.fillRect((int) (p.x * Game.SCALE), (int) (p.y * Game.SCALE),
+                    (int) (Game.TILE_SIZE * Game.SCALE),
+                    (int) (Game.TILE_SIZE * Game.SCALE));
         });
-        
-        
     }
-
+    
     private void drawGrid(Graphics2D g) {
         g.setColor(GRID_COLOR);
         for (int i = 0; i <= Game.TILES_IN_WIDTH; ++i) {
@@ -306,5 +321,10 @@ public class ConstructionState extends GameState {
                     * Game.SCALE),
                     (int) (i * Game.HALF_TILE_SIZE * Game.SCALE));
         }
+    }
+    
+    private void drawAllButtons(Graphics2D g){
+        this.tileButtons.forEach(btn -> btn.draw(g));
+        this.buttons.forEach(btn -> btn.draw(g));
     }
 }

@@ -3,7 +3,6 @@ package com.igorternyuk.tanks.gameplay.tilemap;
 import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
-import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
 import com.igorternyuk.tanks.input.KeyboardState;
@@ -24,6 +23,9 @@ import java.util.Map;
  */
 public class TileMap {
 
+    private static final double EAGLE_PROTECTION_LIFE_TIME = 23;
+    private static final double EAGLE_PROTECTION_BLINKING_TIME = 5;
+    private static final double EAGLE_PROTECTION_BLINK_PERIOD = 0.25;
     private int[][] map = new int[Game.TILES_IN_HEIGHT][Game.TILES_IN_WIDTH];
     private List<Point> enemyTankAppearancePositions = new ArrayList<>();
     private List<Point> eagleProtectionTilePositions = new ArrayList<>();
@@ -33,6 +35,12 @@ public class TileMap {
     private boolean hasWaterTiles = false;
     private String pathToTheCurrentMapFile;
     private boolean mapLoaded = false;
+    private boolean eagleProtectionActive = false;
+    private TileType currProtectionTileType = TileType.BRICKS;
+    private double eagleProtectionTimer = 0;
+    private boolean eagleProtectionBlinking = false;
+    private double eagleProtectionBlinkingTimer = 0;
+    private double eagleProtectionBlinkTimer = 0;
 
     public TileMap() {
         setEnemyTankAppearancePositions();
@@ -47,6 +55,10 @@ public class TileMap {
         } else {
             return new HashMap<>();
         }
+    }
+    
+    public boolean isEagleProtectionActive(){
+        return this.eagleProtectionActive;
     }
 
     public boolean checkIfPointIsInTheMapBounds(Point position) {
@@ -106,8 +118,40 @@ public class TileMap {
                 && col >= 0 && col < this.map[row].length;
     }
 
-    public void activateProtection() {
-        
+    public void activateEagleProtection() {
+        buildMetalWallsAroundEagle();
+        this.eagleProtectionActive = true;
+    }
+    
+    private void buildMetalWallsAroundEagle(){
+        this.eagleProtectionTilePositions.forEach(point -> {
+            int row = point.y / Game.HALF_TILE_SIZE;
+            int col = point.x / Game.HALF_TILE_SIZE;
+            map[row][col] = TileType.METAL.getNumber();
+        });
+        this.currProtectionTileType = TileType.METAL;
+    }
+    
+    public void deactivateEagleProtection(){
+        restoreRegularEagleProtection();
+        this.eagleProtectionActive = false;
+    }
+    
+    private void restoreRegularEagleProtection(){
+        this.eagleProtectionTilePositions.forEach(point -> {
+            int row = point.y / Game.HALF_TILE_SIZE;
+            int col = point.x / Game.HALF_TILE_SIZE;
+            map[row][col] = TileType.BRICKS.getNumber();
+        });
+        this.currProtectionTileType = TileType.BRICKS;
+    }
+    
+    private void flipProtectingTiles(){
+        if(this.currProtectionTileType == TileType.BRICKS){
+            buildMetalWallsAroundEagle();
+        } else {
+            restoreRegularEagleProtection();
+        }
     }
 
     public void handleCollision(Entity entity) {
@@ -161,6 +205,34 @@ public class TileMap {
         if (this.hasWaterTiles) {
             this.tiles.get(TileType.WATER).update(keyboardState, frameTime);
         }
+        updateProtection(keyboardState, frameTime);
+    }
+    
+    private void updateProtection(KeyboardState keyboardState, double frameTime){
+       if(this.eagleProtectionActive){
+            this.eagleProtectionTimer += frameTime;
+            if(this.eagleProtectionTimer >= EAGLE_PROTECTION_LIFE_TIME){
+                this.eagleProtectionBlinkingTimer = 0;
+                this.eagleProtectionActive = false;
+                this.eagleProtectionBlinking = true;
+            }
+        }
+        
+        if(this.eagleProtectionBlinking){
+            this.eagleProtectionBlinkTimer += frameTime;
+            if(this.eagleProtectionBlinkTimer >= EAGLE_PROTECTION_BLINK_PERIOD){
+                flipProtectingTiles();
+                this.eagleProtectionBlinkTimer = 0;
+            }
+            
+            this.eagleProtectionBlinkingTimer += frameTime;
+            if(this.eagleProtectionBlinkingTimer >= EAGLE_PROTECTION_BLINKING_TIME){
+                this.eagleProtectionBlinkingTimer = 0;
+                this.eagleProtectionBlinking = false;
+                this.eagleProtectionActive = false;
+                restoreRegularEagleProtection();
+            }
+        } 
     }
 
     public void draw(Graphics2D g) {

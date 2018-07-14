@@ -254,6 +254,9 @@ public class LevelState extends GameState {
             case KeyEvent.VK_F:
                 this.player.setCanFire(true);
                 break;
+            case KeyEvent.VK_A:
+                this.tileMap.activateEagleProtection();
+                break;
             default:
                 break;
         }

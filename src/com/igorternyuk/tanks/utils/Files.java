@@ -2,6 +2,7 @@ package com.igorternyuk.tanks.utils;
 
 import com.igorternyuk.tanks.gameplay.Game;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -16,19 +17,20 @@ import java.util.logging.Logger;
 public class Files {
 
     public static void writeMapToFile(String pathToFile, int[][] map) {
-        
-        try(PrintWriter writer = new PrintWriter(pathToFile)) {
-            for(int row = 0; row < map.length; ++row){
-                for(int col = 0; col < map[row].length; ++col){
+
+        try (PrintWriter writer = new PrintWriter(new File(Files.class.
+                getResource(pathToFile).getPath()))) {
+            for (int row = 0; row < map.length; ++row) {
+                for (int col = 0; col < map[row].length; ++col) {
                     writer.print(String.valueOf(map[row][col] + " "));
                 }
-                if(row != map.length - 1){
+                if (row != map.length - 1) {
                     writer.println("");
                 }
             }
         } catch (FileNotFoundException ex) {
             Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);
-        }        
+        }
     }
 
     public static int[][] loadMapFromFile(String pathToFile) {
@@ -44,7 +46,7 @@ public class Files {
                     map[row][col] = Integer.parseInt(tokens[col]);
                 }
                 ++row;
-                if(row >= Game.TILES_IN_HEIGHT){
+                if (row >= Game.TILES_IN_HEIGHT) {
                     break;
                 }
             }

@@ -55,7 +55,7 @@ public class TileMap {
     }
     
     public void saveMapToFile(){
-        Files.writeMapToFile(/*this.pathToTheCurrentMapFile*/"/home/igor/Рабочий стол/level2.map", this.map);
+        Files.writeMapToFile(this.pathToTheCurrentMapFile, this.map);
     }
 
     public TileType get(int row, int col) {

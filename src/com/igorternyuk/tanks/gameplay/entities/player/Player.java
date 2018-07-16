@@ -167,7 +167,13 @@ public class Player extends Tank {
     protected void respawn() {
         this.health = 100;
         setPosition(this.respawnX, this.respawnY);
+        addProtection();
         this.identifier.setType(PlayerTankType.REGULAR);
+    }
+    
+    protected void reset(){
+        this.health = 100;
+        setPosition(this.respawnX, this.respawnY);
         this.killedEnemyTanks.clear();
         addProtection();
     }
@@ -227,6 +233,16 @@ public class Player extends Tank {
             }
         }
     }
+    
+    private void updateShootingTimer(double frameTime){
+        if (this.identifier.getType() == PlayerTankType.MIDDLE && !this.canFire) {
+            this.lastShootTimer += frameTime;
+            if (this.lastShootTimer >= this.shotDelay) {
+                this.lastShootTimer = 0;
+                this.canFire = true;
+            }
+        }
+    }
 
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
@@ -238,12 +254,30 @@ public class Player extends Tank {
         }
         super.update(keyboardState, frameTime);
         updateProtectionTimer(frameTime);
-        if (this.identifier.getType() == PlayerTankType.MIDDLE && !this.canFire) {
-            this.lastShootTimer += frameTime;
-            if (this.lastShootTimer >= this.shotDelay) {
-                this.lastShootTimer = 0;
-                this.canFire = true;
+        updateShootingTimer(frameTime);
+    }
+    
+    /*
+    protected void handleMapCollision(Direction direction) {
+        final int rowMin = (int) this.top() / this.tileSize;
+        final int rowMax = (int) (this.bottom() - 1) / this.tileSize;
+        final int colMin = (int) this.left() / this.tileSize;
+        final int colMax = (int) (this.right() - 1) / this.tileSize;
+
+        outer:
+        for (int row = rowMin; row <= rowMax; ++row) {
+            for (int col = colMin; col <= colMax; ++col) {
+                if (this.tileMap.getTileType(row, col).equals(TileType.BLOCKED)) {
+                    if (direction == Direction.VERTICAL) {
+                        handleVerticalCollision(row, col);
+                    } else if (direction == Direction.HORIZONTAL) {
+                        handleHorizontalCollision(row, col);
+                    }
+                    //If we've got a collision we can terminate the further checking
+                    break outer;
+                }
             }
         }
     }
+    */
 }

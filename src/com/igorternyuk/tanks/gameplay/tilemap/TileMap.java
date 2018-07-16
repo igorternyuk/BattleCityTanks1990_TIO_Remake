@@ -94,6 +94,10 @@ public class TileMap {
         }
         return TileType.getFromNumber(this.map[row][col]);
     }
+    
+    public void destroyTile(int row, int col){
+        set(row, col, TileType.EMPTY);
+    }
 
     public void set(int row, int col, TileType tileType) {
         if (!areCoordinatesValid(row, col)) {

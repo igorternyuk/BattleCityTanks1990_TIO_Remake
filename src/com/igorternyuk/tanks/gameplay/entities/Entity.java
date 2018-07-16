@@ -5,6 +5,8 @@ import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
 import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,6 +68,11 @@ public abstract class Entity {
 
     public double bottom() {
         return getY() + getHeight();
+    }
+    
+    public Rectangle getBoundingRect(){
+        return new Rectangle((int)getX(), (int)getY(), (int)getWidth(),
+                (int)getHeight());
     }
     
     public final void setParent(Entity parent){

@@ -12,7 +12,7 @@ import java.awt.image.BufferedImage;
  * @author igor
  */
 public class Tile {
-    
+
     protected TileType type;
     protected Point position;
     protected BufferedImage image;
@@ -24,27 +24,27 @@ public class Tile {
         this.image = Images.resizeImage(image, scale);
         this.scale = scale;
     }
-    
-    public Point getPosition(){
+
+    public Point getPosition() {
         return this.position;
     }
-    
-    public double getX(){
+
+    public final double getX() {
         return this.position.x;
     }
-    
-    public double getY(){
+
+    public final double getY() {
         return this.position.y;
     }
-    
-    public int getRow(){
-        return (int)(this.position.y / Game.HALF_TILE_SIZE);
+
+    public int getRow() {
+        return (int) (this.position.y / Game.HALF_TILE_SIZE);
     }
-    
-    public int getColumn(){
-        return (int)(this.position.x / Game.HALF_TILE_SIZE);
+
+    public int getColumn() {
+        return (int) (this.position.x / Game.HALF_TILE_SIZE);
     }
-    
+
     public BufferedImage getImage() {
         return this.image;
     }
@@ -56,14 +56,14 @@ public class Tile {
     public double getScale() {
         return this.scale;
     }
-    
-    public void update(KeyboardState keyboardState, double frameTime){
-        
+
+    public void update(KeyboardState keyboardState, double frameTime) {
+
     }
 
-    public void draw(Graphics2D g, int x, int y) {
-        g.drawImage(this.image, (int) (x * this.scale), (int) (y * this.scale),
-                null);
+    public void draw(Graphics2D g) {
+        g.drawImage(this.image, (int) (getX() * this.scale), (int) (getY()
+                * this.scale), null);
     }
 
 }

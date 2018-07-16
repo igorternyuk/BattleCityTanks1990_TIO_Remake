@@ -26,6 +26,7 @@ public class Game implements Runnable {
     public static final int HALF_HEIGHT = HEIGHT / 2;
     public static final int TILE_SIZE = 16;
     public static final int HALF_TILE_SIZE = TILE_SIZE / 2;
+    public static final int QUARTER_TILE_SIZE = HALF_TILE_SIZE / 2;
     public static final double SCALE = 2;
     public static final int TILES_IN_WIDTH = (int) ((WIDTH - 4 * TILE_SIZE)
             / SCALE / HALF_TILE_SIZE);

@@ -11,9 +11,8 @@ public class MetalTile extends Tile{
     
     protected int health;
     
-    public MetalTile(TileType type, Point position, BufferedImage image,
-            double scale) {
-        super(type, position, image, scale);
+    protected MetalTile(Point position, BufferedImage image, double scale) {
+        super(TileType.METAL, position, image, scale);
     }
     
     public void hit(int damage){

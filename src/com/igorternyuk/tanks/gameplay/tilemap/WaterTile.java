@@ -2,6 +2,7 @@ package com.igorternyuk.tanks.gameplay.tilemap;
 
 import com.igorternyuk.tanks.graphics.animations.Animation;
 import com.igorternyuk.tanks.graphics.animations.AnimationPlayMode;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 
 /**
@@ -10,8 +11,8 @@ import java.awt.image.BufferedImage;
  */
 public class WaterTile extends AnimatedTile<WaterAnimationType> {
     
-    public WaterTile(TileType type, BufferedImage image, double scale) {
-        super(type, image, scale);
+    protected WaterTile(Point position, BufferedImage image, double scale) {
+        super(TileType.WATER, position, image, scale);
         loadAnimations();
         this.animationManager.setCurrentAnimation(WaterAnimationType.REGULAR);
         this.animationManager.getCurrentAnimation().

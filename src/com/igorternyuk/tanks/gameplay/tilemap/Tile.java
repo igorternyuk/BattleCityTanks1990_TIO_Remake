@@ -12,13 +12,26 @@ import java.awt.image.BufferedImage;
  * @author igor
  */
 public class Tile {
+    
+    public static Tile createTile(TileType type, Point poisiton
+            , BufferedImage image, double scale){
+        if(type == TileType.BRICK){
+            return new BrickTile(poisiton, image, scale);
+        } else if(type == TileType.METAL){
+            return new MetalTile(poisiton, image, scale);
+        } else if(type == TileType.WATER){
+            return new WaterTile(poisiton, image, scale);
+        } 
+        return new Tile(type, poisiton, image, scale);
+    }
 
     protected TileType type;
     protected Point position;
     protected BufferedImage image;
     protected double scale;
 
-    public Tile(TileType type, Point position, BufferedImage image, double scale) {
+    protected Tile(TileType type, Point position, BufferedImage image,
+            double scale) {
         this.type = type;
         this.position = position;
         this.image = Images.resizeImage(image, scale);

@@ -20,7 +20,7 @@ public enum TileType {
             return true;
         }
     },
-    BRICKS(1, new Rectangle(0 * Game.HALF_TILE_SIZE, 0 * Game.HALF_TILE_SIZE,
+    BRICK(1, new Rectangle(0 * Game.HALF_TILE_SIZE, 0 * Game.HALF_TILE_SIZE,
             Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE), "Bricks") {
         @Override
         public boolean isDestroyable() {
@@ -96,9 +96,9 @@ public enum TileType {
     private Rectangle boundingRect;
     private String description;
 
-    private TileType(int number, Rectangle spriteSheet, String description) {
+    private TileType(int number, Rectangle boundingRect, String description) {
         this.number = number;
-        this.boundingRect = spriteSheet;
+        this.boundingRect = boundingRect;
         this.description = description;
     }
 

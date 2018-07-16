@@ -128,7 +128,7 @@ public class LevelState extends GameState {
                 ImageIdentifier.TEXTURE_ATLAS));
         loadSprites();
         loadTankSpriteSheetMaps();
-        this.tileMap = new TileMap();
+        this.tileMap = new TileMap(Game.SCALE);
         this.tileMap.loadMap("/tilemap/level1.map");
 
         startNewGame();

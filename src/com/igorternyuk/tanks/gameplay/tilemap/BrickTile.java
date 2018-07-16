@@ -43,8 +43,8 @@ public class BrickTile extends Tile {
 
     private WallQuarter[][] wall = new WallQuarter[SUBTILE_COUNT][SUBTILE_COUNT];
 
-    public BrickTile(Point position, BufferedImage image, double scale) {
-        super(TileType.BRICKS, position, image, scale);
+    protected BrickTile(Point position, BufferedImage image, double scale) {
+        super(TileType.BRICK, position, image, scale);
         for (int row = 0; row < this.wall.length; ++row) {
             for (int col = 0; col < this.wall[row].length; ++col) {
                 this.wall[row][col] = new WallQuarter(true, new Rectangle(

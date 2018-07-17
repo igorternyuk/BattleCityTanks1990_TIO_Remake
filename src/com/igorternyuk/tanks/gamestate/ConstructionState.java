@@ -298,9 +298,9 @@ public class ConstructionState extends GameState {
             return;
         }
         drawTileMap(g);
-        drawSelectedTile(g);
         highlightForbiddenTiles(g);
         drawGrid(g);
+        drawSelectedTile(g);
         drawAllButtons(g);
     }
 

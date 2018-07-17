@@ -151,10 +151,10 @@ public class TileMap {
         } else if(tileType == TileType.WATER){
             this.waterTiles.add((WaterTile)tile);
         } else {
-            if (this.tiles[col][row].getType() == TileType.BUSH) {
-                this.bushTiles.remove(this.tiles[col][row]);
-            } else if(this.tiles[col][row].getType() == TileType.WATER){
-                this.waterTiles.remove((WaterTile)this.tiles[col][row]);
+            if (this.tiles[row][col].getType() == TileType.BUSH) {
+                this.bushTiles.remove(this.tiles[row][col]);
+            } else if(this.tiles[row][col].getType() == TileType.WATER){
+                this.waterTiles.remove((WaterTile)this.tiles[row][col]);
             }
         }
         this.tiles[row][col] = tile;

@@ -15,6 +15,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,30 +36,32 @@ public class ConstructionState extends GameState {
 
     private class TileButton {
 
-        private Rectangle boundingRect;
         private Tile tile;
+        private Rectangle boundingRect;
         private String label;
 
-        public TileButton(Rectangle boundingRect, Tile tile) {
-            this.boundingRect = boundingRect;
+        public TileButton(Tile tile) {
             this.tile = tile;
+            this.boundingRect = new Rectangle((int) tile.getX(), (int) tile.
+                    getY(),
+                    Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE);
             this.label = this.tile.getType().getDescription();
         }
 
         public void draw(Graphics2D g) {
             g.setColor(TILE_BUTTON_LABEL_COLOR);
             g.setFont(TILE_BUTTON_LABEL_FONT);
-            g.drawString(label, (int) (this.boundingRect.x * Game.SCALE
+            g.drawString(label, (int) (this.tile.getX() * Game.SCALE
                     - Game.HALF_TILE_SIZE),
-                    (int) (this.boundingRect.y * Game.SCALE - Game.TILE_SIZE));
+                    (int) (this.tile.getY() * Game.SCALE - Game.TILE_SIZE));
             if (this.tile.getType() == TileType.EMPTY) {
                 g.setColor(Color.red);
-                g.drawRect((int) (this.boundingRect.x * Game.SCALE - 1),
-                        (int) (this.boundingRect.y * Game.SCALE - 1),
-                        this.boundingRect.width + 1,
-                        this.boundingRect.height + 1);
+                g.drawRect((int) (this.tile.getX() * Game.SCALE - 1),
+                        (int) (this.tile.getY() * Game.SCALE - 1),
+                        (int)(Game.HALF_TILE_SIZE * Game.SCALE) + 1,
+                        (int)(Game.HALF_TILE_SIZE * Game.SCALE) + 1);
             }
-            this.tile.draw(g, this.boundingRect.x, this.boundingRect.y);
+            this.tile.draw(g);
         }
     }
 
@@ -113,17 +116,20 @@ public class ConstructionState extends GameState {
     }
 
     private void fillTileButtonArray() {
-        Map<TileType, Tile> allTiles = this.tileMap.getAllTiles();
+        Map<TileType, BufferedImage> tileTypeImageMap = this.tileMap.
+                getTileTypeImageMap();
         TileType[] allTypes = TileType.values();
+
+        int x = Game.TILES_IN_WIDTH * Game.HALF_TILE_SIZE
+                + Game.HALF_TILE_SIZE;
+
         for (int i = 0; i < allTypes.length; ++i) {
-            int x = Game.TILES_IN_WIDTH * Game.HALF_TILE_SIZE
-                    + Game.HALF_TILE_SIZE;
+            TileType currTileType = allTypes[i];
             int y = 2 * Game.TILE_SIZE * (i + 1);
-            int w = Game.TILE_SIZE;
-            int h = Game.TILE_SIZE;
-            Rectangle rect = new Rectangle(x, y, w, h);
-            System.out.println("rect " + i + " = " + rect);
-            tileButtons.add(new TileButton(rect, allTiles.get(allTypes[i])));
+            Point position = new Point(x, y);
+            Tile tile = Tile.createTile(currTileType, position,
+                    tileTypeImageMap.get(currTileType), Game.SCALE);
+            tileButtons.add(new TileButton(tile));
         }
     }
 
@@ -164,7 +170,7 @@ public class ConstructionState extends GameState {
         for (SpriteSheetIdentifier identifier : SpriteSheetIdentifier.values()) {
             this.spriteSheetManager.put(identifier, this.atlas);
         }
-        tileMap = new TileMap();
+        tileMap = new TileMap(Game.SCALE);
         tileMap.loadMap("/tilemap/level1.map");
         this.enemyTankAppearancePositions.addAll(this.tileMap.
                 getEnemyTankAppearencePositions());
@@ -209,12 +215,12 @@ public class ConstructionState extends GameState {
             Button btn = this.buttons.get(i);
             if (btn.boundingRect.contains(e.getX(), e.getY())) {
                 btn.onClick.run();
-                break;
+                return;
             }
         }
 
         Point clickedPoint = new Point((int) (e.getX() / Game.SCALE),
-                (int) (e.getY() / 2));
+                (int) (e.getY() / Game.SCALE));
 
         if (!this.tileSelected) {
             for (int i = 0; i < this.tileButtons.size(); ++i) {
@@ -243,8 +249,8 @@ public class ConstructionState extends GameState {
                 && !checkIfInEnemyAppearancePositions(clickPosition)
                 && !checkIfInEagleArea(clickPosition);
     }
-    
-    private boolean checkIfInEagleProtectionArea(Point pos){
+
+    private boolean checkIfInEagleProtectionArea(Point pos) {
         for (int i = 0; i < this.eagleProtectionPositions.size(); ++i) {
             Point point = this.eagleProtectionPositions.get(i);
             Rectangle currTileBoundingRect = new Rectangle(
@@ -255,8 +261,8 @@ public class ConstructionState extends GameState {
         }
         return false;
     }
-    
-    private boolean checkIfInEnemyAppearancePositions(Point pos){
+
+    private boolean checkIfInEnemyAppearancePositions(Point pos) {
         for (int i = 0; i < this.enemyTankAppearancePositions.size(); ++i) {
             Point point = this.enemyTankAppearancePositions.get(i);
             Rectangle currTileBoundingRect = new Rectangle(
@@ -267,10 +273,10 @@ public class ConstructionState extends GameState {
         }
         return false;
     }
-    
-    private boolean checkIfInEagleArea(Point pos){
+
+    private boolean checkIfInEagleArea(Point pos) {
         Rectangle eagleArea = new Rectangle(LevelState.EAGLE_POSITION.x,
-            LevelState.EAGLE_POSITION.y, Game.TILE_SIZE, Game.TILE_SIZE);
+                LevelState.EAGLE_POSITION.y, Game.TILE_SIZE, Game.TILE_SIZE);
         return eagleArea.contains(pos);
     }
 
@@ -305,10 +311,13 @@ public class ConstructionState extends GameState {
 
     private void drawSelectedTile(Graphics2D g) {
         if (this.tileSelected) {
-            Tile currTile = this.tileMap.getAllTiles().
-                    get(this.selectedTileType);
-            currTile.draw(g, this.selectedTileDrawPosition.x,
-                    this.selectedTileDrawPosition.y);
+            BufferedImage currTileImage = this.tileMap.getTileTypeImageMap().
+                    get(
+                            this.selectedTileType);
+            g.drawImage(currTileImage,
+                    (int)(this.selectedTileDrawPosition.x * Game.SCALE),
+                    (int)(this.selectedTileDrawPosition.y * Game.SCALE),
+                    Game.TILE_SIZE, Game.TILE_SIZE, null);
         }
     }
 

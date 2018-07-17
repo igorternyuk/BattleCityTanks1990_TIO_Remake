@@ -24,16 +24,14 @@ public class TileMap {
     private static final double EAGLE_PROTECTION_LIFE_TIME = 23;
     private static final double EAGLE_PROTECTION_BLINKING_TIME = 5;
     private static final double EAGLE_PROTECTION_BLINK_PERIOD = 0.25;
+    private double scale;
     private Tile[][] tiles = new Tile[Game.TILES_IN_HEIGHT][Game.TILES_IN_WIDTH];
     private List<Tile> bushTiles = new ArrayList<>();
     private List<WaterTile> waterTiles = new ArrayList<>();
-    private double scale;
     private List<Point> enemyTankAppearancePositions = new ArrayList<>();
     private List<Point> eagleProtectionTilePositions = new ArrayList<>();
     private BufferedImage spriteSheet;
     private Map<TileType, BufferedImage> tileTypeImageMap = new HashMap<>();
-
-    private boolean hasWaterTiles = false;
     private String pathToTheCurrentMapFile;
     private boolean mapLoaded = false;
     private boolean eagleProtectionActive = false;
@@ -49,6 +47,12 @@ public class TileMap {
         setEagleProtectionPositions();
         loadSpriteSheet();
     }
+
+    public Map<TileType, BufferedImage> getTileTypeImageMap() {
+        return Collections.unmodifiableMap(this.tileTypeImageMap);
+    }
+    
+    
 
     public boolean isEagleProtectionActive() {
         return this.eagleProtectionActive;

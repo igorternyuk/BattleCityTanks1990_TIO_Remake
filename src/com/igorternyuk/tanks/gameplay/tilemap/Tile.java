@@ -13,8 +13,8 @@ import java.awt.image.BufferedImage;
  */
 public class Tile {
     
-    public static Tile createTile(TileType type, Point poisiton
-            , BufferedImage image, double scale){
+    public static Tile createTile(TileType type, Point poisiton,
+             BufferedImage image, double scale){
         if(type == TileType.BRICK){
             return new BrickTile(poisiton, image, scale);
         } else if(type == TileType.METAL){
@@ -48,6 +48,14 @@ public class Tile {
 
     public final double getY() {
         return this.position.y;
+    }
+    
+    public int getWidth(){
+        return this.image.getWidth();
+    }
+    
+    public int getHeight(){
+        return this.image.getHeight();
     }
 
     public int getRow() {

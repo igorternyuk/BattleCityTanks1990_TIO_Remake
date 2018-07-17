@@ -17,7 +17,7 @@ public class PlayerTankIdentifier {
     PlayerTankType type;
 
     public PlayerTankIdentifier() {
-        this(TankColor.YELLOW, Heading.NORTH, PlayerTankType.REGULAR);
+        this(TankColor.YELLOW, Heading.NORTH, PlayerTankType.BASIC);
     }
 
     public PlayerTankIdentifier(TankColor color, Heading heading,

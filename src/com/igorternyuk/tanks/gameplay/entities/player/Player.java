@@ -80,14 +80,14 @@ public class Player extends Tank {
 
     public void promote() {
         PlayerTankType currType = this.identifier.getType();
-        if (currType == PlayerTankType.HEAVY) {
+        if (currType == PlayerTankType.ARMORED) {
             return;
         }
         setTankType(currType.next());
     }
 
     public void promoteToHeavy() {
-        setTankType(PlayerTankType.HEAVY);
+        setTankType(PlayerTankType.ARMORED);
     }
 
     private void setTankType(PlayerTankType tankType) {
@@ -140,7 +140,7 @@ public class Player extends Tank {
                 this.identifier.getType().getProjectileSpeed(),
                 this.direction);
         projectile.setDamage(this.identifier.getType().getProjectileDamage());
-        if (this.identifier.getType() == PlayerTankType.HEAVY) {
+        if (this.identifier.getType() == PlayerTankType.ARMORED) {
             projectile.setAntiarmour(true);
         }
         this.level.getEntityManager().addEntity(projectile);
@@ -168,7 +168,7 @@ public class Player extends Tank {
         this.health = 100;
         setPosition(this.respawnX, this.respawnY);
         addProtection();
-        this.identifier.setType(PlayerTankType.REGULAR);
+        this.identifier.setType(PlayerTankType.BASIC);
     }
     
     protected void reset(){

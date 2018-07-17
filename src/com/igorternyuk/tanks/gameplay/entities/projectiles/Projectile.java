@@ -5,6 +5,10 @@ import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
+import com.igorternyuk.tanks.gameplay.tilemap.BrickTile;
+import com.igorternyuk.tanks.gameplay.tilemap.Tile;
+import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
+import com.igorternyuk.tanks.gameplay.tilemap.TileType;
 import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.graphics.images.Sprite;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
@@ -89,9 +93,65 @@ public class Projectile extends Entity {
     public void update(KeyboardState keyboardState, double frameTime) {
         super.update(keyboardState, frameTime);
         move(frameTime);
+        handleMapCollision();
         this.sprite.setPosition(getX(), getY());
     }
+    
+    private void handleMapCollision(){
+        TileMap tileMap = this.level.getTileMap();
+        final int rowMin = (int)(top() / Game.HALF_TILE_SIZE); 
+        final int rowMax = (int)(bottom() - 1) / Game.HALF_TILE_SIZE; 
+        final int colMin = (int)(left() / Game.HALF_TILE_SIZE); 
+        final int colMax = (int)(right() - 1) / Game.HALF_TILE_SIZE; 
+        
+        boolean collision = false;
+        
+        for(int row = rowMin; row <= rowMax; ++row){
+            for(int col = colMin; col <= colMax; ++col){
+                Tile tile = tileMap.getTile(row, col);
+                if(tile.getType() == TileType.BRICK){
+                    BrickTile brickTile = (BrickTile)tile;
+                    if(brickTile.checkCollision(this)){
+                        brickTile.handleProjectileCollision(this);
+                        collision = true;
+                    }
+                    
+                } else if(tile.getType() == TileType.METAL){
+                    
+                }
+            }
+        }
+        
+        if(collision){
+            this.explode();
+        }
+    }
+    
+    /*
+    protected void handleMapCollision(Direction direction) {
+        final int rowMin = (int) this.top() / this.tileSize;
+        final int rowMax = (int) (this.bottom() - 1) / this.tileSize;
+        final int colMin = (int) this.left() / this.tileSize;
+        final int colMax = (int) (this.right() - 1) / this.tileSize;
 
+        outer:
+        for (int row = rowMin; row <= rowMax; ++row) {
+            for (int col = colMin; col <= colMax; ++col) {
+                if (this.tileMap.getTileType(row, col).equals(TileType.BLOCKED)) {
+                    if (direction == Direction.VERTICAL) {
+                        handleVerticalCollision(row, col);
+                    } else if (direction == Direction.HORIZONTAL) {
+                        handleHorizontalCollision(row, col);
+                    }
+                    //If we've got a collision we can terminate the further checking
+                    break outer;
+                }
+            }
+        }
+    }
+    */
+    
+    
     @Override
     public void draw(Graphics2D g) {
         super.draw(g);

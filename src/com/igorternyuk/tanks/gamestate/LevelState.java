@@ -151,7 +151,7 @@ public class LevelState extends GameState {
     }
 
     private void createEntities() {
-        Player tanque = new Player(this, PlayerTankType.MIDDLE,
+        Player tanque = new Player(this, PlayerTankType.ARMORED,
                 PLAYER_RESPAWN_POSITION.x, PLAYER_RESPAWN_POSITION.y,
                 Direction.NORTH
         );

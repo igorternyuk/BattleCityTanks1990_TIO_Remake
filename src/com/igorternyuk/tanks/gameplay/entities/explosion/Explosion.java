@@ -30,7 +30,7 @@ public class Explosion extends AnimatedEntity<ExplosionType> {
 
     @Override
     public final void loadAnimations() {
-        System.out.println("Loading explosion animation...");
+        //System.out.println("Loading explosion animation...");
         BufferedImage spriteSheet;
         if (this.explosionType == ExplosionType.SMALL) {
             spriteSheet = SpriteSheetManager.getInstance().get(

@@ -10,7 +10,7 @@ import java.util.List;
  * @author igor
  */
 public enum ExplosionType {
-    BIG(0.2, new Rectangle(0, 0, 2 * Game.TILE_SIZE, 2 * Game.TILE_SIZE), 2
+    BIG(0.1, new Rectangle(0, 0, 2 * Game.TILE_SIZE, 2 * Game.TILE_SIZE), 2
             * Game.TILE_SIZE, 2),
     SMALL(0.2, new Rectangle(0, 0, Game.TILE_SIZE, Game.TILE_SIZE),
             Game.TILE_SIZE, 3);

@@ -47,12 +47,38 @@ public class TileMap {
         setEagleProtectionPositions();
         loadSpriteSheet();
     }
+    
+    public int getTilesInWidth(){
+        return Game.TILES_IN_WIDTH;
+    }
+    
+    public int getTilesInHeight(){
+        return Game.TILES_IN_HEIGHT;
+    }
+    
+    public int fixRowIndex(int row){
+        if(row < 0){
+            row = 0;
+        }
+        if(row > getTilesInHeight() - 1){
+            row = getTilesInHeight() - 1;
+        }
+        return row;
+    }
+    
+    public int fixColumnIndex(int col){
+        if(col < 0){
+            col = 0;
+        }
+        if(col > getTilesInWidth() - 1){
+            col = getTilesInWidth() - 1;
+        }
+        return col;
+    }
 
     public Map<TileType, BufferedImage> getTileTypeImageMap() {
         return Collections.unmodifiableMap(this.tileTypeImageMap);
     }
-    
-    
 
     public boolean isEagleProtectionActive() {
         return this.eagleProtectionActive;
@@ -90,10 +116,10 @@ public class TileMap {
                         position, this.tileTypeImageMap.get(currTileType),
                         this.scale);
                 this.tiles[row][col] = newTile;
-                if(currTileType == TileType.BUSH){
+                if (currTileType == TileType.BUSH) {
                     this.bushTiles.add(newTile);
-                } else if(currTileType == TileType.WATER){
-                    this.waterTiles.add((WaterTile)newTile);
+                } else if (currTileType == TileType.WATER) {
+                    this.waterTiles.add((WaterTile) newTile);
                 }
             }
         }
@@ -116,8 +142,8 @@ public class TileMap {
     public TileType getTileType(int row, int col) {
         return getTile(row, col).getType();
     }
-    
-    public Tile getTile(int row, int col){
+
+    public Tile getTile(int row, int col) {
         if (!this.mapLoaded) {
             throw new RuntimeException("Tile map was not loaded");
         }
@@ -140,21 +166,21 @@ public class TileMap {
             throw new IllegalArgumentException(
                     "Row or column index is out of game field bounds");
         }
-        
+
         Point selectedPoint = new Point(col * Game.HALF_TILE_SIZE,
                 row * Game.HALF_TILE_SIZE);
         Tile tile = Tile.createTile(tileType, selectedPoint,
                 this.tileTypeImageMap.get(tileType), this.scale);
-        
+
         if (tileType == TileType.BUSH) {
             this.bushTiles.add(tile);
-        } else if(tileType == TileType.WATER){
-            this.waterTiles.add((WaterTile)tile);
+        } else if (tileType == TileType.WATER) {
+            this.waterTiles.add((WaterTile) tile);
         } else {
             if (this.tiles[row][col].getType() == TileType.BUSH) {
                 this.bushTiles.remove(this.tiles[row][col]);
-            } else if(this.tiles[row][col].getType() == TileType.WATER){
-                this.waterTiles.remove((WaterTile)this.tiles[row][col]);
+            } else if (this.tiles[row][col].getType() == TileType.WATER) {
+                this.waterTiles.remove((WaterTile) this.tiles[row][col]);
             }
         }
         this.tiles[row][col] = tile;
@@ -204,6 +230,29 @@ public class TileMap {
     }
 
     public void update(KeyboardState keyboardState, double frameTime) {
+        for (int row = 0; row < this.tiles.length; ++row) {
+            for (int col = 0; col < this.tiles[row].length; ++col) {
+                Tile currTile = this.tiles[row][col];
+                boolean needToBeReplaced = false;
+                if (currTile.getType().isDestroyable()) {
+                    if (currTile.getType() == TileType.BRICK) {
+                        BrickTile brickTile = (BrickTile) currTile;
+                        needToBeReplaced = !brickTile.isAlive();
+                    } else if (currTile.getType() == TileType.METAL) {
+                        MetalTile brickTile = (MetalTile) currTile;
+                        needToBeReplaced = !brickTile.isAlive();
+                    }
+                }
+                if (needToBeReplaced) {
+                    Point currTilePosition = new Point((int) currTile.getX(),
+                            (int) currTile.getY());
+                    this.tiles[row][col] = Tile.createTile(TileType.EMPTY,
+                            currTilePosition, this.tileTypeImageMap.get(
+                                    TileType.EMPTY),
+                            this.scale);
+                }
+            }
+        }
         this.waterTiles.forEach(waterTile -> waterTile.update(keyboardState,
                 frameTime));
         updateProtection(keyboardState, frameTime);

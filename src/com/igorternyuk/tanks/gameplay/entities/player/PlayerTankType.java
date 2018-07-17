@@ -40,7 +40,7 @@ public enum PlayerTankType {
             return PlayerTankType.ARMORED;
         }
     },
-    ARMORED(3, 48, 96, 100, 3 * Game.TILE_SIZE) {
+    ARMORED(3, 48, 96, 50, 3 * Game.TILE_SIZE) {
         @Override
         public boolean canRepeatFire() {
             return false;

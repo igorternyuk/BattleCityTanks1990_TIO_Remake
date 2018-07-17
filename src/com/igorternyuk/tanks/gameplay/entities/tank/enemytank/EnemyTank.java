@@ -158,8 +158,20 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
         super.update(keyboardState, frameTime);
+        /*
+        if (this.moving) {
+            move(frameTime);
+            handleMapCollision();
+            fixBounds();
+        }
+        */
+        updateGleamingColor(frameTime);
+        updateAnimation();
+        
+    }
+    
+    private void updateGleamingColor(double frameTime){
         if (this.gleaming) {
-            //System.out.println("this.colorPlayingTimer = " + this.colorPlayingTimer);
             this.colorPlayingTimer += frameTime;
             if (this.colorPlayingTimer >= COLOR_CHANGING_PERIOD) {
                 TankColor currColor = this.identifier.getColor();
@@ -167,8 +179,6 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
                 this.colorPlayingTimer = 0;
             }
         }
-        updateAnimation();
-
     }
 
     private TankColor calcColorDependingOnHealth() {

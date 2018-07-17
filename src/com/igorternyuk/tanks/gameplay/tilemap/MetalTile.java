@@ -1,5 +1,6 @@
 package com.igorternyuk.tanks.gameplay.tilemap;
 
+import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 
@@ -15,8 +16,14 @@ public class MetalTile extends Tile{
         super(TileType.METAL, position, image, scale);
     }
     
-    public void hit(int damage){
-        this.health -= damage;
+    public void hit(Projectile projectile){
+        if(!projectile.isAntiarmour()){
+            return;
+        }
+        this.health -= projectile.getDamage();
     }
     
+    public boolean isAlive(){
+        return this.health > 0;
+    }
 }

@@ -14,6 +14,8 @@ import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTank;
 import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTankType;
 import com.igorternyuk.tanks.gameplay.entities.tank.protection.Protection;
 import com.igorternyuk.tanks.gameplay.entities.tank.protection.ProtectionType;
+import com.igorternyuk.tanks.gameplay.tilemap.Tile;
+import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
 import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.graphics.animations.Animation;
 import com.igorternyuk.tanks.graphics.animations.AnimationPlayMode;
@@ -185,33 +187,43 @@ public class Player extends Tank {
     }
 
     private void handleUserInput(KeyboardState keyboardState) {
+        
+        this.moving = false;
+        
         if (keyboardState.isKeyPressed(KeyEvent.VK_A)
                 || keyboardState.isKeyPressed(KeyEvent.VK_LEFT)) {
             setDirection(Direction.WEST);
             this.moving = true;
             this.identifier.setHeading(Heading.WEST);
             setProperAnimation();
-        } else if (keyboardState.isKeyPressed(KeyEvent.VK_D)
+        } 
+        
+        if (keyboardState.isKeyPressed(KeyEvent.VK_D)
                 || keyboardState.isKeyPressed(KeyEvent.VK_RIGHT)) {
             setDirection(Direction.EAST);
             this.moving = true;
             this.identifier.setHeading(Heading.EAST);
             setProperAnimation();
-        } else if (keyboardState.isKeyPressed(KeyEvent.VK_W)
+        } 
+        
+        if (keyboardState.isKeyPressed(KeyEvent.VK_W)
                 || keyboardState.isKeyPressed(KeyEvent.VK_UP)) {
             setDirection(Direction.NORTH);
             this.moving = true;
             this.identifier.setHeading(Heading.NORTH);
             setProperAnimation();
-        } else if (keyboardState.isKeyPressed(KeyEvent.VK_S)
+        } 
+        
+        if (keyboardState.isKeyPressed(KeyEvent.VK_S)
                 || keyboardState.isKeyPressed(KeyEvent.VK_DOWN)) {
             setDirection(Direction.SOUTH);
             this.moving = true;
             this.identifier.setHeading(Heading.SOUTH);
             setProperAnimation();
-        } else {
+        }
+        
+        if(!this.moving) {
             this.moving = false;
-            this.animationManager.getCurrentAnimation().stop();
         }
 
         if (keyboardState.isKeyPressed(KeyEvent.VK_F)) {
@@ -250,34 +262,11 @@ public class Player extends Tank {
         handleUserInput(keyboardState);
         if (this.moving) {
             move(frameTime);
+            handleMapCollision();
             fixBounds();
         }
         super.update(keyboardState, frameTime);
         updateProtectionTimer(frameTime);
         updateShootingTimer(frameTime);
     }
-    
-    /*
-    protected void handleMapCollision(Direction direction) {
-        final int rowMin = (int) this.top() / this.tileSize;
-        final int rowMax = (int) (this.bottom() - 1) / this.tileSize;
-        final int colMin = (int) this.left() / this.tileSize;
-        final int colMax = (int) (this.right() - 1) / this.tileSize;
-
-        outer:
-        for (int row = rowMin; row <= rowMax; ++row) {
-            for (int col = colMin; col <= colMax; ++col) {
-                if (this.tileMap.getTileType(row, col).equals(TileType.BLOCKED)) {
-                    if (direction == Direction.VERTICAL) {
-                        handleVerticalCollision(row, col);
-                    } else if (direction == Direction.HORIZONTAL) {
-                        handleHorizontalCollision(row, col);
-                    }
-                    //If we've got a collision we can terminate the further checking
-                    break outer;
-                }
-            }
-        }
-    }
-    */
 }

@@ -41,8 +41,8 @@ public class Projectile extends Entity {
     public ProjectileType getType() {
         return this.type;
     }
-    
-    public void setDamage(int damage){
+
+    public void setDamage(int damage) {
         this.damage = damage;
     }
 
@@ -62,8 +62,8 @@ public class Projectile extends Entity {
     public boolean isAlive() {
         return super.isAlive() && !isOutOfBounds();
     }
-    
-    public void explode(){
+
+    public void explode() {
         super.explode(ExplosionType.SMALL);
         destroy();
     }
@@ -96,37 +96,41 @@ public class Projectile extends Entity {
         handleMapCollision();
         this.sprite.setPosition(getX(), getY());
     }
-    
-    private void handleMapCollision(){
+
+    private void handleMapCollision() {
         TileMap tileMap = this.level.getTileMap();
-        final int rowMin = (int)(top() / Game.HALF_TILE_SIZE); 
-        final int rowMax = (int)(bottom() - 1) / Game.HALF_TILE_SIZE; 
-        final int colMin = (int)(left() / Game.HALF_TILE_SIZE); 
-        final int colMax = (int)(right() - 1) / Game.HALF_TILE_SIZE; 
-        
+        final int rowMin = tileMap.fixRowIndex((int) (top()
+                / Game.HALF_TILE_SIZE));
+        final int rowMax = tileMap.fixRowIndex((int) (bottom() - 1)
+                / Game.HALF_TILE_SIZE);
+        final int colMin = tileMap.fixColumnIndex((int) (left()
+                / Game.HALF_TILE_SIZE));
+        final int colMax = tileMap.fixColumnIndex((int) (right() - 1)
+                / Game.HALF_TILE_SIZE);
+
         boolean collision = false;
-        
-        for(int row = rowMin; row <= rowMax; ++row){
-            for(int col = colMin; col <= colMax; ++col){
+
+        for (int row = rowMin; row <= rowMax; ++row) {
+            for (int col = colMin; col <= colMax; ++col) {
                 Tile tile = tileMap.getTile(row, col);
-                if(tile.getType() == TileType.BRICK){
-                    BrickTile brickTile = (BrickTile)tile;
-                    if(brickTile.checkCollision(this)){
+                if (tile.getType() == TileType.BRICK) {
+                    BrickTile brickTile = (BrickTile) tile;
+                    if (brickTile.checkIfCollision(this)) {
                         brickTile.handleProjectileCollision(this);
                         collision = true;
                     }
-                    
-                } else if(tile.getType() == TileType.METAL){
-                    
+
+                } else if (tile.getType() == TileType.METAL) {
+
                 }
             }
         }
-        
-        if(collision){
+
+        if (collision) {
             this.explode();
         }
     }
-    
+
     /*
     protected void handleMapCollision(Direction direction) {
         final int rowMin = (int) this.top() / this.tileSize;
@@ -149,9 +153,7 @@ public class Projectile extends Entity {
             }
         }
     }
-    */
-    
-    
+     */
     @Override
     public void draw(Graphics2D g) {
         super.draw(g);

@@ -6,7 +6,6 @@ import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -245,7 +244,6 @@ public abstract class Entity {
 
     public void update(KeyboardState keyboardState, double frameTime) {
         this.children.forEach(child -> {
-            //child.setPosition(this.x, this.y);
             child.update(keyboardState, frameTime);
         });
     }

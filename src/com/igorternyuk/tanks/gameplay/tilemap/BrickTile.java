@@ -18,6 +18,7 @@ import java.awt.image.BufferedImage;
 public class BrickTile extends Tile {
 
     private static final int SUBTILE_COUNT = 4;
+    private static final int DIMENSION = (int) (Math.sqrt(SUBTILE_COUNT));
 
     private class WallQuarter {
 
@@ -41,7 +42,7 @@ public class BrickTile extends Tile {
         }
     }
 
-    private WallQuarter[][] wall = new WallQuarter[SUBTILE_COUNT][SUBTILE_COUNT];
+    private WallQuarter[][] wall = new WallQuarter[DIMENSION][DIMENSION];
 
     protected BrickTile(Point position, BufferedImage image, double scale) {
         super(TileType.BRICK, position, image, scale);
@@ -56,12 +57,27 @@ public class BrickTile extends Tile {
         }
     }
 
-    public boolean checkCollision(Entity entity) {
+    public boolean isAlive() {
+        for (int row = 0; row < this.wall.length; ++row) {
+            for (int col = 0; col < this.wall[row].length; ++col) {
+                if (this.wall[row][col].exists) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean checkIfCollision(Entity entity) {
+        System.out.println("CheckIFCollision from BrickTile ");
         for (int row = 0; row < this.wall.length; ++row) {
             for (int col = 0; col < this.wall[row].length; ++col) {
                 if (this.wall[row][col].exists
                         && entity.getBoundingRect().intersects(
-                        this.wall[row][col].boundingRect)) {
+                                this.wall[row][col].boundingRect)) {
+                    System.out.println("COLLISION DETECTED row = " + row
+                            + " col = " + col);
                     return true;
                 }
             }
@@ -80,27 +96,19 @@ public class BrickTile extends Tile {
         }
     }
 
+    @Override
     public void handleTankCollision(Tank tank) {
+        outer:
         for (int row = 0; row < this.wall.length; ++row) {
             for (int col = 0; col < this.wall[row].length; ++col) {
                 Rectangle tankBoundingRect = tank.getBoundingRect();
                 Rectangle currWallQuarterBoundingRect =
                         this.wall[row][col].boundingRect;
                 if (tankBoundingRect.intersects(currWallQuarterBoundingRect)) {
-                    this.wall[row][col].exists = false;
                     Rectangle intersection = tankBoundingRect.intersection(
                             currWallQuarterBoundingRect);
-                    Direction currTankDirection = tank.getDirection();
-                    Direction oppositeDirection = currTankDirection.
-                            getOpposite();
-                    if (currTankDirection.isVertical()) {
-                        tank.setPosition(tank.getX(), tank.getY()
-                                + oppositeDirection.getVy() * intersection.y);
-                    } else if (currTankDirection.isHorizontal()) {
-                        tank.setPosition(tank.getX() + oppositeDirection.getVx()
-                                * intersection.x, tank.getY());
-                    }
-                    break;
+                    resetCollidingEntityPosition(intersection, tank);
+                    break outer;
                 }
             }
         }

@@ -14,6 +14,7 @@ public class MetalTile extends Tile{
     
     protected MetalTile(Point position, BufferedImage image, double scale) {
         super(TileType.METAL, position, image, scale);
+        this.health = 100;
     }
     
     public void hit(Projectile projectile){

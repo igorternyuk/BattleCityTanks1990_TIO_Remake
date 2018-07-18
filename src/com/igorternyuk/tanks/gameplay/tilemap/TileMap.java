@@ -100,7 +100,12 @@ public class TileMap {
 
     public void loadMap(String pathToMapFile) {
         int[][] map = Files.loadMapFromFile(pathToMapFile);
+        this.bushTiles.clear();
+        this.waterTiles.clear();
+        System.out.println("map[25][0] = " + map[25][0]);
         createTilesFromMap(map);
+        System.out.println("Number of bush tiles = " + this.bushTiles.size());
+        
         pathToTheCurrentMapFile = pathToMapFile;
         this.mapLoaded = true;
         System.out.println("The tile map was successfully loaded");

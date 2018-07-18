@@ -9,6 +9,7 @@ import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUp;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUpType;
 import com.igorternyuk.tanks.gameplay.entities.eagle.Eagle;
+import com.igorternyuk.tanks.gameplay.entities.eagle.EagleState;
 import com.igorternyuk.tanks.gameplay.entities.indicators.GameInfoPanel;
 import com.igorternyuk.tanks.gameplay.entities.player.Player;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankIdentifier;
@@ -174,7 +175,8 @@ public class LevelState extends GameState {
                 EntityType.ENEMY_TANK);
         for (int i = projectiles.size() - 1; i >= 0; --i) {
             Projectile projectile = (Projectile) projectiles.get(i);
-            if (projectile.collides(this.eagle)) {
+            if (this.eagle.getState() == EagleState.ALIVE
+                    && projectile.collides(this.eagle)) {
                 this.eagle.kill();
                 continue;
             }

@@ -223,6 +223,7 @@ public class ConstructionState extends GameState {
                 (int) (e.getY() / Game.SCALE));
 
         if (!this.tileSelected) {
+            System.out.println("Tile is not selected");
             for (int i = 0; i < this.tileButtons.size(); ++i) {
                 TileButton currButton = this.tileButtons.get(i);
                 if (currButton.boundingRect.inside(clickedPoint.x,
@@ -234,11 +235,14 @@ public class ConstructionState extends GameState {
                 }
             }
         } else {
+            System.out.println("Tile selected");
             if (!checkIfClickPositionAcceptable(clickedPoint)) {
+                System.out.println("Position is not acceptable");
                 return;
             }
             int row = (int) (e.getY() / Game.SCALE / Game.HALF_TILE_SIZE);
             int col = (int) (e.getX() / Game.SCALE / Game.HALF_TILE_SIZE);
+            System.out.println("this.selectedTileType = " + this.selectedTileType);
             this.tileMap.set(row, col, this.selectedTileType);
         }
     }

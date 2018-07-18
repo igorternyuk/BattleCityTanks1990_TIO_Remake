@@ -1,7 +1,6 @@
 package com.igorternyuk.tanks.gameplay.tilemap;
 
 import com.igorternyuk.tanks.gameplay.Game;
-import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
 import com.igorternyuk.tanks.gameplay.entities.tank.Tank;
@@ -70,14 +69,11 @@ public class BrickTile extends Tile {
 
     @Override
     public boolean checkIfCollision(Entity entity) {
-        System.out.println("CheckIFCollision from BrickTile ");
         for (int row = 0; row < this.wall.length; ++row) {
             for (int col = 0; col < this.wall[row].length; ++col) {
                 if (this.wall[row][col].exists
                         && entity.getBoundingRect().intersects(
                                 this.wall[row][col].boundingRect)) {
-                    System.out.println("COLLISION DETECTED row = " + row
-                            + " col = " + col);
                     return true;
                 }
             }

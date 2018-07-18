@@ -18,16 +18,16 @@ import java.awt.image.BufferedImage;
  */
 public class Tile {
 
-    public static Tile createTile(TileType type, Point poisiton,
+    public static Tile createTile(TileType type, Point position,
             BufferedImage image, double scale) {
         if (type == TileType.BRICK) {
-            return new BrickTile(poisiton, image, scale);
+            return new BrickTile(position, image, scale);
         } else if (type == TileType.METAL) {
-            return new MetalTile(poisiton, image, scale);
+            return new MetalTile(position, image, scale);
         } else if (type == TileType.WATER) {
-            return new WaterTile(poisiton, image, scale);
+            return new WaterTile(position, image, scale);
         }
-        return new Tile(type, poisiton, image, scale);
+        return new Tile(type, position, image, scale);
     }
 
     protected TileType type;

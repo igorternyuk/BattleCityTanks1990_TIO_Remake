@@ -78,6 +78,7 @@ public abstract class Tank<I> extends AnimatedEntity<I>{
                 Tile tile = tileMap.getTile(row, col);
                 if(tile.checkIfCollision(this)){
                     tile.handleTankCollision(this);
+                    System.out.println("row = " + row + " col = " + col + " Retornamos!");
                     return;
                 }
             }

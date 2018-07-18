@@ -188,44 +188,35 @@ public class Player extends Tank {
 
     private void handleUserInput(KeyboardState keyboardState) {
         
-        this.moving = false;
-        
         if (keyboardState.isKeyPressed(KeyEvent.VK_A)
                 || keyboardState.isKeyPressed(KeyEvent.VK_LEFT)) {
             setDirection(Direction.WEST);
             this.moving = true;
             this.identifier.setHeading(Heading.WEST);
             setProperAnimation();
-        } 
-        
-        if (keyboardState.isKeyPressed(KeyEvent.VK_D)
+        } else if (keyboardState.isKeyPressed(KeyEvent.VK_D)
                 || keyboardState.isKeyPressed(KeyEvent.VK_RIGHT)) {
             setDirection(Direction.EAST);
             this.moving = true;
             this.identifier.setHeading(Heading.EAST);
             setProperAnimation();
-        } 
-        
-        if (keyboardState.isKeyPressed(KeyEvent.VK_W)
+        } else if (keyboardState.isKeyPressed(KeyEvent.VK_W)
                 || keyboardState.isKeyPressed(KeyEvent.VK_UP)) {
             setDirection(Direction.NORTH);
             this.moving = true;
             this.identifier.setHeading(Heading.NORTH);
             setProperAnimation();
-        } 
-        
-        if (keyboardState.isKeyPressed(KeyEvent.VK_S)
+        } else if (keyboardState.isKeyPressed(KeyEvent.VK_S)
                 || keyboardState.isKeyPressed(KeyEvent.VK_DOWN)) {
             setDirection(Direction.SOUTH);
             this.moving = true;
             this.identifier.setHeading(Heading.SOUTH);
             setProperAnimation();
+        } else {
+            this.moving = false;
+            this.animationManager.getCurrentAnimation().stop();
         }
         
-        if(!this.moving) {
-            this.moving = false;
-        }
-
         if (keyboardState.isKeyPressed(KeyEvent.VK_F)) {
             fire();
         }

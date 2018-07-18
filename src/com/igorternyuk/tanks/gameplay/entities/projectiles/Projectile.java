@@ -6,6 +6,7 @@ import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
 import com.igorternyuk.tanks.gameplay.tilemap.BrickTile;
+import com.igorternyuk.tanks.gameplay.tilemap.MetalTile;
 import com.igorternyuk.tanks.gameplay.tilemap.Tile;
 import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
 import com.igorternyuk.tanks.gameplay.tilemap.TileType;
@@ -108,7 +109,7 @@ public class Projectile extends Entity {
         final int colMax = tileMap.fixColumnIndex((int) (right() - 1)
                 / Game.HALF_TILE_SIZE);
 
-        boolean collision = false;
+        boolean collisionOcurred = false;
 
         for (int row = rowMin; row <= rowMax; ++row) {
             for (int col = colMin; col <= colMax; ++col) {
@@ -117,16 +118,20 @@ public class Projectile extends Entity {
                     BrickTile brickTile = (BrickTile) tile;
                     if (brickTile.checkIfCollision(this)) {
                         brickTile.handleProjectileCollision(this);
-                        collision = true;
+                        collisionOcurred = true;
                     }
 
                 } else if (tile.getType() == TileType.METAL) {
-
+                    MetalTile metalTile = (MetalTile)tile;
+                    if(metalTile.checkIfCollision(this)){
+                        collisionOcurred = true;
+                        metalTile.hit(this);
+                    }
                 }
             }
         }
 
-        if (collision) {
+        if (collisionOcurred) {
             this.explode();
         }
     }

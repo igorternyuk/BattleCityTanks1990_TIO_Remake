@@ -94,9 +94,13 @@ public class BrickTile extends Tile {
 
     @Override
     public void handleTankCollision(Tank tank) {
+        System.out.println("Handling tank collision from BrickTile");
         outer:
         for (int row = 0; row < this.wall.length; ++row) {
             for (int col = 0; col < this.wall[row].length; ++col) {
+                if(!this.wall[row][col].exists){
+                    continue;
+                }
                 Rectangle tankBoundingRect = tank.getBoundingRect();
                 Rectangle currWallQuarterBoundingRect =
                         this.wall[row][col].boundingRect;
@@ -104,6 +108,8 @@ public class BrickTile extends Tile {
                     Rectangle intersection = tankBoundingRect.intersection(
                             currWallQuarterBoundingRect);
                     resetCollidingEntityPosition(intersection, tank);
+                    System.out.println("Collision with row = " + row + " col = "
+                            + col + " wall quarter");
                     break outer;
                 }
             }

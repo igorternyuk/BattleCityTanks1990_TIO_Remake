@@ -114,10 +114,28 @@ public class TileMap {
     }
 
     public boolean checkIfPointIsInTheMapBounds(Point position) {
-        int row = position.x / Game.HALF_TILE_SIZE;
-        int col = position.y / Game.HALF_TILE_SIZE;
+        return checkIfPointIsInTheMapBounds(position.x, position.y);
+    }
+
+    public boolean checkIfPointIsInTheMapBounds(int x, int y) {
+        int row = x / Game.HALF_TILE_SIZE;
+        int col = y / Game.HALF_TILE_SIZE;
         return areCoordinatesValid(row, col);
     }
+
+    public boolean areCoordinatesValid(int row, int col) {
+        return row >= 0 && row < this.tiles.length
+                && col >= 0 && col < this.tiles[row].length;
+    }
+
+    public boolean isOutOfBounds(Entity entity) {
+        return (entity.left() < 0
+            || entity.right() > getTilesInWidth() * Game.HALF_TILE_SIZE
+            || entity.top() < 0
+            || entity.bottom() > getTilesInHeight() * Game.HALF_TILE_SIZE);
+    }
+    
+    
 
     public List<Point> getEnemyTankAppearencePositions() {
         return Collections.unmodifiableList(this.enemyTankAppearancePositions);
@@ -189,11 +207,6 @@ public class TileMap {
             }
         }
         this.tiles[row][col] = tile;
-    }
-
-    public boolean areCoordinatesValid(int row, int col) {
-        return row >= 0 && row < this.tiles.length
-                && col >= 0 && col < this.tiles[row].length;
     }
 
     public void activateEagleProtection() {

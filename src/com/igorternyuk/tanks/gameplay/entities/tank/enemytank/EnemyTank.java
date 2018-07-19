@@ -16,6 +16,8 @@ import com.igorternyuk.tanks.graphics.animations.Animation;
 import com.igorternyuk.tanks.graphics.animations.AnimationPlayMode;
 import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Point;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -45,11 +47,11 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         updateAnimation();
         this.moving = true;
     }
-    
-    public EnemyTankType getType(){
+
+    public EnemyTankType getType() {
         return this.identifier.getType();
     }
-    
+
     private void checkIfBonus() {
         for (int num : BONUS_TANKS_NUMBERS) {
             if (this.number == num) {
@@ -107,7 +109,8 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     public void hit(int damage) {
         super.hit(damage);
         if (isAlive()) {
-            if (!this.bonus && this.identifier.getType() == EnemyTankType.ARMORED) {
+            if (!this.bonus && this.identifier.getType()
+                    == EnemyTankType.ARMORED) {
                 this.identifier.setColor(calcColorDependingOnHealth());
                 updateAnimation();
             }
@@ -115,8 +118,8 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             explode();
         }
     }
-    
-    protected void explodeWithGrenade(){
+
+    protected void explodeWithGrenade() {
         super.explode();
         destroy();
     }
@@ -140,7 +143,8 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     private void createBonus() {
         int randX = this.random.nextInt(Game.TILES_IN_WIDTH) * Game.TILE_SIZE;
         int randY = this.random.nextInt(Game.TILES_IN_HEIGHT) * Game.TILE_SIZE;
-        PowerUp newBonus = new PowerUp(this.level, PowerUpType.randomType(), randX,
+        PowerUp newBonus = new PowerUp(this.level, PowerUpType.randomType(),
+                randX,
                 randY);
         newBonus.startInfiniteBlinking(0.4);
         this.level.getEntityManager().addEntity(newBonus);
@@ -148,6 +152,17 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
 
     @Override
     public void chooseDirection() {
+        System.out.println("Choosing the new direction");
+        List<Direction> possibleDirections = new ArrayList<>();
+        for (Direction dir : Direction.values()) {
+            if (canMoveInDirection(dir)) {
+                possibleDirections.add(dir);
+            }
+        }
+        Direction randDirection = possibleDirections.get(new Random().nextInt(
+                possibleDirections.size()));
+        setDirection(randDirection);
+        this.identifier.setHeading(Heading.getHeading(randDirection));
     }
 
     private void updateAnimation() {
@@ -159,19 +174,23 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
         super.update(keyboardState, frameTime);
-        
+
         if (this.moving) {
             move(frameTime);
-            handleMapCollision();
-            fixBounds();
+            if (checkMapCollision()) {                
+                chooseDirection();
+            }
+            if(fixBounds()){
+                chooseDirection();
+            }
         }
-        
+
         updateGleamingColor(frameTime);
         updateAnimation();
-        
+
     }
-    
-    private void updateGleamingColor(double frameTime){
+
+    private void updateGleamingColor(double frameTime) {
         if (this.gleaming) {
             this.colorPlayingTimer += frameTime;
             if (this.colorPlayingTimer >= COLOR_CHANGING_PERIOD) {

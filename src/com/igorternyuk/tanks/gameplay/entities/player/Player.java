@@ -253,7 +253,7 @@ public class Player extends Tank {
         handleUserInput(keyboardState);
         if (this.moving) {
             move(frameTime);
-            handleMapCollision();
+            checkMapCollision();
             fixBounds();
         }
         super.update(keyboardState, frameTime);

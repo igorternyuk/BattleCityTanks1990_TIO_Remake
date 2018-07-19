@@ -65,11 +65,13 @@ public abstract class Tank<I> extends AnimatedEntity<I>{
         return departure;
     }
     
-    protected void handleMapCollision(){
+    protected boolean checkMapCollision(){
         TileMap tileMap = this.level.getTileMap();
         if(tileMap.hasCollision(this)){
             Tile collided = tileMap.getLastCollided();
             collided.handleTankCollision(this);
+            return true;
         }
+        return false;
     }
 }

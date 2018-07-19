@@ -2,6 +2,7 @@ package com.igorternyuk.tanks.gameplay.entities;
 
 import com.igorternyuk.tanks.gameplay.entities.explosion.Explosion;
 import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
+import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
 import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Graphics2D;
@@ -177,36 +178,31 @@ public abstract class Entity {
     }
 
     public boolean collides(Entity other) {
-        boolean colided = !(right() < other.left()
+        return !(right() < other.left()
                 || left() > other.right()
                 || top() > other.bottom()
                 || bottom() < other.top());
-        if(colided){
-            System.out.println("this.right() = " + right() + " other.left() = " + other.left());
-            System.out.println("this.left() = " + left() + " other.right() = " + other.right());
-            System.out.println("this.top() = " + top() + " other.bottom() = " + other.bottom());
-            System.out.println("this.bottom() = " + bottom() + " other.top() = " + other.top());
-            System.out.println("this.width = " + this.getWidth());
-            System.out.println("this.height = " + this.getHeight());
-            System.out.println("other.width = " + other.getWidth());
-            System.out.println("other.height = " + other.getHeight());
-        }
-        return colided;
     }
 
-    protected void fixBounds() {
+    protected boolean fixBounds() {
+        boolean boundsFixed = false;
         if (left() < 0) {
             this.x = 0;
+            boundsFixed = true;
         }
         if (right() > this.level.getMapWidth()) {
             this.x = this.level.getMapWidth() - getWidth();
+            boundsFixed = true;
         }
         if (top() < 0) {
             this.y = 0;
+            boundsFixed = true;
         }
         if (bottom() > this.level.getMapHeight()) {
             this.y = this.level.getMapHeight() - getHeight();
+            boundsFixed = true;
         }
+        return boundsFixed;
     }
 
     protected boolean isOutOfBounds() {
@@ -215,7 +211,18 @@ public abstract class Entity {
                 || bottom() < 0
                 || top() > this.level.getMapHeight();
     }
-
+    
+    public boolean canMoveInDirection(Direction direction){
+        double dx = direction.getVx() * this.speed;
+        double dy = direction.getVy() * this.speed;
+        setPosition(this.x + dx, this.y + dy);
+        TileMap tileMap = this.level.getTileMap(); 
+        boolean result = !tileMap.hasCollision(this)
+                && !tileMap.isOutOfBounds(this);
+        setPosition(this.x - dx, this.y - dy);
+        return result;
+    }
+    
     protected void move(double frameTime) {
         this.x += this.speed * this.direction.getVx() * frameTime;
         this.y += this.speed * this.direction.getVy() * frameTime;

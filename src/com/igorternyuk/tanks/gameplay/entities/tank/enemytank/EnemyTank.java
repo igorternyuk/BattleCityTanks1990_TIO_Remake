@@ -19,6 +19,7 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -91,7 +92,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
 
     @Override
     public void fire() {
-        Point departure = calcPointOfProjectileDeparture();
+        Point departure = calcProjectileDeparturePosition();
         int px = departure.x;
         int py = departure.y;
         Projectile projectile = new Projectile(level, ProjectileType.ENEMY, px,
@@ -149,10 +150,15 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         newBonus.startInfiniteBlinking(0.4);
         this.level.getEntityManager().addEntity(newBonus);
     }
+    
+    @Override
+    public void setDirection(Direction direction){
+        super.setDirection(direction);
+        this.identifier.setHeading(Heading.getHeading(direction));
+    }
 
     @Override
     public void chooseDirection() {
-        System.out.println("Choosing the new direction");
         List<Direction> possibleDirections = new ArrayList<>();
         for (Direction dir : Direction.values()) {
             if (canMoveInDirection(dir)) {
@@ -162,7 +168,20 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         Direction randDirection = possibleDirections.get(new Random().nextInt(
                 possibleDirections.size()));
         setDirection(randDirection);
-        this.identifier.setHeading(Heading.getHeading(randDirection));
+        
+    }
+    
+    @Override
+    protected List<Tank> getOtherTanks(){
+        List<Tank> otherTanks = super.getOtherTanks();
+        otherTanks.add((Tank)this.level.getPlayer());
+        return otherTanks; 
+    }
+    
+    @Override
+    protected void handleCollisionWithOtherTank(Tank other){
+        super.handleCollisionWithOtherTank(other);
+        setDirection(this.direction.getOpposite());
     }
 
     private void updateAnimation() {
@@ -183,6 +202,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             if(fixBounds()){
                 chooseDirection();
             }
+            handleCollisionsWithOtherTanks();
         }
 
         updateGleamingColor(frameTime);

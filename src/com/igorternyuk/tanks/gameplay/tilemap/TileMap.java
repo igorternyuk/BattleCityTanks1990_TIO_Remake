@@ -135,8 +135,6 @@ public class TileMap {
             || entity.bottom() > getTilesInHeight() * Game.HALF_TILE_SIZE);
     }
     
-    
-
     public List<Point> getEnemyTankAppearencePositions() {
         return Collections.unmodifiableList(this.enemyTankAppearancePositions);
     }

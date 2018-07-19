@@ -3,28 +3,36 @@ package com.igorternyuk.tanks.gameplay.entities.splash;
 import com.igorternyuk.tanks.gameplay.entities.AnimatedEntity;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
+import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTank;
+import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTankType;
 import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.graphics.animations.Animation;
 import com.igorternyuk.tanks.graphics.animations.AnimationPlayMode;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
+import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.image.BufferedImage;
 
 /**
  *
  * @author igor
  */
-public class Splash extends AnimatedEntity<SplashType>{
+public class Splash extends AnimatedEntity<SplashType> {
+
+    private static final double SPLASH_DURATION = 2;
     private SplashType splashType;
+    private double splashTimer = 0;
+
     public Splash(LevelState level, SplashType splashType, double x, double y) {
         super(level, EntityType.SPLASH, x, y, 0, Direction.NORTH);
         this.splashType = splashType;
         loadAnimations();
         this.animationManager.setCurrentAnimation(SplashType.BONUS);
-        this.animationManager.getCurrentAnimation().start(AnimationPlayMode.LOOP);
+        this.animationManager.getCurrentAnimation().
+                start(AnimationPlayMode.LOOP);
     }
-    
-    public SplashType getSplashType(){
+
+    public SplashType getSplashType() {
         return this.splashType;
     }
 
@@ -33,7 +41,7 @@ public class Splash extends AnimatedEntity<SplashType>{
         System.out.println("Loading splash animation...");
         BufferedImage spriteSheet;
         if (this.splashType == SplashType.BONUS
-             || this.splashType == SplashType.NEW_ENEMY_TANK) {
+                || this.splashType == SplashType.NEW_ENEMY_TANK) {
             spriteSheet = SpriteSheetManager.getInstance().get(
                     SpriteSheetIdentifier.SPLASH);
         } else {
@@ -46,5 +54,20 @@ public class Splash extends AnimatedEntity<SplashType>{
                     spriteSheet, animType.getAnimationSpeed(), animType.
                     getFrames()));
         }
+    }
+
+    @Override
+    public void update(KeyboardState keyboardState, double frameTime) {
+        super.update(keyboardState, frameTime);
+        this.splashTimer += frameTime;
+        if (this.splashTimer >= SPLASH_DURATION) {
+            this.level.getEntityManager().addEntity(new EnemyTank(this.level, 4,
+                    EnemyTankType.ARMORED, getX(), getY(), Direction.EAST));
+            destroy();
+        }
+        /*
+        EnemyTank(LevelState level, int number, EnemyTankType type, double x,
+            double y, Direction direction)
+         */
     }
 }

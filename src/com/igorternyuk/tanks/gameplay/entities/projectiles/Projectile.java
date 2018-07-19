@@ -99,66 +99,24 @@ public class Projectile extends Entity {
     }
 
     private void handleMapCollision() {
-        TileMap tileMap = this.level.getTileMap();
-        final int rowMin = tileMap.fixRowIndex((int) (top()
-                / Game.HALF_TILE_SIZE));
-        final int rowMax = tileMap.fixRowIndex((int) (bottom() - 1)
-                / Game.HALF_TILE_SIZE);
-        final int colMin = tileMap.fixColumnIndex((int) (left()
-                / Game.HALF_TILE_SIZE));
-        final int colMax = tileMap.fixColumnIndex((int) (right() - 1)
-                / Game.HALF_TILE_SIZE);
-
-        boolean collisionOcurred = false;
-
-        for (int row = rowMin; row <= rowMax; ++row) {
-            for (int col = colMin; col <= colMax; ++col) {
-                Tile tile = tileMap.getTile(row, col);
-                if (tile.getType() == TileType.BRICK) {
-                    BrickTile brickTile = (BrickTile) tile;
-                    if (brickTile.checkIfCollision(this)) {
-                        brickTile.handleProjectileCollision(this);
-                        collisionOcurred = true;
-                    }
-
-                } else if (tile.getType() == TileType.METAL) {
-                    MetalTile metalTile = (MetalTile)tile;
-                    if(metalTile.checkIfCollision(this)){
-                        collisionOcurred = true;
-                        metalTile.hit(this);
-                    }
+        TileMap tileMap = this.level.getTileMap();        
+        if(tileMap.hasCollision(this)){
+            Tile collided = tileMap.getLastCollided();
+            if (collided.getType() == TileType.BRICK) {
+                BrickTile brickTile = (BrickTile) collided;
+                if (brickTile.checkIfCollision(this)) {
+                    brickTile.handleProjectileCollision(this);
+                }
+            } else if (collided.getType() == TileType.METAL) {
+                MetalTile metalTile = (MetalTile)collided;
+                if(metalTile.checkIfCollision(this)){
+                    metalTile.hit(this);
                 }
             }
-        }
-
-        if (collisionOcurred) {
             this.explode();
         }
     }
 
-    /*
-    protected void handleMapCollision(Direction direction) {
-        final int rowMin = (int) this.top() / this.tileSize;
-        final int rowMax = (int) (this.bottom() - 1) / this.tileSize;
-        final int colMin = (int) this.left() / this.tileSize;
-        final int colMax = (int) (this.right() - 1) / this.tileSize;
-
-        outer:
-        for (int row = rowMin; row <= rowMax; ++row) {
-            for (int col = colMin; col <= colMax; ++col) {
-                if (this.tileMap.getTileType(row, col).equals(TileType.BLOCKED)) {
-                    if (direction == Direction.VERTICAL) {
-                        handleVerticalCollision(row, col);
-                    } else if (direction == Direction.HORIZONTAL) {
-                        handleHorizontalCollision(row, col);
-                    }
-                    //If we've got a collision we can terminate the further checking
-                    break outer;
-                }
-            }
-        }
-    }
-     */
     @Override
     public void draw(Graphics2D g) {
         super.draw(g);

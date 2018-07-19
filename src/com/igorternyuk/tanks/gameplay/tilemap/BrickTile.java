@@ -94,7 +94,6 @@ public class BrickTile extends Tile {
 
     @Override
     public void handleTankCollision(Tank tank) {
-        System.out.println("Handling tank collision from BrickTile");
         outer:
         for (int row = 0; row < this.wall.length; ++row) {
             for (int col = 0; col < this.wall[row].length; ++col) {

@@ -8,7 +8,7 @@ import com.igorternyuk.tanks.gameplay.Game;
  * @author igor
  */
 public class Main {
-
+    
     /**
      * @param args the command line arguments
      */

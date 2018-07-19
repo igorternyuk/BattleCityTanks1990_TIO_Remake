@@ -66,23 +66,10 @@ public abstract class Tank<I> extends AnimatedEntity<I>{
     }
     
     protected void handleMapCollision(){
-        final int rowMin = (int) this.top() / Game.HALF_TILE_SIZE;
-        final int rowMax = (int) (this.bottom() - 1) / Game.HALF_TILE_SIZE;
-        final int colMin = (int) this.left() / Game.HALF_TILE_SIZE;
-        final int colMax = (int) (this.right() - 1) / Game.HALF_TILE_SIZE;
-        
         TileMap tileMap = this.level.getTileMap();
-        
-        for(int row = rowMin; row <= rowMax; ++row){
-            for(int col = colMin; col <= colMax; ++col){
-                Tile tile = tileMap.getTile(row, col);
-                if(tile.checkIfCollision(this)){
-                    tile.handleTankCollision(this);
-                    System.out.println("row = " + row + " col = " + col + " Retornamos!");
-                    return;
-                }
-            }
+        if(tileMap.hasCollision(this)){
+            Tile collided = tileMap.getLastCollided();
+            collided.handleTankCollision(this);
         }
     }
-    
 }

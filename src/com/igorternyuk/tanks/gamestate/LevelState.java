@@ -15,6 +15,8 @@ import com.igorternyuk.tanks.gameplay.entities.player.Player;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankIdentifier;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
+import com.igorternyuk.tanks.gameplay.entities.splash.Splash;
+import com.igorternyuk.tanks.gameplay.entities.splash.SplashType;
 import com.igorternyuk.tanks.gameplay.entities.tank.Alliance;
 import com.igorternyuk.tanks.gameplay.entities.tank.Heading;
 import com.igorternyuk.tanks.gameplay.entities.tank.TankColor;
@@ -164,6 +166,8 @@ public class LevelState extends GameState {
         this.rightPanel = new GameInfoPanel(this, RIGHT_PANEL_POSITION.x,
                 RIGHT_PANEL_POSITION.y);
         this.entityManager.addEntity(this.rightPanel);
+        this.entityManager.addEntity(new Splash(this, SplashType.NEW_ENEMY_TANK,
+                0, 0));
     }
 
     

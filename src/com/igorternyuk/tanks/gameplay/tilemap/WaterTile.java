@@ -1,5 +1,7 @@
 package com.igorternyuk.tanks.gameplay.tilemap;
 
+import com.igorternyuk.tanks.gameplay.entities.Entity;
+import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.graphics.animations.Animation;
 import com.igorternyuk.tanks.graphics.animations.AnimationPlayMode;
 import java.awt.Point;
@@ -17,6 +19,14 @@ public class WaterTile extends AnimatedTile<WaterAnimationType> {
         this.animationManager.setCurrentAnimation(WaterAnimationType.REGULAR);
         this.animationManager.getCurrentAnimation().
                 start(AnimationPlayMode.LOOP);
+    }
+    
+    @Override
+    public boolean checkIfCollision(Entity entity){
+        if(entity.getEntityType() == EntityType.PROJECTILE){
+            return false;
+        }
+        return super.checkIfCollision(entity);
     }
     
     @Override

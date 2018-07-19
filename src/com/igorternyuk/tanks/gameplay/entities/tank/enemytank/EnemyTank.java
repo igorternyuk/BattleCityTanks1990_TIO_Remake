@@ -43,6 +43,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         this.identifier = new EnemyTankIdentifier(calcColorDependingOnHealth(),
                 Heading.getHeading(direction), type);
         updateAnimation();
+        this.moving = true;
     }
     
     public EnemyTankType getType(){
@@ -158,13 +159,13 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
         super.update(keyboardState, frameTime);
-        /*
+        
         if (this.moving) {
             move(frameTime);
             handleMapCollision();
             fixBounds();
         }
-        */
+        
         updateGleamingColor(frameTime);
         updateAnimation();
         
@@ -183,11 +184,11 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
 
     private TankColor calcColorDependingOnHealth() {
         if (this.health < 25) {
-            return TankColor.RED;
+            return TankColor.GRAY;
         } else if (this.health < 50) {
             return TankColor.YELLOW;
         } else if (this.health < 75) {
-            return TankColor.GRAY;
+            return TankColor.RED;
         } else {
             return TankColor.GREEN;
         }

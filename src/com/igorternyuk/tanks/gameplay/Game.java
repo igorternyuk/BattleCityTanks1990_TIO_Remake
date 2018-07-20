@@ -32,12 +32,12 @@ public class Game implements Runnable {
             / SCALE / HALF_TILE_SIZE);
     public static final int TILES_IN_HEIGHT = (int) ((HEIGHT - 4 * TILE_SIZE)
             / SCALE / HALF_TILE_SIZE);
+    public static final float FPS = 60.0f;
+    public static final float FRAME_TIME = Time.SECOND / FPS;
+    public static final float FRAME_TIME_IN_SECONDS = 1 / FPS;
     private static final String TITLE = "JTanks";
     private static final int CLEAR_COLOR = 0xff000000;
     private static final int NUM_BUFFERS = 4;
-    private static final float FPS = 60.0f;
-    private static final float FRAME_TIME = Time.SECOND / FPS;
-    private static final float FRAME_TIME_IN_SECONDS = 1 / FPS;
     private static final long IDLE_TIME = 1;
 
     private boolean running = false;

@@ -1,11 +1,13 @@
 package com.igorternyuk.tanks.gameplay.entities;
 
+import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.explosion.Explosion;
 import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
 import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
 import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,6 +70,10 @@ public abstract class Entity {
 
     public double bottom() {
         return getY() + getHeight();
+    }
+    
+    public Point getPosition(){
+        return new Point((int)getX(), (int)getY());
     }
     
     public Rectangle getBoundingRect(){
@@ -213,8 +219,8 @@ public abstract class Entity {
     }
     
     public boolean canMoveInDirection(Direction direction){
-        double dx = direction.getVx() * this.speed;
-        double dy = direction.getVy() * this.speed;
+        double dx = direction.getVx() * this.speed * Game.FRAME_TIME_IN_SECONDS;
+        double dy = direction.getVy() * this.speed * Game.FRAME_TIME_IN_SECONDS;
         setPosition(this.x + dx, this.y + dy);
         TileMap tileMap = this.level.getTileMap(); 
         boolean result = !tileMap.hasCollision(this)

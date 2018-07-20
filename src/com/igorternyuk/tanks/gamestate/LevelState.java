@@ -78,6 +78,10 @@ public class LevelState extends GameState {
         return this.stageNumber;
     }
     
+    public Point getEaglePosition(){
+        return EAGLE_POSITION;
+    }
+    
     public EntityManager getEntityManager() {
         return this.entityManager;
     }

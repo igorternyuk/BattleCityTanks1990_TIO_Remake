@@ -1,5 +1,8 @@
 package com.igorternyuk.tanks.gameplay.entities.tank.enemytank;
 
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Ordering;
+import com.google.common.collect.TreeMultimap;
 import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
@@ -16,10 +19,12 @@ import com.igorternyuk.tanks.graphics.animations.Animation;
 import com.igorternyuk.tanks.graphics.animations.AnimationPlayMode;
 import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -35,6 +40,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     private boolean gleaming = false;
     private double colorPlayingTimer;
     private final Random random = new Random();
+    private Point currTarget;
 
     public EnemyTank(LevelState level, int number, EnemyTankType type, double x,
             double y, Direction direction) {
@@ -46,6 +52,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         this.identifier = new EnemyTankIdentifier(calcColorDependingOnHealth(),
                 Heading.getHeading(direction), type);
         updateAnimation();
+        this.currTarget = this.level.getPlayer().getPosition();
         this.moving = true;
     }
 
@@ -136,50 +143,107 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         text.setPosition(getX() + dx, getY() + dy);
         this.level.getEntityManager().addEntity(text);
         if (this.bonus) {
-            createBonus();
+            createPowerUp();
         }
         destroy();
     }
 
-    private void createBonus() {
-        int randX = this.random.nextInt(Game.TILES_IN_WIDTH) * Game.TILE_SIZE;
-        int randY = this.random.nextInt(Game.TILES_IN_HEIGHT) * Game.TILE_SIZE;
-        PowerUp newBonus = new PowerUp(this.level, PowerUpType.randomType(),
-                randX,
-                randY);
-        newBonus.startInfiniteBlinking(0.4);
-        this.level.getEntityManager().addEntity(newBonus);
+    private void createPowerUp() {
+        int randX = this.random.nextInt(Game.TILES_IN_WIDTH)
+                * Game.HALF_TILE_SIZE;
+        int randY = this.random.nextInt(Game.TILES_IN_HEIGHT)
+                * Game.HALF_TILE_SIZE;
+        PowerUp powerUp = new PowerUp(this.level, PowerUpType.randomType(),
+                randX, randY);
+        powerUp.startInfiniteBlinking(0.4);
+        this.level.getEntityManager().addEntity(powerUp);
     }
-    
+
     @Override
-    public void setDirection(Direction direction){
+    public void setDirection(Direction direction) {
         super.setDirection(direction);
         this.identifier.setHeading(Heading.getHeading(direction));
     }
 
     @Override
     public void chooseDirection() {
+        System.out.println("Tank pos x = " + getX() + " y = " + getY());
         List<Direction> possibleDirections = new ArrayList<>();
         for (Direction dir : Direction.values()) {
             if (canMoveInDirection(dir)) {
                 possibleDirections.add(dir);
             }
         }
-        Direction randDirection = possibleDirections.get(new Random().nextInt(
-                possibleDirections.size()));
-        setDirection(randDirection);
-        
+        this.moving = !possibleDirections.isEmpty();
+        /*Direction randDirection = possibleDirections.get(this.random.nextInt(
+                possibleDirections.size()));*/
+        this.currTarget = this.level.getPlayer().getPosition();
+        Multimap<Double, Direction> distanceDirectionMap = TreeMultimap
+                .create(Ordering.from(Double::compare), Ordering.arbitrary());
+        System.out.println("Curr pos x = " + getX() + " y = " + getY());
+        for (int i = 0; i < possibleDirections.size(); ++i) {
+            Direction currDirection = possibleDirections.get(i);
+            int nextX = (int) (getX() + 2 * currDirection.getVx());
+            int nextY = (int) (getY() + 2 * currDirection.getVy());
+            System.out.println("test dir = " + currDirection);
+            System.out.println("Curr pos nextX = " + nextX + " nextY = " + nextY);
+            Point nextPosition = new Point(nextX, nextY);
+            double distance = calcDistance(nextPosition, this.currTarget);
+            System.out.println("dist = " + distance);
+            distanceDirectionMap.put(distance, currDirection);
+        }
+        System.out.println("*********************");
+        distanceDirectionMap.asMap().forEach((dist, dirs) -> {
+            System.out.println("------------------");
+            System.out.println("dist = " + dist);
+            dirs.forEach(dir -> System.out.println("dir = " + dir));
+            System.out.println("------------------");
+        });
+
+        Iterator<Double> distDirIterator =
+                distanceDirectionMap.asMap().keySet().iterator();
+        if (distDirIterator.hasNext()) {
+            double key = distDirIterator.next();
+            Collection<Direction> directions = distanceDirectionMap.asMap().get(
+                    key);
+            int dirCount = directions.size();
+            System.out.println("dirCount = " + dirCount);
+            int randDirNumber = this.random.nextInt(dirCount);
+            System.out.println("randDirNumber = " + randDirNumber);
+            if (!directions.isEmpty()) {
+                Iterator<Direction> dirIterator = directions.iterator();
+                Direction dir = this.direction;
+                for(int i = 0; i <= randDirNumber; ++i){
+                    dir = dirIterator.next();
+                }
+                Direction choosenDir = dir;
+                setDirection(choosenDir);
+                System.out.println("choosenDir = " + choosenDir);
+            }
+        }
     }
-    
+
+    protected double calcDistance(Point2D source, Point2D target) {
+        System.out.println("Calculating distance...");
+        double dx = Math.abs(source.getX() - target.getX());
+        double dy = Math.abs(source.getY() - target.getY());
+        System.out.println("dx = " + dx);
+        System.out.println("dy = " + dy);
+        System.out.println("dist = " + (dx + dy));
+        return Math.sqrt(dx * dx + dy * dy);
+        /*return Math.abs(source.getX() - target.getX()) + Math.abs(source.getY()
+                + target.getY());*/
+    }
+
     @Override
-    protected List<Tank> getOtherTanks(){
+    protected List<Tank> getOtherTanks() {
         List<Tank> otherTanks = super.getOtherTanks();
-        otherTanks.add((Tank)this.level.getPlayer());
-        return otherTanks; 
+        otherTanks.add((Tank) this.level.getPlayer());
+        return otherTanks;
     }
-    
+
     @Override
-    protected void handleCollisionWithOtherTank(Tank other){
+    protected void handleCollisionWithOtherTank(Tank other) {
         super.handleCollisionWithOtherTank(other);
         setDirection(this.direction.getOpposite());
     }
@@ -195,14 +259,25 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         super.update(keyboardState, frameTime);
 
         if (this.moving) {
-            move(frameTime);
-            if (checkMapCollision()) {                
+
+            if (checkMapCollision()) {
                 chooseDirection();
             }
-            if(fixBounds()){
+            if (fixBounds()) {
                 chooseDirection();
+            }
+
+            if (this.direction.isHorizontal()) {
+                if ((int) (getX() + this.direction.getVx()) % Game.TILE_SIZE == 0) {
+                    chooseDirection();
+                }
+            } else if (this.direction.isVertical()) {
+                if ((int) (getY() + this.direction.getVy()) % Game.TILE_SIZE == 0) {
+                    chooseDirection();
+                }
             }
             handleCollisionsWithOtherTanks();
+            move(frameTime);
         }
 
         updateGleamingColor(frameTime);

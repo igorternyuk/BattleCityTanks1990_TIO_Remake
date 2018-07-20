@@ -27,6 +27,8 @@ public class TileMap {
     private static final double EAGLE_PROTECTION_BLINK_PERIOD = 0.25;
     private double scale;
     private Tile[][] tiles = new Tile[Game.TILES_IN_HEIGHT][Game.TILES_IN_WIDTH];
+    private int[][] clearanceMap = new int[Game.TILES_IN_HEIGHT][Game.TILES_IN_WIDTH];
+    private boolean clearanceMapChanged = true;
     private List<Tile> bushTiles = new ArrayList<>();
     private List<WaterTile> waterTiles = new ArrayList<>();
     private Tile lastCollided;
@@ -54,6 +56,13 @@ public class TileMap {
 
     public Tile getLastCollided() {
         return this.lastCollided;
+    }
+    
+    public int[][] getClearanceMap(){
+        if(this.clearanceMapChanged){
+            updateClearanceMap();
+        }
+        return this.clearanceMap;
     }
 
     public boolean hasCollision(Entity entity) {
@@ -266,6 +275,7 @@ public class TileMap {
                             currTilePosition, this.tileTypeImageMap.get(
                                     TileType.EMPTY),
                             this.scale);
+                    this.clearanceMapChanged = true;
                 }
             }
         }
@@ -388,5 +398,39 @@ public class TileMap {
             }
         }
         return currMap;
+    }
+    
+    private void updateClearanceMap(){
+        for(int row = 0; row < this.tiles.length; ++row){
+            for(int col = 0; col < this.tiles[row].length; ++col){
+                System.out.println("row = " + row + " col = " + col);
+                if(!getTile(row, col).getType().isTraversable()){
+                    continue;
+                }
+                int currentClearance = 1;
+                expansion:
+                while(currentClearance < this.tiles.length){
+                    System.out.println("currentClearance = " + currentClearance);
+                    for(int i = 0; i < currentClearance; ++i){
+                        for(int j = 0; j < currentClearance; ++j){
+                            //System.out.println("i = " + i + " j = " + j);
+                            int r = row + i;
+                            int c = col + j;
+                            if(!areCoordinatesValid(r, c)){
+                                break expansion;
+                            }
+                            if(getTile(r, c).getType().isTraversable()){
+                                this.clearanceMap[r][c] = currentClearance - 1;
+                            } else {
+                                break expansion;
+                            }
+                        }
+                    }
+                    ++currentClearance;
+                }
+            }
+        }
+        
+        this.clearanceMapChanged = false;
     }
 }

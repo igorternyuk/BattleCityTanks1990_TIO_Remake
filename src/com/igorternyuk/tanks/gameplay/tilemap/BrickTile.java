@@ -107,8 +107,6 @@ public class BrickTile extends Tile {
                     Rectangle intersection = tankBoundingRect.intersection(
                             currWallQuarterBoundingRect);
                     resetCollidingEntityPosition(intersection, tank);
-                    System.out.println("Collision with row = " + row + " col = "
-                            + col + " wall quarter");
                     break outer;
                 }
             }

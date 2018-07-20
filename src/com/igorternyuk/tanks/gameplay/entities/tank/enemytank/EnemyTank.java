@@ -167,7 +167,6 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
 
     @Override
     public void chooseDirection() {
-        System.out.println("Tank pos x = " + getX() + " y = " + getY());
         List<Direction> possibleDirections = new ArrayList<>();
         for (Direction dir : Direction.values()) {
             if (canMoveInDirection(dir)) {
@@ -180,25 +179,14 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         this.currTarget = this.level.getPlayer().getPosition();
         Multimap<Double, Direction> distanceDirectionMap = TreeMultimap
                 .create(Ordering.from(Double::compare), Ordering.arbitrary());
-        System.out.println("Curr pos x = " + getX() + " y = " + getY());
         for (int i = 0; i < possibleDirections.size(); ++i) {
             Direction currDirection = possibleDirections.get(i);
             int nextX = (int) (getX() + 2 * currDirection.getVx());
             int nextY = (int) (getY() + 2 * currDirection.getVy());
-            System.out.println("test dir = " + currDirection);
-            System.out.println("Curr pos nextX = " + nextX + " nextY = " + nextY);
             Point nextPosition = new Point(nextX, nextY);
             double distance = calcDistance(nextPosition, this.currTarget);
-            System.out.println("dist = " + distance);
             distanceDirectionMap.put(distance, currDirection);
         }
-        System.out.println("*********************");
-        distanceDirectionMap.asMap().forEach((dist, dirs) -> {
-            System.out.println("------------------");
-            System.out.println("dist = " + dist);
-            dirs.forEach(dir -> System.out.println("dir = " + dir));
-            System.out.println("------------------");
-        });
 
         Iterator<Double> distDirIterator =
                 distanceDirectionMap.asMap().keySet().iterator();
@@ -207,9 +195,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             Collection<Direction> directions = distanceDirectionMap.asMap().get(
                     key);
             int dirCount = directions.size();
-            System.out.println("dirCount = " + dirCount);
             int randDirNumber = this.random.nextInt(dirCount);
-            System.out.println("randDirNumber = " + randDirNumber);
             if (!directions.isEmpty()) {
                 Iterator<Direction> dirIterator = directions.iterator();
                 Direction dir = this.direction;
@@ -218,21 +204,14 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
                 }
                 Direction choosenDir = dir;
                 setDirection(choosenDir);
-                System.out.println("choosenDir = " + choosenDir);
             }
         }
     }
 
     protected double calcDistance(Point2D source, Point2D target) {
-        System.out.println("Calculating distance...");
         double dx = Math.abs(source.getX() - target.getX());
         double dy = Math.abs(source.getY() - target.getY());
-        System.out.println("dx = " + dx);
-        System.out.println("dy = " + dy);
-        System.out.println("dist = " + (dx + dy));
         return Math.sqrt(dx * dx + dy * dy);
-        /*return Math.abs(source.getX() - target.getX()) + Math.abs(source.getY()
-                + target.getY());*/
     }
 
     @Override
@@ -268,11 +247,11 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             }
 
             if (this.direction.isHorizontal()) {
-                if ((int) (getX() + this.direction.getVx()) % Game.TILE_SIZE == 0) {
+                if ((int) getX() % Game.TILE_SIZE == 0) {
                     chooseDirection();
                 }
             } else if (this.direction.isVertical()) {
-                if ((int) (getY() + this.direction.getVy()) % Game.TILE_SIZE == 0) {
+                if ((int) getY() % Game.TILE_SIZE == 0) {
                     chooseDirection();
                 }
             }

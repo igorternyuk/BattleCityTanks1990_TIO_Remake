@@ -91,7 +91,7 @@ public class Tile {
     }
     
     public boolean checkIfCollision(Entity entity){
-        if (this.type.isPassable()) {
+        if (this.type.isTraversable()) {
             return false;
         }
         Rectangle tankBoundingRect = entity.getBoundingRect();
@@ -99,7 +99,7 @@ public class Tile {
     }
 
     public void handleTankCollision(Tank tank) {
-        if (this.type.isPassable()) {
+        if (this.type.isTraversable()) {
             return;
         }
         Rectangle tankBoundingRect = tank.getBoundingRect();
@@ -112,22 +112,16 @@ public class Tile {
     
     protected void resetCollidingEntityPosition(Rectangle intersection,
             Entity entity){
-        System.out.println("Player position resetting...");
-        System.out.println("intersection = " + intersection);
         Direction currTankDirection = entity.getDirection();
             Direction oppositeDirection = currTankDirection.getOpposite();
             if (currTankDirection.isVertical()) {
                 entity.setPosition(entity.getX(), entity.getY()
                         + oppositeDirection.getVy() * intersection.height);
                 double dy = oppositeDirection.getVy() * intersection.height;
-                System.out.println("dy = " + dy);
             } else if (currTankDirection.isHorizontal()) {
-                System.out.println("currX = " + entity.getX());
                 entity.setPosition(entity.getX() + oppositeDirection.getVx()
                         * intersection.width, entity.getY());
                 double dx = oppositeDirection.getVx() * intersection.width;
-                System.out.println("dx = " + dx);
-                System.out.println("after collision handing X = " + entity.getX());
             }
     }
 

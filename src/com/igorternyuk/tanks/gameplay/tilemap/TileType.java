@@ -16,7 +16,7 @@ public enum TileType {
         }
 
         @Override
-        public boolean isPassable() {
+        public boolean isTraversable() {
             return true;
         }
     },
@@ -28,7 +28,7 @@ public enum TileType {
         }
 
         @Override
-        public boolean isPassable() {
+        public boolean isTraversable() {
             return false;
         }
     },
@@ -40,7 +40,7 @@ public enum TileType {
         }
 
         @Override
-        public boolean isPassable() {
+        public boolean isTraversable() {
             return false;
         }
     },
@@ -52,7 +52,7 @@ public enum TileType {
         }
 
         @Override
-        public boolean isPassable() {
+        public boolean isTraversable() {
             return false;
         }
     },
@@ -64,7 +64,7 @@ public enum TileType {
         }
 
         @Override
-        public boolean isPassable() {
+        public boolean isTraversable() {
             return true;
         }
     },
@@ -76,7 +76,7 @@ public enum TileType {
         }
 
         @Override
-        public boolean isPassable() {
+        public boolean isTraversable() {
             return true;
         }
     };
@@ -90,7 +90,7 @@ public enum TileType {
 
     public abstract boolean isDestroyable();
 
-    public abstract boolean isPassable();
+    public abstract boolean isTraversable();
 
     private int number;
     private Rectangle boundingRect;

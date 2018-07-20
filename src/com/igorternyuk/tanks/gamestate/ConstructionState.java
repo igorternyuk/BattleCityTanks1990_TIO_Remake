@@ -9,6 +9,7 @@ import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
 import com.igorternyuk.tanks.input.KeyboardState;
 import com.igorternyuk.tanks.resourcemanager.ImageIdentifier;
+import com.sun.glass.events.KeyEvent;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -199,6 +200,15 @@ public class ConstructionState extends GameState {
 
     @Override
     public void onKeyReleased(int keyCode) {
+        if(keyCode == KeyEvent.VK_ENTER){
+            int[][] clearanceMap = this.tileMap.getClearanceMap();
+            for(int row = 0; row < 10; ++row){
+                for(int col = 0; col < 10; ++col){
+                    System.out.print(clearanceMap[row][col] + " ");
+                }
+                System.out.println("");
+            }
+        }
     }
 
     @Override

@@ -44,6 +44,8 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     private Spot currTarget;
     private List<Spot> shortestPath = new ArrayList<>();
     private Spot nextPosition;
+    private double targetTimer = 0;
+    private List<Spot> fireSpots;
 
     public EnemyTank(LevelState level, int number, EnemyTankType type, double x,
             double y, Direction direction) {
@@ -55,6 +57,8 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         this.identifier = new EnemyTankIdentifier(calcColorDependingOnHealth(),
                 Heading.getHeading(direction), type);
         updateAnimation();
+        this.fireSpots = getFireSpotsToAttackTheEagle();
+        selectRandomFirePointToAttackEagle();
         this.moving = true;
     }
 
@@ -198,26 +202,64 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         Spot currSpot = new Spot(currRow, currCol, true);
         return currSpot;
     }
-    
-    private Spot getPlayerSpot(){
+
+    private Spot getPlayerSpot() {
         Player player = this.level.getPlayer();
         int targetCol = (int) player.getX() / Game.HALF_TILE_SIZE;
         int targetRow = (int) player.getY() / Game.HALF_TILE_SIZE;
         return new Spot(targetRow, targetCol, true);
     }
-    
-    private Spot getEagleSpot(){
-        return null;
+
+    private List<Spot> getFireSpotsToAttackTheEagle() {
+        return this.level.getTileMap().getFireSpots();
     }
 
-    private void selectDir() {
+    private boolean checkIfNextPositionReached() {
+        return this.movingAlongShortestPath
+                && getCurrentSpot().equals(this.nextPosition);
+    }
+
+    private void selectRandomFirePointToAttackEagle() {
+        int rand = this.random.nextInt(this.fireSpots.size());
+        this.currTarget = this.fireSpots.get(rand);
+    }
+
+    private void updateTarget(double frameTime) {
+        this.targetTimer += frameTime;
+        if (this.targetTimer < PERIOD_DURATION) {
+            if (!fireSpots.contains(this.currTarget)) {
+                selectRandomFirePointToAttackEagle();
+                this.movingAlongShortestPath = false;
+            }
+        } else if (this.targetTimer < 2 * PERIOD_DURATION) {
+            if (this.currTarget.distanceManhattan(getPlayerSpot()) > 10
+                    * Game.HALF_TILE_SIZE) {
+                this.currTarget = getPlayerSpot();
+                this.movingAlongShortestPath = false;
+            }
+        } else {
+            this.targetTimer = 0;
+        }
+    }
+
+    private void updateDirection() {
+        if (this.movingAlongShortestPath) {
+            moveAlongShortestPath();
+        } else {
+            if (checkIfNeedRecalculateShortestPath()) {
+                selectShortestPathDirection();
+            }
+        }
+    }
+
+    private void selectShortestPathDirection() {
+
+        if (this.currTarget == null) {
+            selectRandomDirrection();
+            return;
+        }
+
         Pathfinder pathfinder = new Pathfinder(this.level.getTileMap());
-
-        Player player = this.level.getPlayer();
-        int targetCol = (int) player.getX() / Game.HALF_TILE_SIZE;
-        int targetRow = (int) player.getY() / Game.HALF_TILE_SIZE;
-
-        this.currTarget = new Spot(targetRow, targetCol, true);
         if (pathfinder.calcPath(getCurrentSpot(), this.currTarget, 2)) {
             this.shortestPath = pathfinder.getOptimalPath();
             if (!this.shortestPath.isEmpty()) {
@@ -226,79 +268,89 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
                 Direction selectedDir = this.nextPosition.getDirFromPrev();
                 setDirection(selectedDir);
             } else {
-                selectRandomDir();
+                selectRandomDirrection();
             }
 
         } else {
-            selectRandomDir();
+            selectRandomDirrection();
         }
     }
 
-    private void selectRandomDir() {
+    private void selectRandomDirrection() {
         List<Direction> allPossibleDirections = new ArrayList<>(4);
         for (Direction dir : Direction.values()) {
             if (canMoveInDirection(dir)) {
                 allPossibleDirections.add(dir);
             }
         }
-        int bound = allPossibleDirections.size();
-        System.out.println("bound = " + bound);
-        int rand = this.random.nextInt(bound);
+
+        if (allPossibleDirections.isEmpty()) {
+            this.moving = false;
+            return;
+        }
+        int rand = this.random.nextInt(allPossibleDirections.size());
         setDirection(Direction.values()[rand]);
+        this.moving = true;
     }
 
-    private boolean checkIfNextPositionReached() {
-        return this.movingAlongShortestPath
-                && getCurrentSpot().equals(this.nextPosition);
+    private void moveAlongShortestPath() {
+        if (checkIfNextPositionReached()) {
+            this.shortestPath.remove(this.nextPosition);
+            if (!this.shortestPath.isEmpty()) {
+                this.nextPosition = this.shortestPath.get(0);
+                setDirection(this.nextPosition.getDirFromPrev());
+            } else {
+                selectRandomDirrection();
+                this.movingAlongShortestPath = false;
+            }
+        }
+    }
+
+    private boolean checkIfNeedRecalculateShortestPath() {
+        if (this.direction.isHorizontal()) {
+            if ((int) getX() % Game.TILE_SIZE == 0) {
+                return true;
+            }
+        } else if (this.direction.isVertical()) {
+            if ((int) getY() % Game.TILE_SIZE == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void handleCollisions() {
+        if (checkMapCollision()) {
+            selectRandomDirrection();
+            this.movingAlongShortestPath = false;
+        }
+        if (fixBounds()) {
+            selectRandomDirrection();
+            this.movingAlongShortestPath = false;
+        }
+
+        if (handleCollisionsWithOtherTanks()) {
+            selectRandomDirrection();
+            this.movingAlongShortestPath = false;
+        }
     }
 
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
         super.update(keyboardState, frameTime);
-
-        if (this.moving) {
-            if (this.movingAlongShortestPath) {
-                if (checkIfNextPositionReached()) {
-                    this.shortestPath.remove(this.nextPosition);
-                    if (!this.shortestPath.isEmpty()) {
-                        this.nextPosition = this.shortestPath.get(0);
-                        setDirection(this.nextPosition.getDirFromPrev());
-                    } else {
-                        selectRandomDir();
-                        this.movingAlongShortestPath = false;
-                    }
-                }
-            } else {
-                if (this.direction.isHorizontal()) {
-                    if ((int) getX() % Game.TILE_SIZE == 0) {
-                        selectDir();
-                    }
-                } else if (this.direction.isVertical()) {
-                    if ((int) getY() % Game.TILE_SIZE == 0) {
-                        selectDir();
-                    }
-                }
-            }
-
-            if (checkMapCollision()) {
-                selectRandomDir();
-                this.movingAlongShortestPath = false;
-            }
-            if (fixBounds()) {
-                selectRandomDir();
-                this.movingAlongShortestPath = false;
-            }
-
-            handleCollisionsWithOtherTanks();
-            move(frameTime);
-            updateGleamingColor(frameTime);
-            updateAnimation();
-
+        if (!this.moving) {
+            return;
         }
+        updateTarget(frameTime);
+        updateDirection();
+        move(frameTime);
+        handleCollisions();
+        updateGleamingColor(frameTime);
+        updateAnimation();
     }
-    
+
     @Override
-    public void draw(Graphics2D g){
+    public void draw(Graphics2D g) {
         super.draw(g);
         this.shortestPath.forEach(spot -> spot.draw(g));
     }

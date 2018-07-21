@@ -64,13 +64,9 @@ public class Pathfinder {
     }
     
     public boolean calcPath(Spot start, Spot end, int agentDimension) {
-        int[][] clearanceMap = this.tileMap.getClearanceMap();
-        
-        Set<Spot> closedSet = new HashSet<>();
-        
-        Queue<Spot> openSet = new PriorityQueue<>((firstSpot, secondSpot) -> {
-            return Double.compare(firstSpot.evaluation, secondSpot.evaluation);
-        });
+        int[][] clearanceMap = this.tileMap.getClearanceMap();        
+        Set<Spot> closedSet = new HashSet<>();        
+        Queue<Spot> openSet = new PriorityQueue<>();
 
         openSet.add(start);
 
@@ -85,11 +81,13 @@ public class Pathfinder {
             closedSet.add(current);
             Map<Direction, Spot> neighbours = getNeighbours(current);
             neighbours.forEach((direction, currNeighbour) -> {
+                
                 boolean alreadyClosed = closedSet.contains(currNeighbour);
                 int currGap = clearanceMap[currNeighbour.row][currNeighbour.col];
-                boolean gapOK = currGap >= agentDimension;
+                boolean clearanceSufficient = currGap >= agentDimension;
                 
-                if (!alreadyClosed && gapOK) {
+                if (!alreadyClosed && clearanceSufficient) {
+                    
                     double tmpCost = current.cost + 1;
                     
                     if (openSet.contains(currNeighbour)) {
@@ -147,7 +145,7 @@ public class Pathfinder {
         }
     }
     
-    public static class Spot {
+    public static class Spot implements Comparable<Spot>{
 
         private int row;
         private int col;
@@ -183,6 +181,18 @@ public class Pathfinder {
         public Direction getDirFromPrev() {
             return this.dirFromPrev;
         }
+        
+        public double distanceEuclidian(Spot target){
+            int dx = (this.col - target.col) * Game.HALF_TILE_SIZE;
+            int dy = (this.row - target.row) * Game.HALF_TILE_SIZE;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+        
+        public double distanceManhattan(Spot target){
+            int dx = (this.col - target.col) * Game.HALF_TILE_SIZE;
+            int dy = (this.row - target.row) * Game.HALF_TILE_SIZE;
+            return dx + dy;
+        }
 
         public void draw(Graphics2D g){
             g.setColor(Color.cyan);
@@ -213,6 +223,11 @@ public class Pathfinder {
             
             return Objects.equal(this.row, other.row)
                     && Objects.equal(this.col, other.col);
+        }
+
+        @Override
+        public int compareTo(Spot other) {
+            return Double.compare(this.evaluation, other.evaluation);
         }
 
     }

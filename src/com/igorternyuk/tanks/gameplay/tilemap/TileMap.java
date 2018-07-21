@@ -49,11 +49,24 @@ public class TileMap {
 
     public TileMap(double scale) {
         this.scale = scale;
-        setEnemyTankAppearancePositions();
-        setEagleProtectionPositions();
+        specifyEnemyTankAppearancePositions();
+        specifyEagleProtectionPositions();
+        specifyFireSpots();
         loadSpriteSheet();
         this.lastCollided = Tile.createTile(TileType.EMPTY, new Point(),
                 this.tileTypeImageMap.get(TileType.EMPTY), this.scale);
+    }
+    
+    public List<Point> getEnemyTankAppearencePositions() {
+        return Collections.unmodifiableList(this.enemyTankAppearancePositions);
+    }
+
+    public List<Point> getEagleProtectionPositions() {
+        return Collections.unmodifiableList(this.eagleProtectionTilePositions);
+    }
+    
+    public List<Spot> getFireSpots(){
+        return Collections.unmodifiableList(this.firePoints);
     }
 
     public Tile getLastCollided() {
@@ -146,13 +159,7 @@ public class TileMap {
             || entity.bottom() > getTilesInHeight() * Game.HALF_TILE_SIZE);
     }
     
-    public List<Point> getEnemyTankAppearencePositions() {
-        return Collections.unmodifiableList(this.enemyTankAppearancePositions);
-    }
-
-    public List<Point> getEagleProtectionPositions() {
-        return Collections.unmodifiableList(this.eagleProtectionTilePositions);
-    }
+    
 
     public void loadMap(String pathToMapFile) {
         int[][] map = Files.loadMapFromFile(pathToMapFile);
@@ -351,7 +358,7 @@ public class TileMap {
         }
     }
 
-    private void setEnemyTankAppearancePositions() {
+    private void specifyEnemyTankAppearancePositions() {
         for (int i = 0; i < 3; ++i) {
             this.enemyTankAppearancePositions.add(new Point(6 * i
                     * Game.TILE_SIZE, 0));
@@ -366,7 +373,7 @@ public class TileMap {
         this.firePoints.add(new Spot(20,12,true));
     }
 
-    private void setEagleProtectionPositions() {
+    private void specifyEagleProtectionPositions() {
         for (int row = 23; row < 26; ++row) {
             for (int col = 11; col < 15; ++col) {
                 if (row > 23 && (col == 12 || col == 13)) {

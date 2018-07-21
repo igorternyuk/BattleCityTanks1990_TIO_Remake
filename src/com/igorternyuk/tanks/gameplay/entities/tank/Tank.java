@@ -88,15 +88,16 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
         return otherTanks; 
     }
 
-    protected void handleCollisionsWithOtherTanks() {
+    protected boolean handleCollisionsWithOtherTanks() {
         List<Tank> otherTanks = getOtherTanks();
         for (int i = 0; i < otherTanks.size(); ++i) {
             Tank currTank = otherTanks.get(i);
             if (checkIfCollidesOtherTank(currTank)) {
                 handleCollisionWithOtherTank(currTank);
-                return;
+                return true;
             }
         }
+        return false;
     }
 
     protected boolean checkIfCollidesOtherTank(Tank other) {

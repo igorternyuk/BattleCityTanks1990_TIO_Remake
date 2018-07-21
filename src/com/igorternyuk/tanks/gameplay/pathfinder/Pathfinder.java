@@ -2,10 +2,17 @@ package com.igorternyuk.tanks.gameplay.pathfinder;
 
 import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
-import java.awt.Point;
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Queue;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -19,103 +26,112 @@ public class Pathfinder {
     private Spot[][] grid;
     private List<Spot> optimalPath = new ArrayList<>();
 
-    private class Spot implements Comparable<Spot> {
-
-        private int row;
-        private int col;
-        private boolean traversable;
-        private double evaluation;
-        private double cost;
-        private double heuristic;
-        private Spot prev;
-        private Direction dirToNext;
-
-        public Spot(int row, int col, boolean traversable) {
-            this.row = row;
-            this.col = col;
-            this.traversable = traversable;
-        }
-
-        public List<Spot> getNeighbours() {
-            List<Spot> neighbours = new ArrayList<>(4);
-            for (Direction dir : Direction.values()) {
-                int newCol = col + dir.getVx();
-                int newRow = row + dir.getVy();
-                if (areCoordinatesValid(newRow, newCol)) {
-                    neighbours.add(grid[newRow][newCol]);
-                }
-            }
-            return neighbours;
-        }
-
-        @Override
-        public int compareTo(Spot other) {
-            return Double.compare(this.evaluation, other.evaluation);
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 3;
-            hash = 47 * hash + this.row;
-            hash = 47 * hash + this.col;
-            hash = 47 * hash + (this.traversable ? 1 : 0);
-            hash =
-                    47 * hash + (int) (Double.doubleToLongBits(this.evaluation)
-                    ^ (Double.doubleToLongBits(this.evaluation) >>> 32));
-            hash =
-                    47 * hash + (int) (Double.doubleToLongBits(this.cost)
-                    ^ (Double.doubleToLongBits(this.cost) >>> 32));
-            hash =
-                    47 * hash + (int) (Double.doubleToLongBits(this.heuristic)
-                    ^ (Double.doubleToLongBits(this.heuristic) >>> 32));
-            hash = 47 * hash + Objects.hashCode(this.prev);
-            hash = 47 * hash + Objects.hashCode(this.dirToNext);
-            return hash;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null || getClass() != obj.getClass()) {
-                return false;
-            }
-            final Spot other = (Spot) obj;
-            return Double.doubleToLongBits(this.evaluation) == Double.doubleToLongBits(
-                    other.evaluation);
-        }
-
-    }
-
     public Pathfinder(TileMap tileMap) {
+        setTileMap(tileMap);
+    }
+    
+    public final void setTileMap(TileMap tileMap){
         this.tileMap = tileMap;
         this.grid = new Spot[this.tileMap.getTilesInHeight()][this.tileMap.
                 getTilesInWidth()];
+        fillGrid();
+        this.tileMap.print();
     }
 
-    public boolean calcPath() {
-        List<Spot> closedSet = new ArrayList<>();
-        SortedSet<Spot> openSet = new TreeSet<>();
-        Spot s1 = new Spot(0, 0, true);
-        s1.evaluation = 145.2;
-        openSet.add(s1);
-        Spot s2 = new Spot(0, 0, true);
-        s2.evaluation = 14.7;
-        openSet.add(s2);
-        Spot s3 = new Spot(0, 0, true);
-        s3.evaluation = 1.2;
-        openSet.add(s3);
-        Spot s4 = new Spot(0, 0, true);
-        s4.evaluation = 18.2;
-        openSet.add(s4);
-        Spot s5 = new Spot(0, 0, true);
-        s5.evaluation = 7.2;
-        openSet.add(s5);
-        System.out.println("openSet.first() = " + openSet.first().evaluation);
-        System.out.println("openSet.last() = " + openSet.last().evaluation);
-        openSet.forEach(spot -> System.out.println("Spot.eval = " + spot.evaluation));
+    public TileMap getTileMap() {
+        return this.tileMap;
+    }
+
+    public Spot[][] getGrid() {
+        return this.grid;
+    }
+
+    public List<Spot> getOptimalPath() {
+        return this.optimalPath;
+    }
+    
+    public Map<Direction, Spot> getNeighbours(Spot spot) {
+        Map<Direction, Spot> neighbours = new HashMap<>();
+        for (Direction dir : Direction.values()) {
+            int newCol = spot.col + dir.getVx();
+            int newRow = spot.row + dir.getVy();
+            if (areCoordinatesValid(newRow, newCol)
+                    && grid[newRow][newCol].traversable) {
+                neighbours.put(dir, grid[newRow][newCol]);
+            }
+        }
+        return neighbours;
+    }
+    
+    public boolean calcPath(Spot start, Spot end, int agentDimension) {
+        System.out.println("Trying to calculate the shortest possible path...");
+        int[][] clearanceMap = this.tileMap.getClearanceMap();
+        
+        Set<Spot> closedSet = new HashSet<>();
+        
+        Queue<Spot> openSet = new PriorityQueue<>((firstSpot, secondSpot) -> {
+            return Double.compare(firstSpot.evaluation, secondSpot.evaluation);
+        });
+
+        openSet.add(start);
+
+        while (!openSet.isEmpty()) {
+            Spot current = openSet.poll();
+            
+            if (current.equals(end)) {
+                restoreOptimalPath(current);
+                return true;
+            }
+
+            closedSet.add(current);
+            Map<Direction, Spot> neighbours = getNeighbours(current);
+            neighbours.forEach((direction, currNeighbour) -> {
+                boolean alreadyClosed = closedSet.contains(currNeighbour);
+                int currGap = clearanceMap[currNeighbour.row][currNeighbour.col];
+                boolean gapOK = currGap >= agentDimension;
+                
+                if (!alreadyClosed && gapOK) {
+                    double tmpCost = current.cost + 1;
+                    
+                    if (openSet.contains(currNeighbour)) {
+                        //System.out.println("Neighbour is already in the open list");
+                        //System.out.println("tmpCost = " + tmpCost);
+                        //System.out.println("currNeighbour.cost = " + currNeighbour.cost);
+                        if (tmpCost < currNeighbour.cost) {
+                            currNeighbour.cost = tmpCost;
+                            currNeighbour.evaluation = currNeighbour.cost
+                                    + currNeighbour.heuristic;
+                            currNeighbour.prev = current;
+                            currNeighbour.dirFromPrev = direction;
+                            System.out.println("Improving the cost");
+                        } else {
+                            System.out.println("Nothing to improve");
+                        }
+                    } else {
+                        currNeighbour.cost = tmpCost;
+                        currNeighbour.heuristic = heuristicFunction(
+                                currNeighbour, end);
+                        currNeighbour.evaluation = currNeighbour.cost
+                                + currNeighbour.heuristic;
+                        currNeighbour.prev = current;
+                        currNeighbour.dirFromPrev = direction;
+                        openSet.add(currNeighbour);
+                    }
+                }
+            });
+        }
+
         return false;
+    }
+
+    private void restoreOptimalPath(Spot end) {
+        this.optimalPath.clear();
+        Spot current = end;
+        while(current.prev != null){
+            this.optimalPath.add(current);
+            current = current.prev;
+        }
+        Collections.reverse(this.optimalPath);
     }
 
     private boolean areCoordinatesValid(int row, int col) {
@@ -127,52 +143,71 @@ public class Pathfinder {
         return Math.abs(source.col - target.col) + Math.abs(source.row
                 - target.row);
     }
+    
+    private void fillGrid() {
+        for (int row = 0; row < this.grid.length; ++row) {
+            for (int col = 0; col < this.grid[row].length; ++col) {
+                boolean traversable = this.tileMap.getTileType(row, col).
+                        isTraversable();
+                this.grid[row][col] = new Spot(row, col, traversable);
+            }
+        }
+    }
+    
+    public static class Spot {
 
-    /*
-if(!openSet.isEmpty()){
-		let current = openSet.pop();
+        private int row;
+        private int col;
+        private boolean traversable;
+        private double evaluation;
+        private double cost;
+        private double heuristic;
+        private Spot prev;
+        private Direction dirFromPrev;
 
-		if(current === target){
-			console.log("Done!");		
-			noLoop();
-		}
+        public Spot(int row, int col, boolean traversable) {
+            this.row = row;
+            this.col = col;
+            this.traversable = traversable;
+        }
 
-		closedSet.push(current);
-		//console.log("current spot x = " + current.x + " y = " + current.y);
-		//console.log("--------------------------");
-		//console.log("neighbours.length = " + neighbours.length);
-		//let neighbours = current.getNeighboursVonNeumann(grid);
-		let neighbours = considerDiagonals
-						 ? current.getNeighboursMoor(grid)
-						 : current.getNeighboursVonNeumann(grid);
-		neighbours.forEach(neighbour => {
-			if(!closedSet.includes(neighbour)){
-				//console.log("currNeighbour x = " + neighbour.x + " y = " + neighbour.y);
-				var tmpCost = current.cost + 1;
-				if(openSet.includes(neighbour)){
-					if(tmpCost < neighbour.cost){
-						neighbour.cost = tmpCost;
-						neighbour.f = neighbour.cost + neighbour.heuristic;
-						neighbour.prev = current;
-						//console.log("improving cost");
-					}
-				} else {
-					neighbour.cost = tmpCost;
-					neighbour.heuristic = heuristicFunc(neighbour, target);
-					neighbour.f = neighbour.cost + neighbour.heuristic;
-					neighbour.prev = current;
-					openSet.push(neighbour);					
-				}
-			}		
-		});	
+        public void draw(Graphics2D g){
+            g.setColor(Color.cyan);
+            g.fillRect(col * 8 * 2, row * 8 * 2, 8 * 2, 8 * 2);
+        }
 
-		restoreOptimalPath(current);
-		openSet.heapify();
-		//console.log("--------------------------");		
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 47 * hash + this.row;
+            hash = 47 * hash + this.col;
+            hash = 47 * hash + (this.traversable ? 1 : 0);
+            return hash;
+        }
 
-	} else {
-		console.log("No solution!");
-		noLoop();
-	}
-     */
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Spot other = (Spot) obj;
+            if (this.row != other.row) {
+                return false;
+            }
+            if (this.col != other.col) {
+                return false;
+            }
+            if (this.traversable != other.traversable) {
+                return false;
+            }
+            return true;
+        }
+
+    }
 }

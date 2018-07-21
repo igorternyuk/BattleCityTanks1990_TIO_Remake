@@ -2,6 +2,7 @@ package com.igorternyuk.tanks.gamestate;
 
 import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.pathfinder.Pathfinder;
+import com.igorternyuk.tanks.gameplay.pathfinder.Pathfinder.Spot;
 import com.igorternyuk.tanks.gameplay.tilemap.Tile;
 import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
 import com.igorternyuk.tanks.gameplay.tilemap.TileType;
@@ -113,9 +114,14 @@ public class ConstructionState extends GameState {
     private List<Point> eagleProtectionPositions = new ArrayList<>();
     private Point selectedTileDrawPosition = new Point();
     private Pathfinder pathfinder;
+    private List<Spot> optimalPath = new ArrayList<>();
+    private Spot start = new Spot(0, 0, true);
+    private Spot end = new Spot(6, 5, true);
 
     public ConstructionState(GameStateManager gsm) {
         super(gsm);
+        //optimalPath.add(new Spot(10, 2, false));
+        //optimalPath.add(new Spot(14, 0, false));
     }
 
     private void fillTileButtonArray() {
@@ -212,15 +218,20 @@ public class ConstructionState extends GameState {
                 System.out.println("");
             }
         } else if(keyCode == KeyEvent.VK_SPACE){
-            this.pathfinder.calcPath();
+            //this.pathfinder.calcPath();
+            if(this.pathfinder.calcPath(start, end, 2)){
+                System.out.println("Optimal path found");
+                this.optimalPath = this.pathfinder.getOptimalPath();
+                System.out.println("this.optimalPath.size() = " + this.optimalPath.size());
+            } else {
+                System.out.println("Path not found");
+            }
+            
         }
     }
 
     @Override
     public void onMouseReleased(MouseEvent e) {
-        System.out.println("Mouse released!!!");
-        System.out.println("clicked point p => { x = " + e.getX() + ", y = "
-                + e.getY() + " }");
         int releasedButton = e.getButton();
         if (releasedButton == MouseEvent.BUTTON3) {
             this.tileSelected = false;
@@ -321,6 +332,7 @@ public class ConstructionState extends GameState {
         drawGrid(g);
         drawSelectedTile(g);
         drawAllButtons(g);
+        this.optimalPath.forEach(spot -> spot.draw(g));
     }
 
     private void drawTileMap(Graphics2D g) {

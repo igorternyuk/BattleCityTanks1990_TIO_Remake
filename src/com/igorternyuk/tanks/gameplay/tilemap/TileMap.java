@@ -168,6 +168,22 @@ public class TileMap {
     public void saveMapToFile() {
         Files.writeMapToFile(this.pathToTheCurrentMapFile, getCurrentMap());
     }
+    
+    public void print(){
+        if(!this.mapLoaded){
+            return;
+        }
+        for(int row = 0; row < this.tiles.length; ++row){
+            for(int col = 0; col < this.tiles[row].length; ++col){
+                if(!getTileType(row, col).isTraversable()){
+                    System.out.print("X");
+                } else {
+                    System.out.print("_");
+                }
+            }
+            System.out.println("");
+        }
+    }
 
     public TileType getTileType(int row, int col) {
         return getTile(row, col).getType();
@@ -403,14 +419,14 @@ public class TileMap {
     private void updateClearanceMap(){
         for(int row = 0; row < this.tiles.length; ++row){
             for(int col = 0; col < this.tiles[row].length; ++col){
-                System.out.println("row = " + row + " col = " + col);
+                //System.out.println("row = " + row + " col = " + col);
                 if(!getTile(row, col).getType().isTraversable()){
                     continue;
                 }
                 int currentClearance = 1;
                 expansion:
                 while(currentClearance < this.tiles.length){
-                    System.out.println("currentClearance = " + currentClearance);
+                    //System.out.println("currentClearance = " + currentClearance);
                     for(int i = 0; i < currentClearance; ++i){
                         for(int j = 0; j < currentClearance; ++j){
                             //System.out.println("i = " + i + " j = " + j);

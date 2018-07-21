@@ -32,7 +32,8 @@ import java.util.Random;
 public class EnemyTank extends Tank<EnemyTankIdentifier> {
 
     private static final double COLOR_CHANGING_PERIOD = 0.1;
-    private static final double PERIOD_DURATION = 20;
+    private static final double TARGET_CHANGING_PERIOD = 20;
+    private static final double FROZEN_TIME = 10;
     private static final int[] BONUS_TANKS_NUMBERS = {4, 11, 18};
     private int number;
     private EnemyTankIdentifier identifier;
@@ -46,6 +47,8 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     private Spot nextPosition;
     private double targetTimer = 0;
     private List<Spot> fireSpots;
+    private boolean frozen = false;
+    private double freezeTimer = 0;
 
     public EnemyTank(LevelState level, int number, EnemyTankType type, double x,
             double y, Direction direction) {
@@ -60,6 +63,38 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         this.fireSpots = getFireSpotsToAttackTheEagle();
         selectRandomFirePointToAttackEagle();
         this.moving = true;
+    }
+    
+    @Override
+    public void update(KeyboardState keyboardState, double frameTime) {
+        super.update(keyboardState, frameTime);
+        if(this.frozen){
+            this.freezeTimer += frameTime;
+            if(this.freezeTimer >= FROZEN_TIME){
+                this.freezeTimer = 0;
+                this.frozen = false;
+            }
+            return;
+        }
+        if (!this.moving) {
+            return;
+        }
+        updateTarget(frameTime);
+        updateDirection();
+        move(frameTime);
+        handleCollisions();
+        updateGleamingColor(frameTime);
+        updateAnimation();
+    }
+
+    @Override
+    public void draw(Graphics2D g) {
+        super.draw(g);
+        this.shortestPath.forEach(spot -> spot.draw(g));
+    }
+    
+    public void freeze(){
+        this.frozen = true;
     }
 
     public EnemyTankType getType() {
@@ -139,7 +174,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     }
 
     @Override
-    protected void explode() {
+    public void explode() {
         super.explode();
         ScoreIcrementText text = new ScoreIcrementText(this.level, this.
                 getScore(), getX(), getY());
@@ -226,12 +261,12 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
 
     private void updateTarget(double frameTime) {
         this.targetTimer += frameTime;
-        if (this.targetTimer < PERIOD_DURATION) {
+        if (this.targetTimer < TARGET_CHANGING_PERIOD) {
             if (!fireSpots.contains(this.currTarget)) {
                 selectRandomFirePointToAttackEagle();
                 this.movingAlongShortestPath = false;
             }
-        } else if (this.targetTimer < 2 * PERIOD_DURATION) {
+        } else if (this.targetTimer < 2 * TARGET_CHANGING_PERIOD) {
             if (this.currTarget.distanceManhattan(getPlayerSpot()) > 10
                     * Game.HALF_TILE_SIZE) {
                 this.currTarget = getPlayerSpot();
@@ -335,25 +370,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         }
     }
 
-    @Override
-    public void update(KeyboardState keyboardState, double frameTime) {
-        super.update(keyboardState, frameTime);
-        if (!this.moving) {
-            return;
-        }
-        updateTarget(frameTime);
-        updateDirection();
-        move(frameTime);
-        handleCollisions();
-        updateGleamingColor(frameTime);
-        updateAnimation();
-    }
-
-    @Override
-    public void draw(Graphics2D g) {
-        super.draw(g);
-        this.shortestPath.forEach(spot -> spot.draw(g));
-    }
+    
 
     private void updateGleamingColor(double frameTime) {
         if (this.gleaming) {

@@ -154,7 +154,7 @@ public class Player extends Tank {
     }
 
     @Override
-    protected void explode() {
+    public void explode() {
         super.explode(ExplosionType.BIG);
         --this.lives;
         if (isAlive()) {

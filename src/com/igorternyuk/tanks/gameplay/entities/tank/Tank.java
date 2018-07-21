@@ -30,7 +30,7 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
 
     public abstract void fire();
 
-    protected void explode() {
+    public void explode() {
         super.explode(ExplosionType.BIG);
     }
 

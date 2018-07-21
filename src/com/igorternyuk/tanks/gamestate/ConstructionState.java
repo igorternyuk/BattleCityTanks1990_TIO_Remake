@@ -218,7 +218,6 @@ public class ConstructionState extends GameState {
                 System.out.println("");
             }
         } else if(keyCode == KeyEvent.VK_SPACE){
-            //this.pathfinder.calcPath();
             if(this.pathfinder.calcPath(start, end, 2)){
                 System.out.println("Optimal path found");
                 this.optimalPath = this.pathfinder.getOptimalPath();
@@ -226,12 +225,13 @@ public class ConstructionState extends GameState {
             } else {
                 System.out.println("Path not found");
             }
-            
         }
     }
 
     @Override
     public void onMouseReleased(MouseEvent e) {
+        System.out.println("clicked row = " + e.getY() / 2 / 8);
+        System.out.println("clicked col = " + e.getX() / 2 / 8);
         int releasedButton = e.getButton();
         if (releasedButton == MouseEvent.BUTTON3) {
             this.tileSelected = false;

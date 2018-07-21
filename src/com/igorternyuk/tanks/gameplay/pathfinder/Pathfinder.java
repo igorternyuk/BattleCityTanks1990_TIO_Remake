@@ -1,5 +1,7 @@
 package com.igorternyuk.tanks.gameplay.pathfinder;
 
+import com.google.common.base.Objects;
+import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
 import java.awt.Color;
@@ -13,8 +15,6 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  *
@@ -64,7 +64,6 @@ public class Pathfinder {
     }
     
     public boolean calcPath(Spot start, Spot end, int agentDimension) {
-        System.out.println("Trying to calculate the shortest possible path...");
         int[][] clearanceMap = this.tileMap.getClearanceMap();
         
         Set<Spot> closedSet = new HashSet<>();
@@ -94,18 +93,12 @@ public class Pathfinder {
                     double tmpCost = current.cost + 1;
                     
                     if (openSet.contains(currNeighbour)) {
-                        //System.out.println("Neighbour is already in the open list");
-                        //System.out.println("tmpCost = " + tmpCost);
-                        //System.out.println("currNeighbour.cost = " + currNeighbour.cost);
                         if (tmpCost < currNeighbour.cost) {
                             currNeighbour.cost = tmpCost;
                             currNeighbour.evaluation = currNeighbour.cost
                                     + currNeighbour.heuristic;
                             currNeighbour.prev = current;
                             currNeighbour.dirFromPrev = direction;
-                            System.out.println("Improving the cost");
-                        } else {
-                            System.out.println("Nothing to improve");
                         }
                     } else {
                         currNeighbour.cost = tmpCost;
@@ -171,9 +164,32 @@ public class Pathfinder {
             this.traversable = traversable;
         }
 
+        public int getRow() {
+            return this.row;
+        }
+
+        public int getCol() {
+            return this.col;
+        }
+
+        public boolean isTraversable() {
+            return this.traversable;
+        }
+
+        public Spot getPrev() {
+            return this.prev;
+        }
+
+        public Direction getDirFromPrev() {
+            return this.dirFromPrev;
+        }
+
         public void draw(Graphics2D g){
             g.setColor(Color.cyan);
-            g.fillRect(col * 8 * 2, row * 8 * 2, 8 * 2, 8 * 2);
+            g.fillRect((int)(col * Game.HALF_TILE_SIZE * Game.SCALE)
+                    , (int)(row * Game.HALF_TILE_SIZE * Game.SCALE)
+                    , (int)(Game.HALF_TILE_SIZE * Game.SCALE)
+                    , (int)(Game.HALF_TILE_SIZE * Game.SCALE));
         }
 
         @Override
@@ -181,7 +197,6 @@ public class Pathfinder {
             int hash = 5;
             hash = 47 * hash + this.row;
             hash = 47 * hash + this.col;
-            hash = 47 * hash + (this.traversable ? 1 : 0);
             return hash;
         }
 
@@ -190,23 +205,14 @@ public class Pathfinder {
             if (this == obj) {
                 return true;
             }
-            if (obj == null) {
+            if (obj == null || getClass() != obj.getClass()) {
                 return false;
             }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
+
             final Spot other = (Spot) obj;
-            if (this.row != other.row) {
-                return false;
-            }
-            if (this.col != other.col) {
-                return false;
-            }
-            if (this.traversable != other.traversable) {
-                return false;
-            }
-            return true;
+            
+            return Objects.equal(this.row, other.row)
+                    && Objects.equal(this.col, other.col);
         }
 
     }

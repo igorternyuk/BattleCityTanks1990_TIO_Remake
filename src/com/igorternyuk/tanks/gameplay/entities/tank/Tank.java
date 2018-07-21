@@ -28,8 +28,6 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
         super(level, type, x, y, speed, direction);
     }
 
-    public abstract void chooseDirection();
-
     public abstract void fire();
 
     protected void explode() {

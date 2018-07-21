@@ -128,10 +128,6 @@ public class Player extends Tank {
     }
 
     @Override
-    public void chooseDirection() {
-    }
-
-    @Override
     public void fire() {
         if (!this.canFire) {
             return;

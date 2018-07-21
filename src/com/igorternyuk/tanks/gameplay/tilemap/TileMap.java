@@ -2,6 +2,7 @@ package com.igorternyuk.tanks.gameplay.tilemap;
 
 import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
+import com.igorternyuk.tanks.gameplay.pathfinder.Pathfinder.Spot;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
 import com.igorternyuk.tanks.input.KeyboardState;
@@ -34,6 +35,7 @@ public class TileMap {
     private Tile lastCollided;
     private List<Point> enemyTankAppearancePositions = new ArrayList<>();
     private List<Point> eagleProtectionTilePositions = new ArrayList<>();
+    private List<Spot> firePoints = new ArrayList<>();
     private BufferedImage spriteSheet;
     private Map<TileType, BufferedImage> tileTypeImageMap = new HashMap<>();
     private String pathToTheCurrentMapFile;
@@ -354,6 +356,14 @@ public class TileMap {
             this.enemyTankAppearancePositions.add(new Point(6 * i
                     * Game.TILE_SIZE, 0));
         }
+    }
+    
+    private void specifyFireSpots(){
+        this.firePoints.add(new Spot(24,6,true));
+        this.firePoints.add(new Spot(24,7,true));
+        this.firePoints.add(new Spot(24,17,true));
+        this.firePoints.add(new Spot(24,18,true));
+        this.firePoints.add(new Spot(20,12,true));
     }
 
     private void setEagleProtectionPositions() {

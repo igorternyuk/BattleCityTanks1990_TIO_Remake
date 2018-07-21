@@ -1,28 +1,27 @@
 package com.igorternyuk.tanks.gameplay.entities.tank.enemytank;
 
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Ordering;
-import com.google.common.collect.TreeMultimap;
 import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUp;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUpType;
+import com.igorternyuk.tanks.gameplay.entities.player.Player;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
 import com.igorternyuk.tanks.gameplay.entities.tank.Heading;
 import com.igorternyuk.tanks.gameplay.entities.tank.Tank;
 import com.igorternyuk.tanks.gameplay.entities.tank.TankColor;
 import com.igorternyuk.tanks.gameplay.entities.text.ScoreIcrementText;
+import com.igorternyuk.tanks.gameplay.pathfinder.Pathfinder;
+import com.igorternyuk.tanks.gameplay.pathfinder.Pathfinder.Spot;
 import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.graphics.animations.Animation;
 import com.igorternyuk.tanks.graphics.animations.AnimationPlayMode;
 import com.igorternyuk.tanks.input.KeyboardState;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -33,6 +32,7 @@ import java.util.Random;
 public class EnemyTank extends Tank<EnemyTankIdentifier> {
 
     private static final double COLOR_CHANGING_PERIOD = 0.1;
+    private static final double PERIOD_DURATION = 20;
     private static final int[] BONUS_TANKS_NUMBERS = {4, 11, 18};
     private int number;
     private EnemyTankIdentifier identifier;
@@ -40,7 +40,10 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     private boolean gleaming = false;
     private double colorPlayingTimer;
     private final Random random = new Random();
-    private Point currTarget;
+    private boolean movingAlongShortestPath = false;
+    private Spot currTarget;
+    private List<Spot> shortestPath = new ArrayList<>();
+    private Spot nextPosition;
 
     public EnemyTank(LevelState level, int number, EnemyTankType type, double x,
             double y, Direction direction) {
@@ -52,7 +55,6 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         this.identifier = new EnemyTankIdentifier(calcColorDependingOnHealth(),
                 Heading.getHeading(direction), type);
         updateAnimation();
-        this.currTarget = this.level.getPlayer().getPosition();
         this.moving = true;
     }
 
@@ -165,49 +167,6 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         this.identifier.setHeading(Heading.getHeading(direction));
     }
 
-    @Override
-    public void chooseDirection() {
-        List<Direction> possibleDirections = new ArrayList<>();
-        for (Direction dir : Direction.values()) {
-            if (canMoveInDirection(dir)) {
-                possibleDirections.add(dir);
-            }
-        }
-        this.moving = !possibleDirections.isEmpty();
-        /*Direction randDirection = possibleDirections.get(this.random.nextInt(
-                possibleDirections.size()));*/
-        this.currTarget = this.level.getPlayer().getPosition();
-        Multimap<Double, Direction> distanceDirectionMap = TreeMultimap
-                .create(Ordering.from(Double::compare), Ordering.arbitrary());
-        for (int i = 0; i < possibleDirections.size(); ++i) {
-            Direction currDirection = possibleDirections.get(i);
-            int nextX = (int) (getX() + 2 * currDirection.getVx());
-            int nextY = (int) (getY() + 2 * currDirection.getVy());
-            Point nextPosition = new Point(nextX, nextY);
-            double distance = calcDistance(nextPosition, this.currTarget);
-            distanceDirectionMap.put(distance, currDirection);
-        }
-
-        Iterator<Double> distDirIterator =
-                distanceDirectionMap.asMap().keySet().iterator();
-        if (distDirIterator.hasNext()) {
-            double key = distDirIterator.next();
-            Collection<Direction> directions = distanceDirectionMap.asMap().get(
-                    key);
-            int dirCount = directions.size();
-            int randDirNumber = this.random.nextInt(dirCount);
-            if (!directions.isEmpty()) {
-                Iterator<Direction> dirIterator = directions.iterator();
-                Direction dir = this.direction;
-                for(int i = 0; i <= randDirNumber; ++i){
-                    dir = dirIterator.next();
-                }
-                Direction choosenDir = dir;
-                setDirection(choosenDir);
-            }
-        }
-    }
-
     protected double calcDistance(Point2D source, Point2D target) {
         double dx = Math.abs(source.getX() - target.getX());
         double dy = Math.abs(source.getY() - target.getY());
@@ -233,35 +192,115 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
                 AnimationPlayMode.LOOP);
     }
 
+    private Spot getCurrentSpot() {
+        int currRow = (int) getY() / Game.HALF_TILE_SIZE;
+        int currCol = (int) getX() / Game.HALF_TILE_SIZE;
+        Spot currSpot = new Spot(currRow, currCol, true);
+        return currSpot;
+    }
+    
+    private Spot getPlayerSpot(){
+        Player player = this.level.getPlayer();
+        int targetCol = (int) player.getX() / Game.HALF_TILE_SIZE;
+        int targetRow = (int) player.getY() / Game.HALF_TILE_SIZE;
+        return new Spot(targetRow, targetCol, true);
+    }
+    
+    private Spot getEagleSpot(){
+        return null;
+    }
+
+    private void selectDir() {
+        Pathfinder pathfinder = new Pathfinder(this.level.getTileMap());
+
+        Player player = this.level.getPlayer();
+        int targetCol = (int) player.getX() / Game.HALF_TILE_SIZE;
+        int targetRow = (int) player.getY() / Game.HALF_TILE_SIZE;
+
+        this.currTarget = new Spot(targetRow, targetCol, true);
+        if (pathfinder.calcPath(getCurrentSpot(), this.currTarget, 2)) {
+            this.shortestPath = pathfinder.getOptimalPath();
+            if (!this.shortestPath.isEmpty()) {
+                this.movingAlongShortestPath = true;
+                this.nextPosition = this.shortestPath.get(0);
+                Direction selectedDir = this.nextPosition.getDirFromPrev();
+                setDirection(selectedDir);
+            } else {
+                selectRandomDir();
+            }
+
+        } else {
+            selectRandomDir();
+        }
+    }
+
+    private void selectRandomDir() {
+        List<Direction> allPossibleDirections = new ArrayList<>(4);
+        for (Direction dir : Direction.values()) {
+            if (canMoveInDirection(dir)) {
+                allPossibleDirections.add(dir);
+            }
+        }
+        int bound = allPossibleDirections.size();
+        System.out.println("bound = " + bound);
+        int rand = this.random.nextInt(bound);
+        setDirection(Direction.values()[rand]);
+    }
+
+    private boolean checkIfNextPositionReached() {
+        return this.movingAlongShortestPath
+                && getCurrentSpot().equals(this.nextPosition);
+    }
+
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
         super.update(keyboardState, frameTime);
 
         if (this.moving) {
+            if (this.movingAlongShortestPath) {
+                if (checkIfNextPositionReached()) {
+                    this.shortestPath.remove(this.nextPosition);
+                    if (!this.shortestPath.isEmpty()) {
+                        this.nextPosition = this.shortestPath.get(0);
+                        setDirection(this.nextPosition.getDirFromPrev());
+                    } else {
+                        selectRandomDir();
+                        this.movingAlongShortestPath = false;
+                    }
+                }
+            } else {
+                if (this.direction.isHorizontal()) {
+                    if ((int) getX() % Game.TILE_SIZE == 0) {
+                        selectDir();
+                    }
+                } else if (this.direction.isVertical()) {
+                    if ((int) getY() % Game.TILE_SIZE == 0) {
+                        selectDir();
+                    }
+                }
+            }
 
             if (checkMapCollision()) {
-                chooseDirection();
+                selectRandomDir();
+                this.movingAlongShortestPath = false;
             }
             if (fixBounds()) {
-                chooseDirection();
+                selectRandomDir();
+                this.movingAlongShortestPath = false;
             }
 
-            if (this.direction.isHorizontal()) {
-                if ((int) getX() % Game.TILE_SIZE == 0) {
-                    chooseDirection();
-                }
-            } else if (this.direction.isVertical()) {
-                if ((int) getY() % Game.TILE_SIZE == 0) {
-                    chooseDirection();
-                }
-            }
             handleCollisionsWithOtherTanks();
             move(frameTime);
+            updateGleamingColor(frameTime);
+            updateAnimation();
+
         }
-
-        updateGleamingColor(frameTime);
-        updateAnimation();
-
+    }
+    
+    @Override
+    public void draw(Graphics2D g){
+        super.draw(g);
+        this.shortestPath.forEach(spot -> spot.draw(g));
     }
 
     private void updateGleamingColor(double frameTime) {

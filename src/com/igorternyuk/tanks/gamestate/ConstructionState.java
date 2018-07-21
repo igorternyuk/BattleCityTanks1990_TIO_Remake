@@ -1,6 +1,7 @@
 package com.igorternyuk.tanks.gamestate;
 
 import com.igorternyuk.tanks.gameplay.Game;
+import com.igorternyuk.tanks.gameplay.pathfinder.Pathfinder;
 import com.igorternyuk.tanks.gameplay.tilemap.Tile;
 import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
 import com.igorternyuk.tanks.gameplay.tilemap.TileType;
@@ -111,6 +112,7 @@ public class ConstructionState extends GameState {
     private List<Point> enemyTankAppearancePositions = new ArrayList<>();
     private List<Point> eagleProtectionPositions = new ArrayList<>();
     private Point selectedTileDrawPosition = new Point();
+    private Pathfinder pathfinder;
 
     public ConstructionState(GameStateManager gsm) {
         super(gsm);
@@ -179,6 +181,7 @@ public class ConstructionState extends GameState {
                 getEagleProtectionPositions());
         fillTileButtonArray();
         fillButtonArray();
+        this.pathfinder = new Pathfinder(this.tileMap);
         loaded = true;
     }
 
@@ -208,6 +211,8 @@ public class ConstructionState extends GameState {
                 }
                 System.out.println("");
             }
+        } else if(keyCode == KeyEvent.VK_SPACE){
+            this.pathfinder.calcPath();
         }
     }
 

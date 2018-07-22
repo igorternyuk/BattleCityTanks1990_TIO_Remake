@@ -41,8 +41,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Stack;
-import java.util.function.Consumer;
 
 /**
  *
@@ -50,6 +50,7 @@ import java.util.function.Consumer;
  */
 public class LevelState extends GameState {
 
+    public static final int TANKS_TOTAL = 20;
     protected static final Point EAGLE_POSITION = new Point(12
             * Game.HALF_TILE_SIZE, 24 * Game.HALF_TILE_SIZE);
     private static final Font FONT_GAME_STATUS = new Font("Verdana", Font.BOLD,
@@ -58,7 +59,7 @@ public class LevelState extends GameState {
             * Game.HALF_TILE_SIZE, 24 * Game.HALF_TILE_SIZE);
     private static final Point RIGHT_PANEL_POSITION = new Point(26
             * Game.HALF_TILE_SIZE, 0 * Game.HALF_TILE_SIZE);
-    private static final int TANKS_TOTAL = 20;
+
     private static final int TANKS_ON_FIELD_MAX = 4;
 
     private TextureAtlas atlas;
@@ -70,18 +71,76 @@ public class LevelState extends GameState {
     private Eagle eagle;
     private EntityManager entityManager;
     private GameInfoPanel rightPanel;
-    private GameStatus gameStatus = GameStatus.PLAY;
-    private boolean loaded = false;
+
     int stageNumber = 1;
     private Stack<EnemyTankType> hangar = new Stack<>();
-    private Map<PowerUpType, Runnable> onPowerUpCollectedHandlers = new HashMap<>();
+    private Map<PowerUpType, Runnable> onPowerUpCollectedHandlers =
+            new HashMap<>();
+    private Random random = new Random();
+    private GameStatus gameStatus = GameStatus.PLAY;
+    private boolean loaded = false;
 
     public LevelState(GameStateManager gsm) {
         super(gsm);
         this.entityManager = new EntityManager(this);
         createOnPowerUpCollectedHanlers();
     }
-    
+
+    public Stack<EnemyTankType> getHangar() {
+        return this.hangar;
+    }
+
+    private boolean needThrowIntoBattleMoreTanks() {
+        long tanksOnTheField = this.entityManager
+                .getEntitiesByType(EntityType.ENEMY_TANK).size();
+        return !this.hangar.isEmpty() && tanksOnTheField < TANKS_ON_FIELD_MAX;
+    }
+
+    private void tryToAddMoreTanksIntoBattle() {
+        List<Point> freeEnemyTankAppearancePoints =
+                getFreeAppearancePoints();
+        if (!freeEnemyTankAppearancePoints.isEmpty()) {
+            int randIndex = this.random.nextInt(
+                    freeEnemyTankAppearancePoints.size());
+            Point randAppearencePoint = freeEnemyTankAppearancePoints.get(
+                    randIndex);
+            this.entityManager.addEntity(new Splash(this,
+                    SplashType.NEW_ENEMY_TANK, randAppearencePoint.x,
+                    randAppearencePoint.y));
+        }
+    }
+
+    @Override
+    public void update(KeyboardState keyboardState, double frameTime) {
+        if (!this.loaded || this.gameStatus != GameStatus.PLAY) {
+            return;
+        }
+        //System.out.println("numEntities.size() = " + this.entities.size());
+        this.tileMap.update(keyboardState, frameTime);
+        this.entityManager.update(keyboardState, frameTime);
+
+        if (needThrowIntoBattleMoreTanks()) {
+            tryToAddMoreTanksIntoBattle();
+        }
+        
+        
+
+        checkCollisions();
+        checkBonuses();
+        checkGameStatus();
+    }
+
+    @Override
+    public void draw(Graphics2D g) {
+        if (!this.loaded) {
+            return;
+        }
+        this.tileMap.draw(g);
+        this.entityManager.draw(g);
+        this.tileMap.drawBushes(g);
+        drawGameStatus(g);
+    }
+
     private void onBonusCollected(PowerUp powerUp) {
         this.onPowerUpCollectedHandlers.get(powerUp.getType()).run();
         this.player.takeScore(powerUp.getScore());
@@ -167,24 +226,47 @@ public class LevelState extends GameState {
 
     private void startNewGame() {
         this.entityManager.removeAllEntities();
+        fillHangar();
         createEntities();
         gameStatus = GameStatus.PLAY;
     }
 
     private void fillHangar() {
-
+        for (int i = TANKS_TOTAL; i > 0; --i) {
+            EnemyTankType[] allEnemyTankTypes = EnemyTankType.values();
+            EnemyTankType randomType = EnemyTankType.values()[this.random.
+                    nextInt(allEnemyTankTypes.length)];
+            this.hangar.push(randomType);
+        }
     }
 
     private List<Point> getFreeAppearancePoints() {
         List<Point> freeAppearancePoints = new ArrayList<>(3);
         List<Entity> enemyTanks = this.entityManager.getEntitiesByType(
                 EntityType.ENEMY_TANK);
+        List<Entity> splashes = this.entityManager.getEntitiesByType(
+                EntityType.SPLASH);
         List<Point> appearancePoints = this.tileMap.
                 getEnemyTankAppearencePositions();
         appearancePoints.forEach(point -> {
             Rectangle currPointBoundingRect = new Rectangle(point.x, point.y,
                     Game.TILE_SIZE, Game.TILE_SIZE);
-            //boolean collisionWithEnemies = enemyTanks.stream();
+            boolean collisionWithEnemies = enemyTanks.stream()
+                    .map(entity -> (EnemyTank) entity)
+                    .anyMatch(enemyTank -> enemyTank.getBoundingRect()
+                            .intersects(currPointBoundingRect));
+            
+            boolean collisionWithSplashes = splashes.stream()
+                    .map(entity -> (Splash) entity)
+                    .anyMatch(splash -> splash.getBoundingRect()
+                            .intersects(currPointBoundingRect));
+            
+            boolean collisionWithPlayer = this.player.getBoundingRect().
+                    intersects(currPointBoundingRect);
+            if (!collisionWithPlayer
+                    && !collisionWithEnemies && !collisionWithSplashes) {
+                freeAppearancePoints.add(point);
+            }
         });
         return freeAppearancePoints;
     }
@@ -202,8 +284,6 @@ public class LevelState extends GameState {
         this.rightPanel = new GameInfoPanel(this, RIGHT_PANEL_POSITION.x,
                 RIGHT_PANEL_POSITION.y);
         this.entityManager.addEntity(this.rightPanel);
-        this.entityManager.addEntity(new Splash(this, SplashType.NEW_ENEMY_TANK,
-                0, 0));
     }
 
     private void checkCollisions() {
@@ -296,30 +376,6 @@ public class LevelState extends GameState {
                 FONT_GAME_STATUS, this.gameStatus.getColor(), Game.HEIGHT / 2);
     }
 
-    @Override
-    public void update(KeyboardState keyboardState, double frameTime) {
-        if (!this.loaded || this.gameStatus != GameStatus.PLAY) {
-            return;
-        }
-        //System.out.println("numEntities.size() = " + this.entities.size());
-        this.tileMap.update(keyboardState, frameTime);
-        this.entityManager.update(keyboardState, frameTime);
-        checkCollisions();
-        checkBonuses();
-        checkGameStatus();
-    }
-
-    @Override
-    public void draw(Graphics2D g) {
-        if (!this.loaded) {
-            return;
-        }
-        this.tileMap.draw(g);
-        this.entityManager.draw(g);
-        this.tileMap.drawBushes(g);
-        drawGameStatus(g);
-    }
-
     private void loadSprites() {
         this.spriteSheetManager = SpriteSheetManager.getInstance();
         for (SpriteSheetIdentifier identifier : SpriteSheetIdentifier.values()) {
@@ -373,35 +429,35 @@ public class LevelState extends GameState {
             }
         }
     }
-    
-    private void createOnPowerUpCollectedHanlers(){
+
+    private void createOnPowerUpCollectedHanlers() {
         this.onPowerUpCollectedHandlers.put(PowerUpType.TANK, () -> {
             this.player.gainExtraLife();
         });
-        
+
         this.onPowerUpCollectedHandlers.put(PowerUpType.STAR, () -> {
             this.player.promote();
         });
-        
+
         this.onPowerUpCollectedHandlers.put(PowerUpType.GUN, () -> {
             this.player.promoteToHeavy();
         });
-        
+
         this.onPowerUpCollectedHandlers.put(PowerUpType.HELMET, () -> {
             this.player.addProtection();
         });
-        
+
         this.onPowerUpCollectedHandlers.put(PowerUpType.SHOVEL, () -> {
             this.tileMap.activateEagleProtection();
         });
-        
+
         this.onPowerUpCollectedHandlers.put(PowerUpType.GRENADE, () -> {
             List<Entity> enemyTanks = this.entityManager.getEntitiesByType(
                     EntityType.ENEMY_TANK);
             enemyTanks.stream().map(entity -> (EnemyTank) entity).forEach(
-                    enemyTank -> enemyTank.explode());
+                    enemyTank -> enemyTank.explodeWithGrenade());
         });
-        
+
         this.onPowerUpCollectedHandlers.put(PowerUpType.TIMER, () -> {
             List<Entity> enemyTanks = this.entityManager.getEntitiesByType(
                     EntityType.ENEMY_TANK);

@@ -12,6 +12,7 @@ import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
 import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.image.BufferedImage;
+import java.util.Stack;
 
 /**
  *
@@ -49,7 +50,6 @@ public class Splash extends AnimatedEntity<SplashType> {
                     SpriteSheetIdentifier.EMPTY);
         }
         for (SplashType animType : SplashType.values()) {
-            System.out.println("animation");
             this.animationManager.addAnimation(animType, new Animation(
                     spriteSheet, animType.getAnimationSpeed(), animType.
                     getFrames()));
@@ -61,13 +61,15 @@ public class Splash extends AnimatedEntity<SplashType> {
         super.update(keyboardState, frameTime);
         this.splashTimer += frameTime;
         if (this.splashTimer >= SPLASH_DURATION) {
-            this.level.getEntityManager().addEntity(new EnemyTank(this.level, 4,
-                    EnemyTankType.ARMORED, getX(), getY(), Direction.EAST));
+            Stack<EnemyTankType> hangar = this.level.getHangar();
+            int tankId = LevelState.TANKS_TOTAL - hangar.size() + 1;
+            if (!hangar.isEmpty()) {
+                this.level.getEntityManager().addEntity(
+                        new EnemyTank(this.level,
+                                tankId, hangar.pop(), getX(), getY(),
+                                Direction.SOUTH));
+            }
             destroy();
         }
-        /*
-        EnemyTank(LevelState level, int number, EnemyTankType type, double x,
-            double y, Direction direction)
-         */
     }
 }

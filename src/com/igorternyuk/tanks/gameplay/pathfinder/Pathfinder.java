@@ -35,7 +35,7 @@ public class Pathfinder {
         this.grid = new Spot[this.tileMap.getTilesInHeight()][this.tileMap.
                 getTilesInWidth()];
         fillGrid();
-        this.tileMap.print();
+        //this.tileMap.print();
     }
 
     public TileMap getTileMap() {

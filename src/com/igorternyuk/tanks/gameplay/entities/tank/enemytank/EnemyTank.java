@@ -32,7 +32,7 @@ import java.util.Random;
 public class EnemyTank extends Tank<EnemyTankIdentifier> {
 
     private static final double COLOR_CHANGING_PERIOD = 0.1;
-    private static final double TARGET_CHANGING_PERIOD = 20;
+    private static final double TARGET_CHANGING_PERIOD = 10;
     private static final double FROZEN_TIME = 10;
     private static final int[] BONUS_TANKS_NUMBERS = {4, 11, 18};
     private int number;
@@ -57,20 +57,23 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         this.health = type.getHealth();
         checkIfBonus();
         loadAnimations();
-        this.identifier = new EnemyTankIdentifier(calcColorDependingOnHealth(),
+        TankColor color = type == EnemyTankType.ARMORED ?
+                 calcColorDependingOnHealth() :
+                 TankColor.GRAY;
+        this.identifier = new EnemyTankIdentifier(color,
                 Heading.getHeading(direction), type);
         updateAnimation();
         this.fireSpots = getFireSpotsToAttackTheEagle();
         selectRandomFirePointToAttackEagle();
         this.moving = true;
     }
-    
+
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
         super.update(keyboardState, frameTime);
-        if(this.frozen){
+        if (this.frozen) {
             this.freezeTimer += frameTime;
-            if(this.freezeTimer >= FROZEN_TIME){
+            if (this.freezeTimer >= FROZEN_TIME) {
                 this.freezeTimer = 0;
                 this.frozen = false;
             }
@@ -90,10 +93,10 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     @Override
     public void draw(Graphics2D g) {
         super.draw(g);
-        this.shortestPath.forEach(spot -> spot.draw(g));
+        //this.shortestPath.forEach(spot -> spot.draw(g));
     }
-    
-    public void freeze(){
+
+    public void freeze() {
         this.frozen = true;
     }
 
@@ -168,7 +171,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         }
     }
 
-    protected void explodeWithGrenade() {
+    public void explodeWithGrenade() {
         super.explode();
         destroy();
     }
@@ -320,6 +323,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         }
 
         if (allPossibleDirections.isEmpty()) {
+            System.out.println("No possible directions");
             this.moving = false;
             return;
         }
@@ -369,8 +373,6 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             this.movingAlongShortestPath = false;
         }
     }
-
-    
 
     private void updateGleamingColor(double frameTime) {
         if (this.gleaming) {

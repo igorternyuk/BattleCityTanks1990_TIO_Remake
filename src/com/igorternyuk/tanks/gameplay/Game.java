@@ -21,17 +21,19 @@ import java.awt.event.MouseEvent;
 public class Game implements Runnable {
 
     public static final int WIDTH = 480;
-    public static final int HEIGHT = 480;
+    public static final int HEIGHT = 560;
     public static final int HALF_WIDTH = WIDTH / 2;
     public static final int HALF_HEIGHT = HEIGHT / 2;
     public static final int TILE_SIZE = 16;
     public static final int HALF_TILE_SIZE = TILE_SIZE / 2;
     public static final int QUARTER_TILE_SIZE = HALF_TILE_SIZE / 2;
+    public static final int STATISTICS_PANEL_HEIGHT = 9 * TILE_SIZE;
+    public static final int RIGHT_PANEL_WIDTH = 4 * TILE_SIZE;
     public static final double SCALE = 2;
-    public static final int TILES_IN_WIDTH = (int) ((WIDTH - 4 * TILE_SIZE)
+    public static final int TILES_IN_WIDTH = (int) ((WIDTH - RIGHT_PANEL_WIDTH)
             / SCALE / HALF_TILE_SIZE);
-    public static final int TILES_IN_HEIGHT = (int) ((HEIGHT - 4 * TILE_SIZE)
-            / SCALE / HALF_TILE_SIZE);
+    public static final int TILES_IN_HEIGHT = (int) ((HEIGHT
+            - STATISTICS_PANEL_HEIGHT) / SCALE / HALF_TILE_SIZE);
     public static final float FPS = 60.0f;
     public static final float FRAME_TIME = Time.SECOND / FPS;
     public static final float FRAME_TIME_IN_SECONDS = 1 / FPS;

@@ -144,7 +144,7 @@ public class Player extends Tank {
             return;
         }
         Point departure = calcProjectileDeparturePosition();
-        Projectile projectile = new Projectile(level, ProjectileType.ENEMY,
+        Projectile projectile = new Projectile(level, ProjectileType.PLAYER,
                 departure.x, departure.y,
                 this.identifier.getType().getProjectileSpeed(),
                 this.direction);

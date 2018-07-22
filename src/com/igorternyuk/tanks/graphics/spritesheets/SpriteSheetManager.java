@@ -70,7 +70,6 @@ public class SpriteSheetManager {
                 SpriteSheetIdentifier.GRAY_STATISTICS_TANKS);
         BufferedImage requiredFragment = spriteSheet.getSubimage(0, enemyTankType.
                 getSpriteSheetPositionY(), Game.TILE_SIZE, Game.TILE_SIZE);
-        
         return Images.resizeImage(requiredFragment, Game.SCALE);
     }
 }

@@ -7,10 +7,10 @@ import com.igorternyuk.tanks.gameplay.Game;
  * @author igor
  */
 public enum EnemyTankType {
-    BASIC(16, 32, 25, 25, 100, 0 * Game.TILE_SIZE), // 1 1
-    FAST(32, 64, 25, 25, 200, 1 * Game.TILE_SIZE), //3 2 
-    POWER(16, 96, 25, 25, 300, 2 * Game.TILE_SIZE), //2 3
-    ARMORED(16, 64, 400, 100, 100, 3 * Game.TILE_SIZE); //2 2
+    BASIC(16, 32, 25, 25, 100, 0 * Game.TILE_SIZE),
+    FAST(32, 64, 25, 25, 200, 1 * Game.TILE_SIZE),
+    POWER(16, 96, 25, 25, 300, 2 * Game.TILE_SIZE),
+    ARMORED(16, 64, 50, 100, 400, 3 * Game.TILE_SIZE);
 
     private double speed;
     private double projectileSpeed;

@@ -307,8 +307,11 @@ public class LevelState extends GameState {
                 EnemyTank enemyTank = (EnemyTank) enemyTanks.get(j);
                 if (projectile.collides(enemyTank)) {
                     enemyTank.hit(projectile.getDamage());
+                    System.out.println("Colliding projectile type = " + projectile.getType());
+                    System.out.println("Killed tank type = " + enemyTank.getType());
                     if (projectile.getType() == ProjectileType.PLAYER
                             && !enemyTank.isAlive()) {
+                        System.out.println("REgistering tank.....S");
                         this.player.registerKilledTank(enemyTank);
                     }
                     projectile.explode();

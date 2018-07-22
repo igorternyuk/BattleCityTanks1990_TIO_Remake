@@ -223,9 +223,9 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     }
 
     private void createPowerUp() {
-        int randX = this.random.nextInt(Game.TILES_IN_WIDTH)
+        int randX = this.random.nextInt(Game.TILES_IN_WIDTH - 1)
                 * Game.HALF_TILE_SIZE;
-        int randY = this.random.nextInt(Game.TILES_IN_HEIGHT)
+        int randY = this.random.nextInt(Game.TILES_IN_HEIGHT - 1)
                 * Game.HALF_TILE_SIZE;
         PowerUp powerUp = new PowerUp(this.level, PowerUpType.randomType(),
                 randX, randY);
@@ -371,9 +371,12 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
 
         if (allPossibleDirections.isEmpty()) {
             System.out.println("No possible directions!The tank got stuck!");
-            this.gotStuck = false;
+            this.gotStuck = true;
             this.moving = false;
             return;
+        } else {
+            System.out.println("Let's get out of there!");
+            this.gotStuck = false;
         }
         int rand = this.random.nextInt(allPossibleDirections.size());
         setDirection(Direction.values()[rand]);
@@ -407,8 +410,8 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     }
 
     private void handleCollisions() {
-        boolean collidedMap = checkMapCollision();
         boolean collidedOtherTanks = handleCollisionsWithOtherTanks();
+        boolean collidedMap = checkMapCollision();
         boolean boundsFixed = fixBounds();
         if (collidedMap || collidedOtherTanks || boundsFixed) {
             selectRandomDirrection();

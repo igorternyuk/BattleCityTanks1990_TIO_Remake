@@ -38,7 +38,7 @@ public class Player extends Tank {
     private int lives = 5;
     private double lastShootTimer;
     private double shotDelay = 0.15;
-    private PlayerStatistics playerStatistics = new PlayerStatistics(this);
+    private PlayerStatistics playerStatistics = new PlayerStatistics();
 
     public Player(LevelState level, PlayerTankType type, double x, double y,
             Direction direction) {
@@ -58,6 +58,7 @@ public class Player extends Tank {
         if (this.moving) {
             move(frameTime);
             checkMapCollision();
+            checkCollisionsWithSplashes();
             fixBounds();
         }
         super.update(keyboardState, frameTime);

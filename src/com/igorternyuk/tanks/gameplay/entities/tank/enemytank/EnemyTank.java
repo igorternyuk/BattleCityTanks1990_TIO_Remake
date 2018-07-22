@@ -2,12 +2,12 @@ package com.igorternyuk.tanks.gameplay.entities.tank.enemytank;
 
 import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
+import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUp;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUpType;
 import com.igorternyuk.tanks.gameplay.entities.player.Player;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
-import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
 import com.igorternyuk.tanks.gameplay.entities.tank.Heading;
 import com.igorternyuk.tanks.gameplay.entities.tank.Tank;
 import com.igorternyuk.tanks.gameplay.entities.tank.TankColor;
@@ -18,8 +18,10 @@ import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.graphics.animations.Animation;
 import com.igorternyuk.tanks.graphics.animations.AnimationPlayMode;
 import com.igorternyuk.tanks.input.KeyboardState;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +39,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             * Game.HALF_TILE_SIZE;
     private static final double FROZEN_TIME = 10;
     private static final int[] BONUS_TANKS_NUMBERS = {4, 11, 18};
+    private static final double SHOOTING_PERIOD = 2;
     private int number;
     private EnemyTankIdentifier identifier;
     private boolean bonus = false;
@@ -52,25 +55,26 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     private boolean frozen = false;
     private double freezeTimer = 0;
     private boolean gotStuck = false;
+    private double shootingTimer = 0;
 
     public EnemyTank(LevelState level, int number, EnemyTankType type, double x,
             double y, Direction direction) {
         super(level, EntityType.ENEMY_TANK, x, y, type.getSpeed(), direction);
         this.number = number;
         this.health = type.getHealth();
-        
+
         checkIfBonus();
-        
+
         if (this.bonus) {
             destroyExistingBonuses();
         }
-        
+
         loadAnimations();
 
         TankColor color;
 
         if (type == EnemyTankType.ARMORED) {
-            color = calcColorDependingOnHealth();
+            color = TankColor.GREEN;
         } else {
             if (this.number % 2 == 0) {
                 color = TankColor.GREEN;
@@ -103,6 +107,14 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
                 handleCollisions();
             }
             return;
+        }
+
+        this.shootingTimer += frameTime;
+        if (this.shootingTimer >= SHOOTING_PERIOD) {
+            this.shootingTimer = 0;
+            if (isFireLineFreeOfPartnerTanks()) {
+                fire();
+            }
         }
         updateTarget(frameTime);
         updateDirection();
@@ -176,15 +188,16 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         Point departure = calcProjectileDeparturePosition();
         int px = departure.x;
         int py = departure.y;
-        Projectile projectile = new Projectile(level, ProjectileType.ENEMY, px,
-                py,
+        Projectile projectile = new Projectile(level, this.getType().
+                getProjectileType(), px, py,
                 this.identifier.getType().getProjectileSpeed(),
                 this.direction);
         projectile.setDamage(this.identifier.getType().getProjectileDamage());
         if (this.identifier.getType() == EnemyTankType.ARMORED) {
             projectile.setAntiarmour(true);
         }
-        this.level.getEntities().add(projectile);
+        this.level.getEntityManager().addEntity(projectile);
+        this.canFire = false;
     }
 
     @Override
@@ -410,10 +423,11 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     }
 
     private void handleCollisions() {
-        boolean collidedOtherTanks = handleCollisionsWithOtherTanks();
-        boolean collidedMap = checkMapCollision();
+        boolean collidesOtherTanks = handleCollisionsWithOtherTanks();
+        boolean collidesSplashes = checkCollisionsWithSplashes();
+        boolean collidesMap = checkMapCollision();
         boolean boundsFixed = fixBounds();
-        if (collidedMap || collidedOtherTanks || boundsFixed) {
+        if (collidesMap || collidesSplashes || collidesOtherTanks || boundsFixed) {
             selectRandomDirrection();
             this.movingAlongShortestPath = false;
         }
@@ -439,6 +453,38 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             return TankColor.RED;
         } else {
             return TankColor.GREEN;
+        }
+    }
+
+    private boolean isFireLineFreeOfPartnerTanks() {
+        List<Entity> partners = this.level.getEntityManager().getEntitiesByType(
+                EntityType.ENEMY_TANK);
+        Rectangle damageArea = calcDamageArea();
+        return partners.stream().noneMatch(entity -> entity.getBoundingRect().
+                intersects(damageArea));
+    }
+
+    private Rectangle calcDamageArea() {
+        if (this.direction == Direction.NORTH) {
+            return new Rectangle((int) left() - getWidth(),
+                     0,
+                     3 * getWidth(),
+                    (int) top());
+        } else if (this.direction == Direction.SOUTH) {
+            return new Rectangle((int) left() - getWidth(),
+                     (int) bottom(),
+                     3 * getWidth(),
+                     this.level.getMapHeight() - (int) top());
+        } else if (this.direction == Direction.EAST) {
+            return new Rectangle((int) right(),
+                     (int) top() - getHeight(),
+                     this.level.getMapWidth() - (int) left(),
+                     3 * getHeight());
+        } else {
+            return new Rectangle(0,
+                     (int) top() - getHeight(),
+                     (int) left(),
+                    3 * getHeight());
         }
     }
 }

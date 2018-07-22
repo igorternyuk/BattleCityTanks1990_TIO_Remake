@@ -1,16 +1,17 @@
 package com.igorternyuk.tanks.gameplay.entities.tank.enemytank;
 
 import com.igorternyuk.tanks.gameplay.Game;
+import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
 
 /**
  *
  * @author igor
  */
 public enum EnemyTankType {
-    BASIC(16, 32, 25, 25, 100, 0 * Game.TILE_SIZE),
-    FAST(32, 64, 25, 25, 200, 1 * Game.TILE_SIZE),
-    POWER(16, 96, 25, 25, 300, 2 * Game.TILE_SIZE),
-    ARMORED(16, 64, 50, 100, 400, 3 * Game.TILE_SIZE);
+    BASIC(16, 96, 25, 25, 100, 0 * Game.TILE_SIZE),
+    FAST(32, 144, 25, 25, 200, 1 * Game.TILE_SIZE),
+    POWER(16, 144, 25, 25, 300, 2 * Game.TILE_SIZE),
+    ARMORED(16, 96, 50, 100, 400, 3 * Game.TILE_SIZE);
 
     private double speed;
     private double projectileSpeed;
@@ -18,6 +19,7 @@ public enum EnemyTankType {
     private int health;
     private int score;
     private int spriteSheetPositionY;
+    private ProjectileType projectileType;
 
     private EnemyTankType(double speed, double projectileSpeed,
             int projectileDamage, int health, int score, int positionY) {
@@ -27,6 +29,7 @@ public enum EnemyTankType {
         this.health = health;
         this.score = score;
         this.spriteSheetPositionY = positionY;
+        this.projectileType = ProjectileType.ENEMY;
     }
     
     public double getSpeed() {
@@ -39,6 +42,10 @@ public enum EnemyTankType {
     
     public int getProjectileDamage(){
         return this.projectileDamage;
+    }
+
+    public ProjectileType getProjectileType() {
+        return this.projectileType;
     }
 
     public int getHealth() {

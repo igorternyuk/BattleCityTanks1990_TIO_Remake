@@ -1,6 +1,7 @@
 package com.igorternyuk.tanks.gameplay.entities.player;
 
 import com.igorternyuk.tanks.gameplay.Game;
+import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
 
 /**
  *
@@ -57,6 +58,7 @@ public enum PlayerTankType {
     private double projectileSpeed;
     private int projectileDamage;
     private int spriteSheetPositionY;
+    private ProjectileType projectileType;
 
     private PlayerTankType(int starNumber, double speed, double projectileSpeed,
             int projectileDamage, int spriteSheetPositionY) {
@@ -65,6 +67,7 @@ public enum PlayerTankType {
         this.projectileSpeed = projectileSpeed;
         this.projectileDamage = projectileDamage;
         this.spriteSheetPositionY = spriteSheetPositionY;
+        this.projectileType = ProjectileType.PLAYER;
     }
 
     public abstract boolean canRepeatFire();
@@ -80,6 +83,10 @@ public enum PlayerTankType {
 
     public int getProjectileDamage() {
         return this.projectileDamage;
+    }
+
+    public ProjectileType getProjectileType() {
+        return this.projectileType;
     }
 
     public double getSpeed() {

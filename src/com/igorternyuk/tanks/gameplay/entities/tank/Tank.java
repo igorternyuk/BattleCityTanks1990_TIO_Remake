@@ -6,6 +6,7 @@ import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
+import com.igorternyuk.tanks.gameplay.entities.splash.Splash;
 import com.igorternyuk.tanks.gameplay.tilemap.Tile;
 import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
 import com.igorternyuk.tanks.gamestate.LevelState;
@@ -79,13 +80,13 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
         }
         return false;
     }
-    
-    protected List<Tank> getOtherTanks(){
+
+    protected List<Tank> getOtherTanks() {
         List<Tank> otherTanks = this.level.getEntityManager()
                 .getEntitiesByType(EntityType.ENEMY_TANK).stream()
                 .filter(tank -> !tank.equals(this)).map(tank -> (Tank) tank)
                 .collect(Collectors.toList());
-        return otherTanks; 
+        return otherTanks;
     }
 
     protected boolean handleCollisionsWithOtherTanks() {
@@ -94,6 +95,21 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
             Tank currTank = otherTanks.get(i);
             if (checkIfCollidesOtherTank(currTank)) {
                 handleCollisionWithOtherTank(currTank);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected boolean checkCollisionsWithSplashes() {
+        List<Entity> splashes = this.level.getEntityManager().getEntitiesByType(
+                EntityType.SPLASH);
+        for (int i = splashes.size() - 1; i >= 0; --i) {
+            Splash currSplash = (Splash) splashes.get(i);
+            if (collides(currSplash)) {
+                Rectangle intersection = getBoundingRect().intersection(
+                        currSplash.getBoundingRect());
+                correctPositionAfterIntersection(intersection);
                 return true;
             }
         }
@@ -111,6 +127,10 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
         Rectangle otherBoundingRect = other.getBoundingRect();
         Rectangle intersection = thisBoundingRect.
                 intersection(otherBoundingRect);
+        correctPositionAfterIntersection(intersection);
+    }
+
+    private void correctPositionAfterIntersection(Rectangle intersection) {
         if (this.direction.isVertical()) {
             setPosition(this.x, this.y + intersection.height * this.direction.
                     getOpposite().getVy());

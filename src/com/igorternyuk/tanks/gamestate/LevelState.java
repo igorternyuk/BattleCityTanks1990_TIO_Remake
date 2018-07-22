@@ -32,7 +32,6 @@ import java.awt.Graphics2D;
 import com.igorternyuk.tanks.input.KeyboardState;
 import com.igorternyuk.tanks.resourcemanager.ImageIdentifier;
 import com.igorternyuk.tanks.utils.Painter;
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -57,7 +56,7 @@ public class LevelState extends GameState {
             * Game.HALF_TILE_SIZE, 24 * Game.HALF_TILE_SIZE);
     private static final Font FONT_GAME_STATUS = new Font("Verdana", Font.BOLD,
             48);
-   
+
     private static final Point PLAYER_RESPAWN_POSITION = new Point(8
             * Game.HALF_TILE_SIZE, 24 * Game.HALF_TILE_SIZE);
     private static final Point RIGHT_PANEL_POSITION = new Point(26
@@ -128,7 +127,6 @@ public class LevelState extends GameState {
         if (needThrowIntoBattleMoreTanks()) {
             tryToAddMoreTanksIntoBattle();
         }
-
         checkCollisions();
         checkBonuses();
         checkGameStatus();
@@ -306,15 +304,13 @@ public class LevelState extends GameState {
             for (int j = enemyTanks.size() - 1; j >= 0; --j) {
                 EnemyTank enemyTank = (EnemyTank) enemyTanks.get(j);
                 if (projectile.collides(enemyTank)) {
-                    enemyTank.hit(projectile.getDamage());
-                    System.out.println("Colliding projectile type = " + projectile.getType());
-                    System.out.println("Killed tank type = " + enemyTank.getType());
-                    if (projectile.getType() == ProjectileType.PLAYER
-                            && !enemyTank.isAlive()) {
-                        System.out.println("REgistering tank.....S");
-                        this.player.registerKilledTank(enemyTank);
+                    if(projectile.getType() == ProjectileType.PLAYER){
+                        enemyTank.hit(projectile.getDamage());
+                        if(!enemyTank.isAlive()){
+                            this.player.registerKilledTank(enemyTank);
+                        }
+                        projectile.explode();
                     }
-                    projectile.explode();
                 }
             }
         }
@@ -440,7 +436,7 @@ public class LevelState extends GameState {
     }
 
     private void drawPlayerStatistics(Graphics2D g) {
-        
+
     }
 
     private void createOnPowerUpCollectedHanlers() {

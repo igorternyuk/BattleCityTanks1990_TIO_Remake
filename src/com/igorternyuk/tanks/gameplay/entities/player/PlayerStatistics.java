@@ -24,13 +24,11 @@ public class PlayerStatistics {
             Font.BOLD, 18);
     private static final Font FONT_LARGER = new Font("Verdana",
             Font.BOLD, 28);
-    private Player player;
     private int score = 0;
     private int killedTankCount = 0;
     private Map<EnemyTankType, Integer> killedEnemyTanks = new HashMap<>();
 
-    public PlayerStatistics(Player player) {
-        this.player = player;
+    public PlayerStatistics() {
         resetKilledTanksMap();
     }
 
@@ -58,7 +56,6 @@ public class PlayerStatistics {
                 + 1);
         this.score += enemyTank.getScore();
         ++this.killedTankCount;
-        System.out.println("Tank killed Score = " + this.score);
     }
 
     public void addPowerUp(PowerUp powerUp) {
@@ -73,6 +70,11 @@ public class PlayerStatistics {
         g.setColor(Color.black);
         g.fillRect(0, Game.HEIGHT - Game.STATISTICS_PANEL_HEIGHT,
                 Game.WIDTH, Game.STATISTICS_PANEL_HEIGHT);
+        
+        g.setColor(Color.white);
+        g.fillRect(0, Game.HEIGHT - Game.STATISTICS_PANEL_HEIGHT,
+                Game.WIDTH, 3);
+        
         g.setColor(Color.yellow);
         g.setFont(FONT_SMALLER);
 

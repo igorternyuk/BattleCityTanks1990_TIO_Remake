@@ -15,6 +15,7 @@ import com.igorternyuk.tanks.gameplay.entities.player.Player;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankIdentifier;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
+import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
 import com.igorternyuk.tanks.gameplay.entities.splash.Splash;
 import com.igorternyuk.tanks.gameplay.entities.splash.SplashType;
 import com.igorternyuk.tanks.gameplay.entities.tank.Alliance;
@@ -31,6 +32,7 @@ import java.awt.Graphics2D;
 import com.igorternyuk.tanks.input.KeyboardState;
 import com.igorternyuk.tanks.resourcemanager.ImageIdentifier;
 import com.igorternyuk.tanks.utils.Painter;
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -55,6 +57,7 @@ public class LevelState extends GameState {
             * Game.HALF_TILE_SIZE, 24 * Game.HALF_TILE_SIZE);
     private static final Font FONT_GAME_STATUS = new Font("Verdana", Font.BOLD,
             48);
+   
     private static final Point PLAYER_RESPAWN_POSITION = new Point(8
             * Game.HALF_TILE_SIZE, 24 * Game.HALF_TILE_SIZE);
     private static final Point RIGHT_PANEL_POSITION = new Point(26
@@ -125,8 +128,6 @@ public class LevelState extends GameState {
         if (needThrowIntoBattleMoreTanks()) {
             tryToAddMoreTanksIntoBattle();
         }
-        
-        
 
         checkCollisions();
         checkBonuses();
@@ -142,11 +143,12 @@ public class LevelState extends GameState {
         this.entityManager.draw(g);
         this.tileMap.drawBushes(g);
         drawGameStatus(g);
+        drawPlayerStatistics(g);
     }
 
     private void onBonusCollected(PowerUp powerUp) {
         this.onPowerUpCollectedHandlers.get(powerUp.getType()).run();
-        this.player.takeScore(powerUp.getScore());
+        this.player.collectPowerUp(powerUp);
         powerUp.collect();
     }
 
@@ -258,12 +260,12 @@ public class LevelState extends GameState {
                     .map(entity -> (EnemyTank) entity)
                     .anyMatch(enemyTank -> enemyTank.getBoundingRect()
                             .intersects(currPointBoundingRect));
-            
+
             boolean collisionWithSplashes = splashes.stream()
                     .map(entity -> (Splash) entity)
                     .anyMatch(splash -> splash.getBoundingRect()
                             .intersects(currPointBoundingRect));
-            
+
             boolean collisionWithPlayer = this.player.getBoundingRect().
                     intersects(currPointBoundingRect);
             if (!collisionWithPlayer
@@ -304,7 +306,11 @@ public class LevelState extends GameState {
             for (int j = enemyTanks.size() - 1; j >= 0; --j) {
                 EnemyTank enemyTank = (EnemyTank) enemyTanks.get(j);
                 if (projectile.collides(enemyTank)) {
-                    enemyTank.hit(25);
+                    enemyTank.hit(projectile.getDamage());
+                    if (projectile.getType() == ProjectileType.PLAYER
+                            && !enemyTank.isAlive()) {
+                        this.player.registerKilledTank(enemyTank);
+                    }
                     projectile.explode();
                 }
             }
@@ -348,9 +354,6 @@ public class LevelState extends GameState {
             case KeyEvent.VK_F:
                 this.player.setCanFire(true);
                 break;
-            case KeyEvent.VK_A:
-                this.tileMap.activateEagleProtection();
-                break;
             default:
                 break;
         }
@@ -372,11 +375,6 @@ public class LevelState extends GameState {
         } else if (this.gameStatus == GameStatus.PAUSED) {
             this.gameStatus = GameStatus.PLAY;
         }
-    }
-
-    private void drawGameStatus(Graphics2D g) {
-        Painter.drawCenteredString(g, this.gameStatus.getDescription(),
-                FONT_GAME_STATUS, this.gameStatus.getColor(), Game.HEIGHT / 2);
     }
 
     private void loadSprites() {
@@ -431,6 +429,15 @@ public class LevelState extends GameState {
                 }
             }
         }
+    }
+
+    private void drawGameStatus(Graphics2D g) {
+        Painter.drawCenteredString(g, this.gameStatus.getDescription(),
+                FONT_GAME_STATUS, this.gameStatus.getColor(), Game.HEIGHT / 2);
+    }
+
+    private void drawPlayerStatistics(Graphics2D g) {
+        
     }
 
     private void createOnPowerUpCollectedHanlers() {

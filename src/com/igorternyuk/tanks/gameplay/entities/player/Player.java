@@ -4,6 +4,7 @@ import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
+import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUp;
 import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
@@ -11,21 +12,16 @@ import com.igorternyuk.tanks.gameplay.entities.tank.Heading;
 import com.igorternyuk.tanks.gameplay.entities.tank.Tank;
 import com.igorternyuk.tanks.gameplay.entities.tank.TankColor;
 import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTank;
-import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTankType;
 import com.igorternyuk.tanks.gameplay.entities.tank.protection.Protection;
 import com.igorternyuk.tanks.gameplay.entities.tank.protection.ProtectionType;
-import com.igorternyuk.tanks.gameplay.tilemap.Tile;
-import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
 import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.graphics.animations.Animation;
 import com.igorternyuk.tanks.graphics.animations.AnimationPlayMode;
 import com.igorternyuk.tanks.input.KeyboardState;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -37,13 +33,12 @@ public class Player extends Tank {
     private static final double PROTECTION_TIME = 23;
     private PlayerTankIdentifier identifier;
     private double respawnX, respawnY;
-    private int score;
     private boolean hasProtection = false;
     private double protectionTimer;
     private int lives = 5;
     private double lastShootTimer;
     private double shotDelay = 0.15;
-    private Map<EnemyTankType, Integer> killedEnemyTanks = new HashMap<>();
+    private PlayerStatistics playerStatistics = new PlayerStatistics(this);
 
     public Player(LevelState level, PlayerTankType type, double x, double y,
             Direction direction) {
@@ -56,28 +51,44 @@ public class Player extends Tank {
         setProperAnimation();
     }
 
+    @Override
+    public void update(KeyboardState keyboardState, double frameTime) {
+        this.moving = false;
+        handleUserInput(keyboardState);
+        if (this.moving) {
+            move(frameTime);
+            checkMapCollision();
+            fixBounds();
+        }
+        super.update(keyboardState, frameTime);
+        updateProtectionTimer(frameTime);
+        updateShootingTimer(frameTime);
+    }
+
+    @Override
+    public void draw(Graphics2D g) {
+        super.draw(g);
+        this.playerStatistics.draw(g);
+    }
+
     public PlayerTankIdentifier getIdentifier() {
         return this.identifier;
     }
 
-    public Map<EnemyTankType, Integer> getKilledEnemyTanks() {
-        return Collections.unmodifiableMap(this.killedEnemyTanks);
+    public PlayerStatistics getPlayerStatistics() {
+        return this.playerStatistics;
     }
 
     public void registerKilledTank(EnemyTank enemyTank) {
-        int killedTanksEithSuchType = this.killedEnemyTanks.get(enemyTank.
-                getType());
-        this.killedEnemyTanks.put(enemyTank.getType(), killedTanksEithSuchType
-                + 1);
+        this.playerStatistics.addKilledTank(enemyTank);
     }
 
-    public void takeScore(int scoreIncrement) {
-        this.score += scoreIncrement;
-        System.out.println("Taking score: " + this.score);
+    public void collectPowerUp(PowerUp powerup) {
+        this.playerStatistics.addPowerUp(powerup);
     }
 
     public int getScore() {
-        return this.score;
+        return this.playerStatistics.getScore();
     }
 
     public void promote() {
@@ -168,11 +179,11 @@ public class Player extends Tank {
         addProtection();
         this.identifier.setType(PlayerTankType.BASIC);
     }
-    
-    protected void reset(){
+
+    protected void reset() {
         this.health = 100;
         setPosition(this.respawnX, this.respawnY);
-        this.killedEnemyTanks.clear();
+        this.playerStatistics.reset();
         addProtection();
     }
 
@@ -183,7 +194,7 @@ public class Player extends Tank {
     }
 
     private void handleUserInput(KeyboardState keyboardState) {
-        
+
         if (keyboardState.isKeyPressed(KeyEvent.VK_A)
                 || keyboardState.isKeyPressed(KeyEvent.VK_LEFT)) {
             setDirection(Direction.WEST);
@@ -212,7 +223,7 @@ public class Player extends Tank {
             this.moving = false;
             this.animationManager.getCurrentAnimation().stop();
         }
-        
+
         if (keyboardState.isKeyPressed(KeyEvent.VK_F)) {
             fire();
         }
@@ -232,8 +243,8 @@ public class Player extends Tank {
             }
         }
     }
-    
-    private void updateShootingTimer(double frameTime){
+
+    private void updateShootingTimer(double frameTime) {
         if (this.identifier.getType() == PlayerTankType.MIDDLE && !this.canFire) {
             this.lastShootTimer += frameTime;
             if (this.lastShootTimer >= this.shotDelay) {
@@ -241,19 +252,5 @@ public class Player extends Tank {
                 this.canFire = true;
             }
         }
-    }
-
-    @Override
-    public void update(KeyboardState keyboardState, double frameTime) {
-        this.moving = false;
-        handleUserInput(keyboardState);
-        if (this.moving) {
-            move(frameTime);
-            checkMapCollision();
-            fixBounds();
-        }
-        super.update(keyboardState, frameTime);
-        updateProtectionTimer(frameTime);
-        updateShootingTimer(frameTime);
     }
 }

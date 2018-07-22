@@ -10,6 +10,7 @@ import java.awt.Rectangle;
 public enum SpriteSheetIdentifier {
     EAGLE(new Rectangle(304,32,32,16), new Color(0xFFFFFFFF)),
     TANK(new Rectangle(0,0,256,256), new Color(0xFF000001)),
+    GRAY_STATISTICS_TANKS(new Rectangle(128,64,16,64), new Color(0xFF000001)),
     SMALL_TILES(new Rectangle(256, 64, 32, 24), new Color(0xFF000000)),
     LARGE_TILES(new Rectangle(256, 0, 48, 64), new Color(0xFF000001)),
     PROJECTILE(new Rectangle(323, 102, 27, 4), new Color(0xFF000001)),

@@ -19,7 +19,7 @@ import java.awt.image.BufferedImage;
  */
 public class ScoreIcrementText extends Entity {
     
-    private static final double LIFE_TIME = 5;
+    private static final double LIFE_TIME = 2;
     private int score;
     private Sprite sprite;
     private double timer;

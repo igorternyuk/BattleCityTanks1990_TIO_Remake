@@ -58,10 +58,13 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         super(level, EntityType.ENEMY_TANK, x, y, type.getSpeed(), direction);
         this.number = number;
         this.health = type.getHealth();
+        
         checkIfBonus();
+        
         if (this.bonus) {
             destroyExistingBonuses();
         }
+        
         loadAnimations();
 
         TankColor color;

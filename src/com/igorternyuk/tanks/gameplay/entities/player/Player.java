@@ -14,6 +14,7 @@ import com.igorternyuk.tanks.gameplay.entities.tank.TankColor;
 import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTank;
 import com.igorternyuk.tanks.gameplay.entities.tank.protection.Protection;
 import com.igorternyuk.tanks.gameplay.entities.tank.protection.ProtectionType;
+import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
 import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.graphics.animations.Animation;
 import com.igorternyuk.tanks.graphics.animations.AnimationPlayMode;
@@ -31,13 +32,18 @@ import java.util.stream.Collectors;
 public class Player extends Tank {
 
     private static final double PROTECTION_TIME = 23;
+    private static final double SLIDING_DURATION = 2;
     private PlayerTankIdentifier identifier;
     private double respawnX, respawnY;
     private boolean hasProtection = false;
     private double protectionTimer;
     private int lives = 5;
     private double lastShootTimer;
-    private double shotDelay = 0.15;
+    private final double shotDelay = 0.15;
+    private boolean onIce = false;
+    private boolean sliding = false;
+    private double slidingTimer = 0;
+    
     private PlayerStatistics playerStatistics = new PlayerStatistics(this);
 
     public Player(LevelState level, PlayerTankType type, double x, double y,
@@ -53,8 +59,14 @@ public class Player extends Tank {
 
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
-        this.moving = false;
-        handleUserInput(keyboardState);
+        
+        updateSlidingTimer(frameTime);
+        
+        if(!this.sliding){
+            this.moving = false;
+            handleUserInput(keyboardState);
+        }
+        
         if (this.moving) {
             move(frameTime);
             checkMapCollision();
@@ -65,11 +77,28 @@ public class Player extends Tank {
         updateProtectionTimer(frameTime);
         updateShootingTimer(frameTime);
     }
+    
+    private void updateSlidingTimer(double frameTime){
+        checkIfIce();
+        if(this.sliding){
+            this.slidingTimer += frameTime;
+            if(this.slidingTimer >= SLIDING_DURATION){
+                this.slidingTimer = 0;
+                this.sliding = false;
+            }
+        } else {
+            this.slidingTimer = 0;
+        }
+    }
 
     @Override
     public void draw(Graphics2D g) {
         super.draw(g);
         this.playerStatistics.draw(g);
+    }
+
+    public void setSliding(boolean sliding) {
+        this.sliding = this.onIce && sliding;
     }
 
     public PlayerTankIdentifier getIdentifier() {
@@ -117,7 +146,7 @@ public class Player extends Tank {
     }
 
     public void gainExtraLife() {
-        this.health += 100;
+        ++this.lives;
     }
 
     public int getLives() {
@@ -181,7 +210,7 @@ public class Player extends Tank {
         this.identifier.setType(PlayerTankType.BASIC);
     }
 
-    protected void reset() {
+    public void reset() {
         this.health = 100;
         setPosition(this.respawnX, this.respawnY);
         this.playerStatistics.reset();
@@ -252,6 +281,14 @@ public class Player extends Tank {
                 this.lastShootTimer = 0;
                 this.canFire = true;
             }
+        }
+    }
+    
+    private void checkIfIce(){
+        TileMap tileMap = this.level.getTileMap();
+        this.onIce = tileMap.checkIfOnTheIce(this);
+        if(!this.onIce){
+            this.sliding = false;
         }
     }
 }

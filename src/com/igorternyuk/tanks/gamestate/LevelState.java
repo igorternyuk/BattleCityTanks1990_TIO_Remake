@@ -63,6 +63,7 @@ public class LevelState extends GameState {
             * Game.HALF_TILE_SIZE, 0 * Game.HALF_TILE_SIZE);
 
     private static final int TANKS_ON_FIELD_MAX = 4;
+    private static final int STAGE_MAX = 10;
 
     private TextureAtlas atlas;
     private SpriteSheetManager spriteSheetManager;
@@ -128,8 +129,9 @@ public class LevelState extends GameState {
             tryToAddMoreTanksIntoBattle();
         }
         checkCollisions();
-        checkBonuses();
+        checkPowerUps();
         checkGameStatus();
+        checkIfNextStage();
     }
 
     @Override
@@ -212,9 +214,27 @@ public class LevelState extends GameState {
         loadSprites();
         loadTankSpriteSheetMaps();
         this.tileMap = new TileMap(Game.SCALE);
-        this.tileMap.loadMap("/tilemap/level1.map");
+        loadMap();
 
         startNewGame();
+        this.loaded = true;
+    }
+
+    private void loadMap() {
+        this.tileMap.loadMap("/tilemap/level" + this.stageNumber + ".map");
+    }
+
+    private void nextStage() {
+        ++this.stageNumber;
+        if (this.stageNumber > STAGE_MAX) {
+            this.stageNumber = 1;
+        }
+        loadMap();
+        this.entityManager.removeEntitiesExcepts(EntityType.PLAYER_TANK,
+                EntityType.RIGHT_PANEL, EntityType.EAGLE);
+        this.player.reset();
+        fillHangar();
+        gameStatus = GameStatus.PLAY;
         this.loaded = true;
     }
 
@@ -235,6 +255,7 @@ public class LevelState extends GameState {
     }
 
     private void fillHangar() {
+        this.hangar.clear();
         for (int i = TANKS_TOTAL; i > 0; --i) {
             EnemyTankType[] allEnemyTankTypes = EnemyTankType.values();
             EnemyTankType randomType = EnemyTankType.values()[this.random.
@@ -275,13 +296,13 @@ public class LevelState extends GameState {
     }
 
     private void createEntities() {
-        Player tanque = new Player(this, PlayerTankType.ARMORED,
+        Player playerTank = new Player(this, PlayerTankType.BASIC,
                 PLAYER_RESPAWN_POSITION.x, PLAYER_RESPAWN_POSITION.y,
                 Direction.NORTH
         );
-        this.player = tanque;
+        this.player = playerTank;
         this.player.addProtection();
-        this.entityManager.addEntity(tanque);
+        this.entityManager.addEntity(playerTank);
         this.eagle = new Eagle(this, EAGLE_POSITION.x, EAGLE_POSITION.y);
         this.entityManager.addEntity(eagle);
         this.rightPanel = new GameInfoPanel(this, RIGHT_PANEL_POSITION.x,
@@ -301,9 +322,9 @@ public class LevelState extends GameState {
                 this.eagle.kill();
                 continue;
             }
-            
-            if(projectile.getType() == ProjectileType.ENEMY
-                    && projectile.collides(this.player)){
+
+            if (projectile.getType() == ProjectileType.ENEMY
+                    && projectile.collides(this.player)) {
                 System.out.println("Player got hit!");
                 this.player.hit(projectile.getDamage());
                 System.out.println("Player health" + this.player.getHealth());
@@ -312,9 +333,9 @@ public class LevelState extends GameState {
             for (int j = enemyTanks.size() - 1; j >= 0; --j) {
                 EnemyTank enemyTank = (EnemyTank) enemyTanks.get(j);
                 if (projectile.collides(enemyTank)) {
-                    if(projectile.getType() == ProjectileType.PLAYER){
+                    if (projectile.getType() == ProjectileType.PLAYER) {
                         enemyTank.hit(projectile.getDamage());
-                        if(!enemyTank.isAlive()){
+                        if (!enemyTank.isAlive()) {
                             this.player.registerKilledTank(enemyTank);
                         }
                         projectile.explode();
@@ -324,9 +345,9 @@ public class LevelState extends GameState {
         }
     }
 
-    private void checkBonuses() {
+    private void checkPowerUps() {
         List<Entity> bonuses = this.entityManager.getEntitiesByType(
-                EntityType.BONUS);
+                EntityType.POWER_UP);
         for (int i = 0; i < bonuses.size(); ++i) {
             PowerUp bonus = (PowerUp) bonuses.get(i);
             if (this.player.collides(bonus)) {
@@ -352,6 +373,16 @@ public class LevelState extends GameState {
     @Override
     public void onKeyReleased(int keyCode) {
         switch (keyCode) {
+            case KeyEvent.VK_LEFT:
+            case KeyEvent.VK_RIGHT:
+            case KeyEvent.VK_UP:
+            case KeyEvent.VK_DOWN:
+            case KeyEvent.VK_A:
+            case KeyEvent.VK_S:
+            case KeyEvent.VK_D:
+            case KeyEvent.VK_W:
+                this.player.setSliding(true);
+                break;
             case KeyEvent.VK_SPACE:
                 togglePause();
                 break;
@@ -481,5 +512,14 @@ public class LevelState extends GameState {
             enemyTanks.stream().map(entity -> (EnemyTank) entity).forEach(
                     enemyTank -> enemyTank.freeze());
         });
+    }
+
+    private void checkIfNextStage() {
+        if (this.gameStatus == GameStatus.PLAY
+                && this.hangar.isEmpty()
+                && this.entityManager.getEntitiesByType(EntityType.ENEMY_TANK).
+                        isEmpty()) {
+            nextStage();
+        }
     }
 }

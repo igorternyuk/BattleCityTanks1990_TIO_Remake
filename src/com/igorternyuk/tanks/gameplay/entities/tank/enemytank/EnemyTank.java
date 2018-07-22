@@ -91,7 +91,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     }
 
     private void destroyExistingBonuses() {
-        this.level.getEntityManager().getEntitiesByType(EntityType.BONUS).
+        this.level.getEntityManager().getEntitiesByType(EntityType.POWER_UP).
                 forEach(powerUp -> powerUp.destroy());
     }
 
@@ -386,8 +386,10 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         if (allPossibleDirections.isEmpty()) {
             this.gotStuck = true;
             this.moving = false;
+            System.out.println("Got stuck!!");
             return;
         } else {
+            System.out.println("Trying to get out!!");
             this.gotStuck = false;
         }
         int rand = this.random.nextInt(allPossibleDirections.size());

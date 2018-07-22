@@ -23,7 +23,7 @@ public class PowerUp extends Entity {
     private Sprite sprite;
 
     public PowerUp(LevelState level, PowerUpType type, double x, double y) {
-        super(level, EntityType.BONUS, x, y, 0, Direction.NORTH);
+        super(level, EntityType.POWER_UP, x, y, 0, Direction.NORTH);
         this.type = type;
         BufferedImage image = SpriteSheetManager.getInstance().get(
                 SpriteSheetIdentifier.BONUS);

@@ -40,6 +40,7 @@ public class PlayerStatistics {
 
     public void reset() {
         this.score = 0;
+        killedTankCount = 0;
         resetKilledTanksMap();
     }
 

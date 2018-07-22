@@ -28,7 +28,8 @@ public class TileMap {
     private static final double EAGLE_PROTECTION_BLINK_PERIOD = 0.25;
     private double scale;
     private Tile[][] tiles = new Tile[Game.TILES_IN_HEIGHT][Game.TILES_IN_WIDTH];
-    private int[][] clearanceMap = new int[Game.TILES_IN_HEIGHT][Game.TILES_IN_WIDTH];
+    private int[][] clearanceMap =
+            new int[Game.TILES_IN_HEIGHT][Game.TILES_IN_WIDTH];
     private boolean clearanceMapChanged = true;
     private List<Tile> bushTiles = new ArrayList<>();
     private List<WaterTile> waterTiles = new ArrayList<>();
@@ -56,7 +57,7 @@ public class TileMap {
         this.lastCollided = Tile.createTile(TileType.EMPTY, new Point(),
                 this.tileTypeImageMap.get(TileType.EMPTY), this.scale);
     }
-    
+
     public List<Point> getEnemyTankAppearencePositions() {
         return Collections.unmodifiableList(this.enemyTankAppearancePositions);
     }
@@ -64,23 +65,25 @@ public class TileMap {
     public List<Point> getEagleProtectionPositions() {
         return Collections.unmodifiableList(this.eagleProtectionTilePositions);
     }
-    
-    public List<Spot> getFireSpots(){
+
+    public List<Spot> getFireSpots() {
         return Collections.unmodifiableList(this.firePoints);
     }
 
     public Tile getLastCollided() {
         return this.lastCollided;
     }
-    
-    public int[][] getClearanceMap(){
-        if(this.clearanceMapChanged){
+
+    public int[][] getClearanceMap() {
+        if (this.clearanceMapChanged) {
             updateClearanceMap();
         }
         return this.clearanceMap;
     }
 
-    public boolean hasCollision(Entity entity) {
+    public List<Tile> getIntersectedTiles(Entity entity) {
+        List<Tile> intersectedTiles = new ArrayList<>(9);
+
         final int rowMin = fixRowIndex((int) entity.top() / Game.HALF_TILE_SIZE);
         final int rowMax = fixRowIndex((int) (entity.bottom() - 1)
                 / Game.HALF_TILE_SIZE);
@@ -91,11 +94,26 @@ public class TileMap {
 
         for (int row = rowMin; row <= rowMax; ++row) {
             for (int col = colMin; col <= colMax; ++col) {
-                Tile tile = getTile(row, col);
-                if (tile.checkIfCollision(entity)) {
-                    this.lastCollided = tile;
-                    return true;
-                }
+                intersectedTiles.add(getTile(row, col));
+            }
+        }
+        return intersectedTiles;
+    }
+
+    public boolean checkIfOnTheIce(Entity entity) {
+        List<Tile> intersectedTiles = getIntersectedTiles(entity);
+        return intersectedTiles.stream().anyMatch(tile -> tile.getType()
+                == TileType.ICE);
+    }
+
+    public boolean hasCollision(Entity entity) {
+
+        List<Tile> intersectedTiles = getIntersectedTiles(entity);
+        for (int i = 0; i < intersectedTiles.size(); ++i) {
+            Tile currTile = intersectedTiles.get(i);
+            if (currTile.checkIfCollision(entity)) {
+                this.lastCollided = currTile;
+                return true;
             }
         }
         return false;
@@ -154,12 +172,10 @@ public class TileMap {
 
     public boolean isOutOfBounds(Entity entity) {
         return (entity.left() < 0
-            || entity.right() > getTilesInWidth() * Game.HALF_TILE_SIZE
-            || entity.top() < 0
-            || entity.bottom() > getTilesInHeight() * Game.HALF_TILE_SIZE);
+                || entity.right() > getTilesInWidth() * Game.HALF_TILE_SIZE
+                || entity.top() < 0
+                || entity.bottom() > getTilesInHeight() * Game.HALF_TILE_SIZE);
     }
-    
-    
 
     public void loadMap(String pathToMapFile) {
         int[][] map = Files.loadMapFromFile(pathToMapFile);
@@ -177,14 +193,14 @@ public class TileMap {
     public void saveMapToFile() {
         Files.writeMapToFile(this.pathToTheCurrentMapFile, getCurrentMap());
     }
-    
-    public void print(){
-        if(!this.mapLoaded){
+
+    public void print() {
+        if (!this.mapLoaded) {
             return;
         }
-        for(int row = 0; row < this.tiles.length; ++row){
-            for(int col = 0; col < this.tiles[row].length; ++col){
-                if(!getTileType(row, col).isTraversable()){
+        for (int row = 0; row < this.tiles.length; ++row) {
+            for (int col = 0; col < this.tiles[row].length; ++col) {
+                if (!getTileType(row, col).isTraversable()) {
                     System.out.print("X");
                 } else {
                     System.out.print("_");
@@ -364,13 +380,13 @@ public class TileMap {
                     * Game.TILE_SIZE, 0));
         }
     }
-    
-    private void specifyFireSpots(){
-        this.firePoints.add(new Spot(24,6,true));
-        this.firePoints.add(new Spot(24,7,true));
-        this.firePoints.add(new Spot(24,17,true));
-        this.firePoints.add(new Spot(24,18,true));
-        this.firePoints.add(new Spot(20,12,true));
+
+    private void specifyFireSpots() {
+        this.firePoints.add(new Spot(24, 6, true));
+        this.firePoints.add(new Spot(24, 7, true));
+        this.firePoints.add(new Spot(24, 17, true));
+        this.firePoints.add(new Spot(24, 18, true));
+        this.firePoints.add(new Spot(20, 12, true));
     }
 
     private void specifyEagleProtectionPositions() {
@@ -432,27 +448,27 @@ public class TileMap {
         }
         return currMap;
     }
-    
-    private void updateClearanceMap(){
-        for(int row = 0; row < this.tiles.length; ++row){
-            for(int col = 0; col < this.tiles[row].length; ++col){
+
+    private void updateClearanceMap() {
+        for (int row = 0; row < this.tiles.length; ++row) {
+            for (int col = 0; col < this.tiles[row].length; ++col) {
                 //System.out.println("row = " + row + " col = " + col);
-                if(!getTile(row, col).getType().isTraversable()){
+                if (!getTile(row, col).getType().isTraversable()) {
                     continue;
                 }
                 int currentClearance = 1;
                 expansion:
-                while(currentClearance < this.tiles.length){
+                while (currentClearance < this.tiles.length) {
                     //System.out.println("currentClearance = " + currentClearance);
-                    for(int i = 0; i < currentClearance; ++i){
-                        for(int j = 0; j < currentClearance; ++j){
+                    for (int i = 0; i < currentClearance; ++i) {
+                        for (int j = 0; j < currentClearance; ++j) {
                             //System.out.println("i = " + i + " j = " + j);
                             int r = row + i;
                             int c = col + j;
-                            if(!areCoordinatesValid(r, c)){
+                            if (!areCoordinatesValid(r, c)) {
                                 break expansion;
                             }
-                            if(getTile(r, c).getType().isTraversable()){
+                            if (getTile(r, c).getType().isTraversable()) {
                                 this.clearanceMap[r][c] = currentClearance - 1;
                             } else {
                                 break expansion;
@@ -463,7 +479,7 @@ public class TileMap {
                 }
             }
         }
-        
+
         this.clearanceMapChanged = false;
     }
 }

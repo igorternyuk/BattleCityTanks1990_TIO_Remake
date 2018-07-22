@@ -45,6 +45,33 @@ public class EntityManager {
         List<Entity> lista = this.entitiesByType.get(entity.getEntityType());
         lista.remove(entity);
     }
+    
+    public void removeEntitiesByType(EntityType... entityTypes){
+        this.entities.removeIf(entity -> {
+            for(int i = 0; i < entityTypes.length; ++i){
+                if(entityTypes[i] == entity.getEntityType()){
+                    if(this.entitiesByType.containsKey(entityTypes[i])){
+                        this.entitiesByType.get(entityTypes[i]).clear();
+                    }
+                    return true;
+                }
+            }
+            return false;
+        });
+    }
+    
+    public void removeEntitiesExcepts(EntityType... entityTypes){
+        this.entities.removeIf(entity -> {
+            for(int i = 0; i < entityTypes.length; ++i){
+                if(entityTypes[i] == entity.getEntityType()){
+                    return false;
+                }
+            }
+            this.entitiesByType.get(entity.getEntityType()).clear();
+            return true;
+        });
+        
+    }
 
     public void removeAllEntities() {
         this.entities.clear();

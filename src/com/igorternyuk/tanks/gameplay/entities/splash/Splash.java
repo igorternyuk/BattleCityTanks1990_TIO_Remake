@@ -39,7 +39,6 @@ public class Splash extends AnimatedEntity<SplashType> {
 
     @Override
     public final void loadAnimations() {
-        System.out.println("Loading splash animation...");
         BufferedImage spriteSheet;
         if (this.splashType == SplashType.BONUS
                 || this.splashType == SplashType.NEW_ENEMY_TANK) {

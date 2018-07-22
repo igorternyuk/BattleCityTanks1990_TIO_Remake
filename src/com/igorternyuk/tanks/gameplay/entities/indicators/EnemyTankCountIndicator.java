@@ -9,6 +9,7 @@ import com.igorternyuk.tanks.graphics.images.Sprite;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
 import com.igorternyuk.tanks.input.KeyboardState;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
@@ -19,8 +20,11 @@ import java.awt.image.BufferedImage;
  */
 public class EnemyTankCountIndicator extends Entity {
 
+    private static final Color BACKGROUND_COLOR = new Color(99, 99, 99);
     private static final int TANK_SIGNS_IN_ROW = 2;
-    private int tankCount = 20;
+    private static final int MAX_ROWS = LevelState.TANKS_TOTAL
+            / TANK_SIGNS_IN_ROW;
+    private int tankCount = 0;
     private int rows;
     private Sprite sprite;
 
@@ -43,8 +47,9 @@ public class EnemyTankCountIndicator extends Entity {
 
     @Override
     public int getWidth() {
-        return this.tankCount > 2 ? 2 * Game.HALF_TILE_SIZE :
-                Game.HALF_TILE_SIZE;
+        return this.tankCount > TANK_SIGNS_IN_ROW
+                ? TANK_SIGNS_IN_ROW * Game.HALF_TILE_SIZE
+                : Game.HALF_TILE_SIZE;
     }
 
     @Override
@@ -58,14 +63,26 @@ public class EnemyTankCountIndicator extends Entity {
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
         super.update(keyboardState, frameTime);
-        /*        this.tankCount = (int) this.level.getEntities().stream().filter(e ->
-                e.getEntityType() == EntityType.ENEMY_TANK).count();*/
+        this.tankCount = this.level.getHangar().size();
         this.rows = this.tankCount / TANK_SIGNS_IN_ROW;
     }
 
     @Override
     public void draw(Graphics2D g) {
         super.draw(g);
+        drawBackground(g);
+        drawTankSigns(g);
+    }
+
+    private void drawBackground(Graphics2D g) {
+        g.setColor(BACKGROUND_COLOR);
+        g.fillRect((int) (getX() * Game.SCALE),
+                (int) (getY() * Game.SCALE),
+                (int) (Game.HALF_TILE_SIZE * TANK_SIGNS_IN_ROW * Game.SCALE),
+                (int) (Game.HALF_TILE_SIZE * MAX_ROWS * Game.SCALE));
+    }
+    
+    private void drawTankSigns(Graphics2D g){
         for (int i = 0; i < this.rows; ++i) {
             for (int j = 0; j < TANK_SIGNS_IN_ROW; ++j) {
                 double posX = getX() + j * Game.HALF_TILE_SIZE;

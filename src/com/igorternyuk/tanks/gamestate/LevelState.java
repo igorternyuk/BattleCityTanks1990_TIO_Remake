@@ -93,7 +93,10 @@ public class LevelState extends GameState {
     private boolean needThrowIntoBattleMoreTanks() {
         long tanksOnTheField = this.entityManager
                 .getEntitiesByType(EntityType.ENEMY_TANK).size();
-        return !this.hangar.isEmpty() && tanksOnTheField < TANKS_ON_FIELD_MAX;
+        long splashCount = this.entityManager.getEntitiesByType(
+                EntityType.SPLASH).size();
+        return !this.hangar.isEmpty()
+                && (splashCount + tanksOnTheField < TANKS_ON_FIELD_MAX);
     }
 
     private void tryToAddMoreTanksIntoBattle() {

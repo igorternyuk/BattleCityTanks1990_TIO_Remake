@@ -32,6 +32,7 @@ import java.awt.Graphics2D;
 import com.igorternyuk.tanks.input.KeyboardState;
 import com.igorternyuk.tanks.resourcemanager.ImageIdentifier;
 import com.igorternyuk.tanks.utils.Painter;
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -56,15 +57,16 @@ public class LevelState extends GameState {
             * Game.HALF_TILE_SIZE, 24 * Game.HALF_TILE_SIZE);
     private static final Font FONT_GAME_STATUS = new Font("Verdana", Font.BOLD,
             48);
-
+    private Font FONT_STAGE_SPLASH = new Font("Verdana", Font.BOLD | Font.ITALIC, 48);
     private static final Point PLAYER_RESPAWN_POSITION = new Point(8
             * Game.HALF_TILE_SIZE, 24 * Game.HALF_TILE_SIZE);
     private static final Point RIGHT_PANEL_POSITION = new Point(26
             * Game.HALF_TILE_SIZE, 0 * Game.HALF_TILE_SIZE);
-
+    
     private static final int TANKS_ON_FIELD_MAX = 4;
     private static final int STAGE_MAX = 10;
-
+    private static final double NEXT_STAGE_SPLASH_DELAY = 6;
+    
     private TextureAtlas atlas;
     private SpriteSheetManager spriteSheetManager;
     private Map<EnemyTankIdentifier, BufferedImage> enemyTankSpriteSheetMap;
@@ -75,13 +77,15 @@ public class LevelState extends GameState {
     private EntityManager entityManager;
     private GameInfoPanel rightPanel;
 
-    int stageNumber = 1;
+    int stageNumber = 2;
     private Stack<EnemyTankType> hangar = new Stack<>();
     private Map<PowerUpType, Runnable> onPowerUpCollectedHandlers =
             new HashMap<>();
     private Random random = new Random();
     private GameStatus gameStatus = GameStatus.PLAY;
     private boolean loaded = false;
+    private double stageSplashTimer = 0;
+    private boolean nextStageSplashOccured = false;
 
     public LevelState(GameStateManager gsm) {
         super(gsm);
@@ -121,7 +125,14 @@ public class LevelState extends GameState {
         if (!this.loaded || this.gameStatus != GameStatus.PLAY) {
             return;
         }
-        //System.out.println("numEntities.size() = " + this.entities.size());
+        
+        if(!this.nextStageSplashOccured){
+            this.stageSplashTimer += frameTime;
+            if(this.stageSplashTimer >= 4){
+                this.stageSplashTimer = 0;
+                this.nextStageSplashOccured = true;
+            }
+        }
         this.tileMap.update(keyboardState, frameTime);
         this.entityManager.update(keyboardState, frameTime);
 
@@ -144,7 +155,24 @@ public class LevelState extends GameState {
         this.tileMap.drawBushes(g);
         drawGameStatus(g);
         drawPlayerStatistics(g);
+        if(!this.nextStageSplashOccured){
+            drawStageSplash(g);
+        }
     }
+    
+    
+    private void drawStageSplash(Graphics2D g){
+        g.setFont(FONT_STAGE_SPLASH);
+        String message = " - STAGE - " + this.stageNumber;
+        int alpha = (int)(255 * Math.sin(Math.PI
+                * this.stageSplashTimer / NEXT_STAGE_SPLASH_DELAY));
+        if(alpha < 0) alpha = 0;
+        if(alpha > 255) alpha = 255;
+        Color color = new Color(255, 255, 255, alpha);
+        Painter.drawCenteredString(g, message, FONT_STAGE_SPLASH, color,
+                (Game.HEIGHT - Game.STATISTICS_PANEL_HEIGHT) / 2);
+    }
+    
 
     private void onBonusCollected(PowerUp powerUp) {
         this.onPowerUpCollectedHandlers.get(powerUp.getType()).run();
@@ -519,6 +547,7 @@ public class LevelState extends GameState {
                 && this.hangar.isEmpty()
                 && this.entityManager.getEntitiesByType(EntityType.ENEMY_TANK).
                         isEmpty()) {
+            this.nextStageSplashOccured = false;
             nextStage();
         }
     }

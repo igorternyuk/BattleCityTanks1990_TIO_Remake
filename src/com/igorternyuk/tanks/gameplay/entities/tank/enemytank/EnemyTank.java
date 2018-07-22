@@ -428,8 +428,12 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         boolean collidesSplashes = checkCollisionsWithSplashes();
         boolean collidesMap = checkMapCollision();
         boolean boundsFixed = fixBounds();
-        if (collidesMap || collidesSplashes || collidesOtherTanks || boundsFixed) {
+
+        if(collidesMap || boundsFixed){
             selectRandomDirrection();
+        }
+        
+        if (collidesMap || collidesSplashes || collidesOtherTanks || boundsFixed) {
             this.movingAlongShortestPath = false;
         }
     }

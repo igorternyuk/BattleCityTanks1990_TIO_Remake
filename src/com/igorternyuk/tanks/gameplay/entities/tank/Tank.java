@@ -95,6 +95,7 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
             Tank currTank = otherTanks.get(i);
             if (checkIfCollidesOtherTank(currTank)) {
                 handleCollisionWithOtherTank(currTank);
+                
                 return true;
             }
         }
@@ -110,6 +111,7 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
                 Rectangle intersection = getBoundingRect().intersection(
                         currSplash.getBoundingRect());
                 correctPositionAfterIntersection(intersection);
+                setDirection(this.direction.getOpposite());
                 return true;
             }
         }
@@ -128,6 +130,7 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
         Rectangle intersection = thisBoundingRect.
                 intersection(otherBoundingRect);
         correctPositionAfterIntersection(intersection);
+        setDirection(this.direction.getOpposite());
     }
 
     private void correctPositionAfterIntersection(Rectangle intersection) {

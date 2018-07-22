@@ -32,18 +32,19 @@ import java.util.stream.Collectors;
 public class Player extends Tank {
 
     private static final double PROTECTION_TIME = 23;
-    private static final double SLIDING_DURATION = 2;
+    private static final double SLIDING_DURATION = 0.25;
+    private static final double SHOT_DELAY = 0.15;
+    
     private PlayerTankIdentifier identifier;
     private double respawnX, respawnY;
     private boolean hasProtection = false;
     private double protectionTimer;
     private int lives = 5;
     private double lastShootTimer;
-    private final double shotDelay = 0.15;
     private boolean onIce = false;
     private boolean sliding = false;
     private double slidingTimer = 0;
-    
+
     private PlayerStatistics playerStatistics = new PlayerStatistics(this);
 
     public Player(LevelState level, PlayerTankType type, double x, double y,
@@ -59,13 +60,9 @@ public class Player extends Tank {
 
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
-        
+
         updateSlidingTimer(frameTime);
-        
-        if(!this.sliding){
-            this.moving = false;
-            handleUserInput(keyboardState);
-        }
+        handleUserInput(keyboardState);
         
         if (this.moving) {
             move(frameTime);
@@ -77,12 +74,12 @@ public class Player extends Tank {
         updateProtectionTimer(frameTime);
         updateShootingTimer(frameTime);
     }
-    
-    private void updateSlidingTimer(double frameTime){
+
+    private void updateSlidingTimer(double frameTime) {
         checkIfIce();
-        if(this.sliding){
+        if (this.sliding) {
             this.slidingTimer += frameTime;
-            if(this.slidingTimer >= SLIDING_DURATION){
+            if (this.slidingTimer >= SLIDING_DURATION) {
                 this.slidingTimer = 0;
                 this.sliding = false;
             }
@@ -188,9 +185,11 @@ public class Player extends Tank {
 
     @Override
     public void hit(int damage) {
-        super.hit(damage);
-        if (this.health <= 0) {
-            explode();
+        if (!this.hasProtection) {
+            super.hit(damage);
+            if (this.health <= 0) {
+                explode();
+            }
         }
     }
 
@@ -213,8 +212,8 @@ public class Player extends Tank {
     public void reset() {
         this.health = 100;
         setPosition(this.respawnX, this.respawnY);
-        this.playerStatistics.reset();
         addProtection();
+        this.playerStatistics.reset();
     }
 
     private void setProperAnimation() {
@@ -223,7 +222,8 @@ public class Player extends Tank {
                 AnimationPlayMode.LOOP);
     }
 
-    private void handleUserInput(KeyboardState keyboardState) {
+    private void steer(KeyboardState keyboardState) {
+        this.moving = false;
 
         if (keyboardState.isKeyPressed(KeyEvent.VK_A)
                 || keyboardState.isKeyPressed(KeyEvent.VK_LEFT)) {
@@ -253,9 +253,26 @@ public class Player extends Tank {
             this.moving = false;
             this.animationManager.getCurrentAnimation().stop();
         }
+    }
+
+    private void handleUserInput(KeyboardState keyboardState) {
 
         if (keyboardState.isKeyPressed(KeyEvent.VK_F)) {
             fire();
+        }
+        
+        boolean canSteer = false;
+        
+        if (this.sliding) {
+            if(!this.moving){
+                canSteer = true;
+            }
+        } else {
+            canSteer = true;
+        }
+        
+        if(canSteer){
+            steer(keyboardState);
         }
     }
 
@@ -277,17 +294,17 @@ public class Player extends Tank {
     private void updateShootingTimer(double frameTime) {
         if (this.identifier.getType() == PlayerTankType.MIDDLE && !this.canFire) {
             this.lastShootTimer += frameTime;
-            if (this.lastShootTimer >= this.shotDelay) {
+            if (this.lastShootTimer >= SHOT_DELAY) {
                 this.lastShootTimer = 0;
                 this.canFire = true;
             }
         }
     }
-    
-    private void checkIfIce(){
+
+    private void checkIfIce() {
         TileMap tileMap = this.level.getTileMap();
         this.onIce = tileMap.checkIfOnTheIce(this);
-        if(!this.onIce){
+        if (!this.onIce) {
             this.sliding = false;
         }
     }

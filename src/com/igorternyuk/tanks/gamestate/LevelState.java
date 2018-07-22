@@ -301,6 +301,14 @@ public class LevelState extends GameState {
                 this.eagle.kill();
                 continue;
             }
+            
+            if(projectile.getType() == ProjectileType.ENEMY
+                    && projectile.collides(this.player)){
+                System.out.println("Player got hit!");
+                this.player.hit(projectile.getDamage());
+                System.out.println("Player health" + this.player.getHealth());
+                projectile.explode();
+            }
             for (int j = enemyTanks.size() - 1; j >= 0; --j) {
                 EnemyTank enemyTank = (EnemyTank) enemyTanks.get(j);
                 if (projectile.collides(enemyTank)) {

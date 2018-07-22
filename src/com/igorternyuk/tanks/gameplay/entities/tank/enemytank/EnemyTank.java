@@ -18,7 +18,6 @@ import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.graphics.animations.Animation;
 import com.igorternyuk.tanks.graphics.animations.AnimationPlayMode;
 import com.igorternyuk.tanks.input.KeyboardState;
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -40,6 +39,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     private static final double FROZEN_TIME = 10;
     private static final int[] BONUS_TANKS_NUMBERS = {4, 11, 18};
     private static final double SHOOTING_PERIOD = 2;
+    private static final int TANK_DIMENSION = 2;
     private int number;
     private EnemyTankIdentifier identifier;
     private boolean bonus = false;
@@ -358,7 +358,8 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         }
 
         Pathfinder pathfinder = new Pathfinder(this.level.getTileMap());
-        if (pathfinder.calcPath(getCurrentSpot(), this.currTarget, 2)) {
+        if (pathfinder.calcPath(getCurrentSpot(), this.currTarget
+                , TANK_DIMENSION)) {
             this.shortestPath = pathfinder.getOptimalPath();
             if (!this.shortestPath.isEmpty()) {
                 this.movingAlongShortestPath = true;
@@ -383,12 +384,10 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         }
 
         if (allPossibleDirections.isEmpty()) {
-            System.out.println("No possible directions!The tank got stuck!");
             this.gotStuck = true;
             this.moving = false;
             return;
         } else {
-            System.out.println("Let's get out of there!");
             this.gotStuck = false;
         }
         int rand = this.random.nextInt(allPossibleDirections.size());

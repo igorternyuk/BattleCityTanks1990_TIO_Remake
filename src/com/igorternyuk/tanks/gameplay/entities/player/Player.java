@@ -38,7 +38,7 @@ public class Player extends Tank {
     private int lives = 5;
     private double lastShootTimer;
     private double shotDelay = 0.15;
-    private PlayerStatistics playerStatistics = new PlayerStatistics();
+    private PlayerStatistics playerStatistics = new PlayerStatistics(this);
 
     public Player(LevelState level, PlayerTankType type, double x, double y,
             Direction direction) {
@@ -160,7 +160,7 @@ public class Player extends Tank {
     @Override
     public void hit(int damage) {
         super.hit(damage);
-        if (!isAlive()) {
+        if (this.health <= 0) {
             explode();
         }
     }

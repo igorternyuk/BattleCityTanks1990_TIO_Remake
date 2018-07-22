@@ -6,6 +6,7 @@ import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTank;
 import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTankType;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
 import com.igorternyuk.tanks.input.KeyboardState;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -24,11 +25,16 @@ public class PlayerStatistics {
             Font.BOLD, 18);
     private static final Font FONT_LARGER = new Font("Verdana",
             Font.BOLD, 28);
+    
+    private static final Color COLOR_KILLED_TANKS_POINTS = new Color(0, 148, 255);
+    
+    private Player player;
     private int score = 0;
     private int killedTankCount = 0;
     private Map<EnemyTankType, Integer> killedEnemyTanks = new HashMap<>();
 
-    public PlayerStatistics() {
+    public PlayerStatistics(Player player) {
+        this.player = player;
         resetKilledTanksMap();
     }
 
@@ -75,7 +81,7 @@ public class PlayerStatistics {
         g.fillRect(0, Game.HEIGHT - Game.STATISTICS_PANEL_HEIGHT,
                 Game.WIDTH, 3);
         
-        g.setColor(Color.yellow);
+        g.setColor(COLOR_KILLED_TANKS_POINTS);
         g.setFont(FONT_SMALLER);
 
         EnemyTankType[] enemyTankTypes = EnemyTankType.values();
@@ -90,21 +96,31 @@ public class PlayerStatistics {
                     * currEnemyTankType.getScore();
             int currY =  (int) ((Game.TILES_IN_HEIGHT * Game.HALF_TILE_SIZE + i
                     * Game.TILE_SIZE) * Game.SCALE);
-            g.drawImage(currTankTypeImage, 5, currY + 5, null);
+            g.drawImage(currTankTypeImage, 5, currY + 8, null);
             g.drawString(killedTanksWithCurrType + "(PTS: "
-                    + pointsForCurrTankType + ") ", 32 + 5, currY + 23);
+                    + pointsForCurrTankType + ") ", 32 + 16, currY + 30);
             
         }
         
+        int y = (int) ((Game.TILES_IN_HEIGHT * Game.HALF_TILE_SIZE) * Game.SCALE);
+        
+        g.setColor(Color.yellow);
+        g.fillRect(200, y + 16, this.player.getHealth() / 20 * 32, 32);
+        g.setColor(Color.yellow.darker());
+        g.setStroke(new BasicStroke(3));
+        for(int i = 0; i < 5; ++i){
+            g.drawRect(200 + i * 32, y + 16, 32, 32);
+        }
+        g.setStroke(new BasicStroke(1));
+        
         g.setFont(FONT_LARGER);
         g.setColor(Color.red);
-        int y = (int) ((Game.TILES_IN_HEIGHT * Game.HALF_TILE_SIZE + 3
-                    * Game.TILE_SIZE) * Game.SCALE);
-        g.drawString("TOTAL: " + this.killedTankCount, 200, y - 32);
+        
+        g.drawString("TOTAL: " + this.killedTankCount, 200, y + 90);
         g.setColor(Color.green);
-        g.drawString("SCORE: " + this.score, 200, y + 16);
+        g.drawString("SCORE: " + this.score, 200, y + 120);
     }
-
+    
     private void resetKilledTanksMap() {
         for (EnemyTankType type : EnemyTankType.values()) {
             this.killedEnemyTanks.put(type, 0);

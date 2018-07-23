@@ -82,11 +82,11 @@ public enum Direction {
         return vector;
     }
     
-    public int getVx(){
+    public int getDx(){
         return this.vector.x;
     }
     
-    public int getVy(){
+    public int getDy(){
         return this.vector.y;
     }
     

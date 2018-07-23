@@ -14,6 +14,7 @@ import com.igorternyuk.tanks.gameplay.entities.tank.TankColor;
 import com.igorternyuk.tanks.gameplay.entities.text.ScoreIcrementText;
 import com.igorternyuk.tanks.gameplay.pathfinder.Pathfinder;
 import com.igorternyuk.tanks.gameplay.pathfinder.Pathfinder.Spot;
+import com.igorternyuk.tanks.gameplay.tilemap.TileMap.FiringSpot;
 import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.graphics.animations.Animation;
 import com.igorternyuk.tanks.graphics.animations.AnimationPlayMode;
@@ -51,11 +52,12 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     private List<Spot> shortestPath = new ArrayList<>();
     private Spot nextPosition;
     private double targetTimer = 0;
-    private List<Spot> fireSpots;
+    private List<FiringSpot> firingSpots;
     private boolean frozen = false;
     private double freezeTimer = 0;
     private boolean gotStuck = false;
     private double shootingTimer = 0;
+    private boolean firingSpotReached = false;
 
     public EnemyTank(LevelState level, int number, EnemyTankType type, double x,
             double y, Direction direction) {
@@ -66,31 +68,20 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         checkIfBonus();
 
         if (this.bonus) {
-            destroyExistingBonuses();
+            destroyExistingPowerUps();
         }
 
         loadAnimations();
 
-        TankColor color;
-
-        if (type == EnemyTankType.ARMORED) {
-            color = TankColor.GREEN;
-        } else {
-            if (this.number % 2 == 0) {
-                color = TankColor.GREEN;
-            } else {
-                color = TankColor.GRAY;
-            }
-        }
-        this.identifier = new EnemyTankIdentifier(color,
+        this.identifier = new EnemyTankIdentifier(getTankColor(number, type),
                 Heading.getHeading(direction), type);
         updateAnimation();
-        this.fireSpots = getFireSpotsToAttackTheEagle();
+        this.firingSpots = getFiringSpotsToAttackTheEagle();
         selectRandomFirePointToAttackEagle();
         this.moving = true;
     }
 
-    private void destroyExistingBonuses() {
+    private void destroyExistingPowerUps() {
         this.level.getEntityManager().getEntitiesByType(EntityType.POWER_UP).
                 forEach(powerUp -> powerUp.destroy());
     }
@@ -98,28 +89,31 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
         super.update(keyboardState, frameTime);
-        
+
         if (this.frozen) {
             handleIfFrozen(frameTime);
             return;
         }
-        
+
         updateGleamingColor(frameTime);
 
-        if (!this.moving) {
-            if (this.gotStuck) {
-                //handleCollisions();
-                selectRandomDirrection();
-            }
+        if (!this.moving && !this.firingSpotReached && this.gotStuck) {
+            selectRandomDirrection();
             return;
         }
         
-        move(frameTime);
-        fixBounds();
-        
-        if(!checkCollisions()){
-            updateTarget(frameTime);
-            updateDirection();
+        if(this.moving){
+            move(frameTime);
+            fixBounds();
+
+            if (!checkCollisions(frameTime)) {
+                updateTarget(frameTime);
+                updateDirection();
+            } else {
+                this.movingAlongShortestPath = false;
+            }
+            
+            checkIfFiringSpotToAttackEagleReached();
         }
         
         updateShootingTimer(frameTime);
@@ -132,37 +126,38 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         //this.shortestPath.forEach(spot -> spot.draw(g));
     }
     
-    private boolean checkCollisions() {
-        boolean isCollision = false;
-        boolean collidesMap = checkMapCollision();
-        if(!collidesMap){
-            boolean collidesSplashes = checkCollisionsWithSplashes();
-            if(!collidesSplashes){
-                boolean collidesOtherTanks = handleCollisionsWithOtherTanks();
-                isCollision = collidesOtherTanks;
-            } else {
-                isCollision = true;
-                selectRandomDirrection();
-                move(0.017);
-            }
-        } else {
+    private boolean checkCollisions(double frameTime) {
+
+        if(checkMapCollision()){
             selectRandomDirrection();
-            move(0.017);
-            isCollision = true;
+            move(frameTime);
+            return true;
         }
         
-        if(isCollision){
-            this.movingAlongShortestPath = false;
+        if(checkCollisionsWithSplashes()){
+            selectRandomDirrection();
+            move(frameTime);
+            return true;
         }
         
-        return isCollision;
+        return handleCollisionsWithOtherTanks();
     }
-    
-    private void updateShootingTimer(double frameTime){
+
+    private void checkIfFiringSpotToAttackEagleReached() {
+        for(int i = 0; i < this.firingSpots.size(); ++i){
+            if(firingSpots.get(i).getSpot().equals(getCurrentSpot())){
+                this.firingSpotReached = true;
+                setDirection(firingSpots.get(i).getFireDirection());
+                this.moving = false;
+            }
+        }
+    }
+
+    private void updateShootingTimer(double frameTime) {
         this.shootingTimer += frameTime;
         if (this.shootingTimer >= SHOOTING_PERIOD) {
             this.shootingTimer = 0;
-            if (isFireLineFreeOfPartnerTanks()) {
+            if (this.firingSpotReached || isFireLineFreeOfPartnerTanks()) {
                 fire();
             }
         }
@@ -317,8 +312,8 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         return new Spot(targetRow, targetCol, true);
     }
 
-    private List<Spot> getFireSpotsToAttackTheEagle() {
-        return this.level.getTileMap().getFireSpots();
+    private List<FiringSpot> getFiringSpotsToAttackTheEagle() {
+        return this.level.getTileMap().getFiringSpots();
     }
 
     private boolean checkIfNextPositionReached() {
@@ -327,8 +322,8 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     }
 
     private void selectRandomFirePointToAttackEagle() {
-        int rand = this.random.nextInt(this.fireSpots.size());
-        this.currTarget = this.fireSpots.get(rand);
+        int rand = this.random.nextInt(this.firingSpots.size());
+        this.currTarget = this.firingSpots.get(rand).getSpot();
     }
 
     private void updateTarget(double frameTime) {
@@ -360,7 +355,12 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     }
 
     private void targetEagle() {
-        if (!fireSpots.contains(this.currTarget)) {
+        boolean isCurrTargetEagle = this.firingSpots.stream().anyMatch(
+                firingSpot -> {
+            return firingSpot.getSpot().equals(this.currTarget);
+        });
+
+        if (!isCurrTargetEagle) {
             selectRandomFirePointToAttackEagle();
             this.movingAlongShortestPath = false;
         }
@@ -384,8 +384,8 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         }
 
         Pathfinder pathfinder = new Pathfinder(this.level.getTileMap());
-        if (pathfinder.calcPath(getCurrentSpot(), this.currTarget
-                , TANK_DIMENSION)) {
+        if (pathfinder.calcPath(getCurrentSpot(), this.currTarget,
+                TANK_DIMENSION)) {
             this.shortestPath = pathfinder.getOptimalPath();
             if (!this.shortestPath.isEmpty()) {
                 this.movingAlongShortestPath = true;
@@ -449,8 +449,6 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         return false;
     }
 
-    
-
     private void updateGleamingColor(double frameTime) {
         if (this.gleaming) {
             this.colorPlayingTimer += frameTime;
@@ -483,29 +481,30 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     }
 
     private Rectangle calcDamageArea() {
-        if (this.direction == Direction.NORTH) {
-            return new Rectangle((int) left() - getWidth(),
-                     0,
-                     3 * getWidth(),
-                    (int) top());
-        } else if (this.direction == Direction.SOUTH) {
-            return new Rectangle((int) left() - getWidth(),
-                     (int) bottom(),
-                     3 * getWidth(),
-                     this.level.getMapHeight() - (int) top());
-        } else if (this.direction == Direction.EAST) {
-            return new Rectangle((int) right(),
-                     (int) top() - getHeight(),
-                     this.level.getMapWidth() - (int) left(),
-                     3 * getHeight());
-        } else {
-            return new Rectangle(0,
-                     (int) top() - getHeight(),
-                     (int) left(),
-                    3 * getHeight());
+        switch (this.direction) {
+            case NORTH:
+                return new Rectangle((int) left() - getWidth(),
+                        0,
+                        3 * getWidth(),
+                        (int) top());
+            case SOUTH:
+                return new Rectangle((int) left() - getWidth(),
+                        (int) bottom(),
+                        3 * getWidth(),
+                        this.level.getMapHeight() - (int) top());
+            case EAST:
+                return new Rectangle((int) right(),
+                        (int) top() - getHeight(),
+                        this.level.getMapWidth() - (int) left(),
+                        3 * getHeight());
+            default:
+                return new Rectangle(0,
+                        (int) top() - getHeight(),
+                        (int) left(),
+                        3 * getHeight());
         }
     }
-    
+
     @Override
     public final void loadAnimations() {
 
@@ -515,5 +514,22 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
                     0, 0, Game.TILE_SIZE, Game.TILE_SIZE, 2, Game.TILE_SIZE
             ));
         });
+    }
+    
+    private TankColor getTankColor(int number, EnemyTankType tankType){
+        
+        TankColor color;
+
+        if (tankType == EnemyTankType.ARMORED) {
+            color = TankColor.GREEN;
+        } else {
+            if (number % 2 == 0) {
+                color = TankColor.GREEN;
+            } else {
+                color = TankColor.GRAY;
+            }
+        }
+        
+        return color;
     }
 }

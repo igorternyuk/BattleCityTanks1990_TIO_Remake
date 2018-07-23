@@ -1,6 +1,7 @@
 package com.igorternyuk.tanks.gameplay.tilemap;
 
 import com.igorternyuk.tanks.gameplay.Game;
+import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.pathfinder.Pathfinder.Spot;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
@@ -23,9 +24,36 @@ import java.util.Map;
  */
 public class TileMap {
 
-    private static final double EAGLE_PROTECTION_LIFE_TIME = 23;
+    private static final double EAGLE_PROTECTION_LIFE_TIME = 20;
     private static final double EAGLE_PROTECTION_BLINKING_TIME = 5;
     private static final double EAGLE_PROTECTION_BLINK_PERIOD = 0.25;
+    
+    public static class FiringSpot{
+        private Spot spot;
+        private Direction fireDirection;
+
+        public FiringSpot(Spot spot, Direction fireDirection) {
+            this.spot = spot;
+            this.fireDirection = fireDirection;
+        }
+
+        public Spot getSpot() {
+            return this.spot;
+        }
+
+        public void setSpot(Spot spot) {
+            this.spot = spot;
+        }
+
+        public Direction getFireDirection() {
+            return this.fireDirection;
+        }
+
+        public void setFireDirection(Direction fireDirection) {
+            this.fireDirection = fireDirection;
+        }
+    }
+    
     private double scale;
     private Tile[][] tiles = new Tile[Game.TILES_IN_HEIGHT][Game.TILES_IN_WIDTH];
     private int[][] clearanceMap =
@@ -36,7 +64,7 @@ public class TileMap {
     private Tile lastCollided;
     private List<Point> enemyTankAppearancePositions = new ArrayList<>();
     private List<Point> eagleProtectionTilePositions = new ArrayList<>();
-    private List<Spot> firePoints = new ArrayList<>();
+    private List<FiringSpot> firePoints = new ArrayList<>();
     private BufferedImage spriteSheet;
     private Map<TileType, BufferedImage> tileTypeImageMap = new HashMap<>();
     private String pathToTheCurrentMapFile;
@@ -66,7 +94,7 @@ public class TileMap {
         return Collections.unmodifiableList(this.eagleProtectionTilePositions);
     }
 
-    public List<Spot> getFireSpots() {
+    public List<FiringSpot> getFiringSpots() {
         return Collections.unmodifiableList(this.firePoints);
     }
 
@@ -382,11 +410,11 @@ public class TileMap {
     }
 
     private void specifyFireSpots() {
-        this.firePoints.add(new Spot(24, 6, true));
-        this.firePoints.add(new Spot(24, 7, true));
-        this.firePoints.add(new Spot(24, 17, true));
-        this.firePoints.add(new Spot(24, 18, true));
-        this.firePoints.add(new Spot(20, 12, true));
+        this.firePoints.add(new FiringSpot(new Spot(24, 6, true), Direction.EAST));
+        this.firePoints.add(new FiringSpot(new Spot(24, 7, true), Direction.EAST));
+        this.firePoints.add(new FiringSpot(new Spot(24, 17, true), Direction.WEST));
+        this.firePoints.add(new FiringSpot(new Spot(24, 18, true), Direction.WEST));
+        this.firePoints.add(new FiringSpot(new Spot(20, 12, true), Direction.SOUTH));
     }
 
     private void specifyEagleProtectionPositions() {

@@ -53,8 +53,8 @@ public class Pathfinder {
     public Map<Direction, Spot> getNeighbours(Spot spot) {
         Map<Direction, Spot> neighbours = new HashMap<>();
         for (Direction dir : Direction.values()) {
-            int newCol = spot.col + dir.getVx();
-            int newRow = spot.row + dir.getVy();
+            int newCol = spot.col + dir.getDx();
+            int newRow = spot.row + dir.getDy();
             if (areCoordinatesValid(newRow, newCol)
                     && grid[newRow][newCol].traversable) {
                 neighbours.put(dir, grid[newRow][newCol]);
@@ -64,6 +64,7 @@ public class Pathfinder {
     }
     
     public boolean calcPath(Spot start, Spot end, int agentDimension) {
+        
         int[][] clearanceMap = this.tileMap.getClearanceMap();        
         Set<Spot> closedSet = new HashSet<>();        
         Queue<Spot> openSet = new PriorityQueue<>();

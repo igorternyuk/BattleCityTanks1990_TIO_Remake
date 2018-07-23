@@ -141,10 +141,10 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
     private void correctPositionAfterIntersection(Rectangle intersection) {
         if (this.direction.isVertical()) {
             setPosition(this.x, this.y + intersection.height * this.direction.
-                    getOpposite().getVy());
+                    getOpposite().getDy());
         } else if (this.direction.isHorizontal()) {
             setPosition(this.x + intersection.width * this.direction.
-                    getOpposite().getVx(), this.y);
+                    getOpposite().getDx(), this.y);
         }
     }
 }

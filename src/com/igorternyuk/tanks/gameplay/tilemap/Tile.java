@@ -116,9 +116,9 @@ public class Tile {
             Direction oppositeDirection = currTankDirection.getOpposite();
             if (currTankDirection.isVertical()) {
                 entity.setPosition(entity.getX(), entity.getY()
-                        + oppositeDirection.getVy() * intersection.height);
+                        + oppositeDirection.getDy() * intersection.height);
             } else if (currTankDirection.isHorizontal()) {
-                entity.setPosition(entity.getX() + oppositeDirection.getVx()
+                entity.setPosition(entity.getX() + oppositeDirection.getDx()
                         * intersection.width, entity.getY());
             }
     }

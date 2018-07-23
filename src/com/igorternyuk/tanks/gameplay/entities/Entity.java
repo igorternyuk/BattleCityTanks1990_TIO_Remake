@@ -219,8 +219,8 @@ public abstract class Entity {
     }
     
     public boolean canMoveInDirection(Direction direction){
-        double dx = direction.getVx() * this.speed * Game.FRAME_TIME_IN_SECONDS;
-        double dy = direction.getVy() * this.speed * Game.FRAME_TIME_IN_SECONDS;
+        double dx = direction.getDx() * this.speed * Game.FRAME_TIME_IN_SECONDS;
+        double dy = direction.getDy() * this.speed * Game.FRAME_TIME_IN_SECONDS;
         setPosition(this.x + dx, this.y + dy);
         TileMap tileMap = this.level.getTileMap(); 
         boolean result = !tileMap.hasCollision(this)
@@ -230,8 +230,8 @@ public abstract class Entity {
     }
     
     protected void move(double frameTime) {
-        this.x += this.speed * this.direction.getVx() * frameTime;
-        this.y += this.speed * this.direction.getVy() * frameTime;
+        this.x += this.speed * this.direction.getDx() * frameTime;
+        this.y += this.speed * this.direction.getDy() * frameTime;
     }
 
     protected void updateBlinkTimer(double frameTime) {

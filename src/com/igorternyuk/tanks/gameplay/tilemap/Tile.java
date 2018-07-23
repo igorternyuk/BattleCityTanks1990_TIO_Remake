@@ -117,11 +117,9 @@ public class Tile {
             if (currTankDirection.isVertical()) {
                 entity.setPosition(entity.getX(), entity.getY()
                         + oppositeDirection.getVy() * intersection.height);
-                double dy = oppositeDirection.getVy() * intersection.height;
             } else if (currTankDirection.isHorizontal()) {
                 entity.setPosition(entity.getX() + oppositeDirection.getVx()
                         * intersection.width, entity.getY());
-                double dx = oppositeDirection.getVx() * intersection.width;
             }
     }
 

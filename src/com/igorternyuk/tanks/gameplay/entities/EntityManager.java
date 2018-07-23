@@ -32,12 +32,14 @@ public class EntityManager {
     }
 
     public void addEntity(Entity entity) {
-        if (entity.getEntityType() == EntityType.PLAYER_TANK) {
-            this.player = (Player) entity;
+        if(!this.entities.contains(entity)){
+            if (entity.getEntityType() == EntityType.PLAYER_TANK) {
+                this.player = (Player) entity;
+            }
+            this.entities.add(entity);
+            List<Entity> lista = this.entitiesByType.get(entity.getEntityType());
+            lista.add(entity);
         }
-        this.entities.add(entity);
-        List<Entity> lista = this.entitiesByType.get(entity.getEntityType());
-        lista.add(entity);
     }
 
     public void removeEntity(Entity entity) {

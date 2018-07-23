@@ -77,7 +77,7 @@ public class LevelState extends GameState {
     private EntityManager entityManager;
     private GameInfoPanel rightPanel;
 
-    int stageNumber = 2;
+    int stageNumber = 1;
     private Stack<EnemyTankType> hangar = new Stack<>();
     private Map<PowerUpType, Runnable> onPowerUpCollectedHandlers =
             new HashMap<>();
@@ -139,6 +139,7 @@ public class LevelState extends GameState {
         if (needThrowIntoBattleMoreTanks()) {
             tryToAddMoreTanksIntoBattle();
         }
+        
         checkCollisions();
         checkPowerUps();
         checkGameStatus();
@@ -276,10 +277,14 @@ public class LevelState extends GameState {
     }
 
     private void startNewGame() {
+        this.loaded = false;
         this.entityManager.removeAllEntities();
+        this.stageNumber = 1;
+        loadMap();
         fillHangar();
         createEntities();
         gameStatus = GameStatus.PLAY;
+        this.loaded = true;
     }
 
     private void fillHangar() {
@@ -336,6 +341,13 @@ public class LevelState extends GameState {
         this.rightPanel = new GameInfoPanel(this, RIGHT_PANEL_POSITION.x,
                 RIGHT_PANEL_POSITION.y);
         this.entityManager.addEntity(this.rightPanel);
+        
+        /*EnemyTank first = new EnemyTank(this, 1, EnemyTankType.ARMORED,
+                4 * 16, 5 * 16, Direction.EAST);
+        EnemyTank second = new EnemyTank(this, 2, EnemyTankType.BASIC,
+                6 * 16, 6 * 16, Direction.NORTH);
+        this.entityManager.addEntity(first);
+        this.entityManager.addEntity(second);*/
     }
 
     private void checkCollisions() {

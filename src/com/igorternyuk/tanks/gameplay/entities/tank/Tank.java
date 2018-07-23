@@ -74,11 +74,16 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
     protected boolean checkMapCollision() {
         TileMap tileMap = this.level.getTileMap();
         if (tileMap.hasCollision(this)) {
+            System.out.println("Collision with map");
             Tile collided = tileMap.getLastCollided();
             collided.handleTankCollision(this);
             return true;
         }
         return false;
+    }
+    
+    public void reverse(){
+        setDirection(direction.getOpposite());
     }
 
     protected List<Tank> getOtherTanks() {
@@ -94,8 +99,7 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
         for (int i = 0; i < otherTanks.size(); ++i) {
             Tank currTank = otherTanks.get(i);
             if (checkIfCollidesOtherTank(currTank)) {
-                handleCollisionWithOtherTank(currTank);
-                
+                handleCollisionWithOtherTank(currTank);                
                 return true;
             }
         }
@@ -108,10 +112,10 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
         for (int i = splashes.size() - 1; i >= 0; --i) {
             Splash currSplash = (Splash) splashes.get(i);
             if (collides(currSplash)) {
+                System.out.println("Collision with splashes");
                 Rectangle intersection = getBoundingRect().intersection(
                         currSplash.getBoundingRect());
                 correctPositionAfterIntersection(intersection);
-                setDirection(this.direction.getOpposite());
                 return true;
             }
         }
@@ -123,14 +127,15 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
         Rectangle otherBoundingRect = other.getBoundingRect();
         return thisBoundingRect.intersects(otherBoundingRect);
     }
-
+    
     protected void handleCollisionWithOtherTank(Tank other) {
         Rectangle thisBoundingRect = this.getBoundingRect();
         Rectangle otherBoundingRect = other.getBoundingRect();
         Rectangle intersection = thisBoundingRect.
                 intersection(otherBoundingRect);
         correctPositionAfterIntersection(intersection);
-        setDirection(this.direction.getOpposite());
+        reverse();
+        move(0.017);
     }
 
     private void correctPositionAfterIntersection(Rectangle intersection) {

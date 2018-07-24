@@ -6,6 +6,7 @@ import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityManager;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
+import com.igorternyuk.tanks.gameplay.entities.RenderingLayerIdentifier;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUp;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUpType;
 import com.igorternyuk.tanks.gameplay.entities.eagle.Eagle;
@@ -90,7 +91,31 @@ public class LevelState extends GameState {
     public LevelState(GameStateManager gsm) {
         super(gsm);
         this.entityManager = new EntityManager(this);
+        addRenderingLayers();
         createOnPowerUpCollectedHanlers();
+    }
+    
+    private void addRenderingLayers(){
+        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.EAGLE,
+                EntityType.EAGLE);
+        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.PROJECTILES,
+                EntityType.PROJECTILE);
+        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.SPLASHES,
+                EntityType.SPLASH);
+        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.TANKS,
+                EntityType.PLAYER_TANK, EntityType.ENEMY_TANK);
+        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.SCORE_TEXTS,
+                EntityType.SCRORE_TEXT);
+        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.PROTECTIONS,
+                EntityType.PROTECTION);
+        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.POWERUPS,
+                EntityType.POWER_UP);
+        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.EXPLOSIONS,
+                EntityType.EXPLOSION);
+        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.GAME_INFO,
+                EntityType.INDICATOR, EntityType.RIGHT_PANEL);
+        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.SPLASH_TEXTS,
+                EntityType.SPLASH_TEXT);
     }
 
     public Stack<EnemyTankType> getHangar() {

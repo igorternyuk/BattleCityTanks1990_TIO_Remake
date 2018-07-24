@@ -6,8 +6,11 @@ import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  *
@@ -16,15 +19,28 @@ import java.util.Map;
 public class EntityManager {
 
     private LevelState level;
-    private List<Entity> entities = new ArrayList<>();
+    private List<Entity> entities = new LinkedList<>();
     private Map<EntityType, List<Entity>> entitiesByType = new HashMap();
     private Player player;
+    private SortedMap<RenderingLayerIdentifier, EntityType[]> renderingLayers =
+            new TreeMap<>((first, second) -> {
+                return Integer.compare(first.ordinal(), second.ordinal());
+            });
 
     public EntityManager(LevelState level) {
         this.level = level;
         for (EntityType type : EntityType.values()) {
-            entitiesByType.put(type, new ArrayList<>());
+            entitiesByType.put(type, new LinkedList<>());
         }
+    }
+
+    public void addRenderingLayer(RenderingLayerIdentifier identifier,
+            EntityType... types) {
+        this.renderingLayers.put(identifier, types);
+    }
+    
+    public void removeRenderingLayer(RenderingLayerIdentifier identifier){
+        this.renderingLayers.remove(identifier);
     }
 
     public Player getPlayer() {
@@ -93,17 +109,17 @@ public class EntityManager {
         }
         return matchingEntities;
     }
-    
-    public List<Entity> getEntitiesIfNotOfType(EntityType... entityTypes){
+
+    public List<Entity> getEntitiesIfNotOfType(EntityType... entityTypes) {
         List<Entity> matchingEntities = new ArrayList<>();
         this.entities.forEach((entity) -> {
             for (EntityType entityType : entityTypes) {
-                if(!entity.getEntityType().equals(entityType)){
+                if (!entity.getEntityType().equals(entityType)) {
                     matchingEntities.addAll(this.entitiesByType.get(entityType));
                 }
             }
         });
-        
+
         return matchingEntities;
     }
 
@@ -121,21 +137,11 @@ public class EntityManager {
         for (int i = this.entities.size() - 1; i >= 0; --i) {
             this.entities.get(i).update(keyboardState, frameTime);
         }
-        //System.out.println("entities.size() = " + entities.size());
     }
 
     public void draw(Graphics2D g) {
-        this.entitiesByType.get(EntityType.EAGLE).get(0).draw(g);
-        for (int i = this.entities.size() - 1; i >= 0; --i) {
-            Entity entity = this.entities.get(i);
-            if (entity.getEntityType() != EntityType.EAGLE) {
-                entity.draw(g);
-            }
-        }
-        
-        getEntitiesByType(EntityType.PLAYER_TANK, EntityType.ENEMY_TANK).
-                forEach(e -> e.draw(g));
-        getEntitiesByType(EntityType.SPLASH_TEXT).
-                forEach(text -> text.draw(g));
+        this.renderingLayers.values().forEach(types -> {
+            getEntitiesByType(types).forEach(entity -> entity.draw(g));
+        });
     }
 }

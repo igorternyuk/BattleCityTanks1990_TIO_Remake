@@ -95,28 +95,7 @@ public class LevelState extends GameState {
         createOnPowerUpCollectedHanlers();
     }
     
-    private void addRenderingLayers(){
-        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.EAGLE,
-                EntityType.EAGLE);
-        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.PROJECTILES,
-                EntityType.PROJECTILE);
-        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.SPLASHES,
-                EntityType.SPLASH);
-        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.TANKS,
-                EntityType.PLAYER_TANK, EntityType.ENEMY_TANK);
-        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.SCORE_TEXTS,
-                EntityType.SCRORE_TEXT);
-        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.PROTECTIONS,
-                EntityType.PROTECTION);
-        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.POWERUPS,
-                EntityType.POWER_UP);
-        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.EXPLOSIONS,
-                EntityType.EXPLOSION);
-        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.GAME_INFO,
-                EntityType.INDICATOR, EntityType.RIGHT_PANEL);
-        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.SPLASH_TEXTS,
-                EntityType.SPLASH_TEXT);
-    }
+    
 
     public Stack<EnemyTankType> getHangar() {
         return this.hangar;
@@ -287,7 +266,7 @@ public class LevelState extends GameState {
     private void startNewGame() {
         this.loaded = false;
         this.entityManager.removeAllEntities();
-        this.stageNumber = 2;
+        this.stageNumber = 1;
         loadMap();
         fillHangar();
         createEntities();
@@ -561,5 +540,28 @@ public class LevelState extends GameState {
                         isEmpty()) {
             nextStage();
         }
+    }
+    
+    private void addRenderingLayers(){
+        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.EAGLE,
+                EntityType.EAGLE);
+        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.PROJECTILES,
+                EntityType.PROJECTILE);
+        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.SPLASHES,
+                EntityType.SPLASH);
+        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.TANKS,
+                EntityType.PLAYER_TANK, EntityType.ENEMY_TANK);
+        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.SCORE_TEXTS,
+                EntityType.SCRORE_TEXT);
+        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.PROTECTIONS,
+                EntityType.PROTECTION);
+        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.POWERUPS,
+                EntityType.POWER_UP);
+        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.EXPLOSIONS,
+                EntityType.EXPLOSION);
+        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.GAME_INFO,
+                EntityType.INDICATOR, EntityType.RIGHT_PANEL);
+        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.SPLASH_TEXTS,
+                EntityType.SPLASH_TEXT);
     }
 }

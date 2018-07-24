@@ -348,8 +348,9 @@ public class TileMap {
                 }
             }
         }
-        this.waterTiles.forEach(waterTile -> waterTile.update(keyboardState,
-                frameTime));
+        for(int i = this.waterTiles.size() - 1; i >= 0; --i){
+            this.waterTiles.get(i).update(keyboardState, frameTime);
+        }
         updateProtection(keyboardState, frameTime);
     }
 

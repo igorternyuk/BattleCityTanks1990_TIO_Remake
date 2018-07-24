@@ -59,7 +59,11 @@ public class GameInfoPanel extends Entity {
     public void draw(Graphics2D g) {
         this.sprite.draw(g);
         super.draw(g);
-        Painter.drawNumber(g, this.player.getLives(),
+        int playerLives = this.player.getLives();
+        if(playerLives < 0){
+            playerLives = 0;
+        }
+        Painter.drawNumber(g, playerLives,
                 Painter.DIGIT_DEFAULT_COLOR,
                 (int) (28 * Game.HALF_TILE_SIZE * Game.SCALE),
                 (int) (18 * Game.HALF_TILE_SIZE * Game.SCALE), Game.SCALE);

@@ -123,19 +123,19 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
         switch (this.direction) {
             case NORTH:
                 departure.x = (int) ((left() + right() - projectileWidth) / 2);
-                departure.y = (int) top() - projectileHeight;
+                departure.y = (int) top()/* - projectileHeight*/;
                 break;
             case SOUTH:
                 departure.x = (int) ((left() + right() - projectileWidth) / 2);
-                departure.y = (int) bottom() + projectileHeight;
+                departure.y = (int) bottom() - projectileHeight;
                 break;
             case EAST:
                 departure.y = (int) ((top() + bottom() - projectileHeight) / 2);
-                departure.x = (int) left() + projectileWidth;
+                departure.x = (int) right() - projectileWidth;
                 break;
             case WEST:
                 departure.y = (int) ((top() + bottom() - projectileHeight) / 2);
-                departure.x = (int) left() - projectileWidth;
+                departure.x = (int) left()/* - projectileWidth*/;
                 break;
             default:
                 break;

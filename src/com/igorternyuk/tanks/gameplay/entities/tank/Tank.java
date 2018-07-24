@@ -52,7 +52,6 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
         if (tileMap.hasCollision(this)) {
             Tile collided = tileMap.getLastCollided();
             collided.handleTankCollision(this);
-            System.out.println("Map collision");
             return true;
         }
         return false;

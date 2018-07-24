@@ -15,5 +15,6 @@ public enum EntityType {
     SCRORE_TEXT,
     PROTECTION,
     INDICATOR,
-    RIGHT_PANEL;
+    RIGHT_PANEL,
+    SPLASH_TEXT;
 }

@@ -32,7 +32,7 @@ public class EntityManager {
     }
 
     public void addEntity(Entity entity) {
-        if(!this.entities.contains(entity)){
+        if (!this.entities.contains(entity)) {
             if (entity.getEntityType() == EntityType.PLAYER_TANK) {
                 this.player = (Player) entity;
             }
@@ -47,12 +47,12 @@ public class EntityManager {
         List<Entity> lista = this.entitiesByType.get(entity.getEntityType());
         lista.remove(entity);
     }
-    
-    public void removeEntitiesByType(EntityType... entityTypes){
+
+    public void removeEntitiesByType(EntityType... entityTypes) {
         this.entities.removeIf(entity -> {
-            for(int i = 0; i < entityTypes.length; ++i){
-                if(entityTypes[i] == entity.getEntityType()){
-                    if(this.entitiesByType.containsKey(entityTypes[i])){
+            for (int i = 0; i < entityTypes.length; ++i) {
+                if (entityTypes[i] == entity.getEntityType()) {
+                    if (this.entitiesByType.containsKey(entityTypes[i])) {
                         this.entitiesByType.get(entityTypes[i]).clear();
                     }
                     return true;
@@ -61,18 +61,18 @@ public class EntityManager {
             return false;
         });
     }
-    
-    public void removeEntitiesExcepts(EntityType... entityTypes){
+
+    public void removeEntitiesExcepts(EntityType... entityTypes) {
         this.entities.removeIf(entity -> {
-            for(int i = 0; i < entityTypes.length; ++i){
-                if(entityTypes[i] == entity.getEntityType()){
+            for (int i = 0; i < entityTypes.length; ++i) {
+                if (entityTypes[i] == entity.getEntityType()) {
                     return false;
                 }
             }
             this.entitiesByType.get(entity.getEntityType()).clear();
             return true;
         });
-        
+
     }
 
     public void removeAllEntities() {
@@ -86,8 +86,25 @@ public class EntityManager {
         return this.entities.size();
     }
 
-    public List<Entity> getEntitiesByType(EntityType entityType) {
-        return this.entitiesByType.get(entityType);
+    public List<Entity> getEntitiesByType(EntityType... entityTypes) {
+        List<Entity> matchingEntities = new ArrayList<>();
+        for (EntityType entityType : entityTypes) {
+            matchingEntities.addAll(this.entitiesByType.get(entityType));
+        }
+        return matchingEntities;
+    }
+    
+    public List<Entity> getEntitiesIfNotOfType(EntityType... entityTypes){
+        List<Entity> matchingEntities = new ArrayList<>();
+        this.entities.forEach((entity) -> {
+            for (EntityType entityType : entityTypes) {
+                if(!entity.getEntityType().equals(entityType)){
+                    matchingEntities.addAll(this.entitiesByType.get(entityType));
+                }
+            }
+        });
+        
+        return matchingEntities;
     }
 
     public List<Entity> getAllEntities() {
@@ -115,5 +132,10 @@ public class EntityManager {
                 entity.draw(g);
             }
         }
+        
+        getEntitiesByType(EntityType.PLAYER_TANK, EntityType.ENEMY_TANK).
+                forEach(e -> e.draw(g));
+        getEntitiesByType(EntityType.SPLASH_TEXT).
+                forEach(text -> text.draw(g));
     }
 }

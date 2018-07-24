@@ -108,12 +108,6 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             selectRandomDirrection();
             return;
         }
-        
-        /*if (!this.moving && !this.firingSpotReached && this.gotStuck) {
-            selectRandomDirrection();
-            return;
-        }*/
-
         if (this.moving) {
             move(frameTime);
             fixBounds();
@@ -248,13 +242,10 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         
         if (allPossibleDirections.isEmpty()) {
             this.gotStuck = true;
-            System.out.println("Got stuck!!!");
-            
             this.moving = false;
             return;
         } else {
             this.gotStuck = false;
-            System.out.println("No stuck!!!");
         }
         int rand = this.random.nextInt(allPossibleDirections.size());
         setDirection(allPossibleDirections.get(rand));

@@ -32,24 +32,23 @@ import java.util.Random;
  */
 public class EnemyTank extends Tank<EnemyTankIdentifier> {
 
+    private static final int[] BONUS_TANKS_NUMBERS = {4, 11, 18};
+    private static final int TANK_DIMENSION = 2;
     private static final double COLOR_CHANGING_PERIOD = 0.1;
     private static final double TARGET_CHANGING_PERIOD = 20;
-    private static final int MIN_TARGET_POSITION_CHANGE_TO_RECALCULATE_PATH = 10
-            * Game.HALF_TILE_SIZE;
     private static final double FROZEN_TIME = 10;
-    private static final int[] BONUS_TANKS_NUMBERS = {4, 11, 18};
     private static final double SHOOTING_PERIOD = 2;
-    private static final int TANK_DIMENSION = 2;
+    
     private int number;
     private EnemyTankIdentifier identifier;
     private boolean bonus = false;
     private boolean gleaming = false;
-    private double colorPlayingTimer;
-    private final Random random = new Random();
+    private double gleamingTimer;
+    
     private boolean movingAlongShortestPath = false;
-    private Spot currTarget;
     private List<Spot> shortestPath = new ArrayList<>();
     private Spot nextPosition;
+    private Spot currTarget;
     private double targetTimer = 0;
     private List<FiringSpot> firingSpots;
     private boolean frozen = false;
@@ -57,7 +56,8 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     private boolean gotStuck = false;
     private double shootingTimer = 0;
     private boolean firingSpotReached = false;
-
+    private final Random random = new Random();
+    
     public EnemyTank(LevelState level, int number, EnemyTankType type, double x,
             double y, Direction direction) {
         super(level, EntityType.ENEMY_TANK, x, y, type.getSpeed(), direction);
@@ -245,10 +245,11 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
 
     private void selectRandomDirrection() {
         List<Direction> allPossibleDirections = getAllPossibleDirections();
-
+        
         if (allPossibleDirections.isEmpty()) {
             this.gotStuck = true;
             System.out.println("Got stuck!!!");
+            
             this.moving = false;
             return;
         } else {
@@ -256,8 +257,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             System.out.println("No stuck!!!");
         }
         int rand = this.random.nextInt(allPossibleDirections.size());
-        setDirection(Direction.values()[rand]);
-        System.out.println("Selected direction = " + direction);
+        setDirection(allPossibleDirections.get(rand));
         this.moving = true;
     }
 
@@ -338,11 +338,14 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
 
     private void targetPlayer() {
         Spot playerSpot = getPlayerSpot();
-        if (this.currTarget.distanceManhattan(playerSpot)
+        /*if (this.currTarget.distanceManhattan(playerSpot)
                 > MIN_TARGET_POSITION_CHANGE_TO_RECALCULATE_PATH) {
             this.currTarget = playerSpot;
             this.movingAlongShortestPath = false;
-        }
+        }*/
+        
+        this.currTarget = playerSpot;
+        this.movingAlongShortestPath = false;
     }
 
     private void targetEagle() {
@@ -495,11 +498,11 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     
     private void updateGleamingColor(double frameTime) {
         if (this.gleaming) {
-            this.colorPlayingTimer += frameTime;
-            if (this.colorPlayingTimer >= COLOR_CHANGING_PERIOD) {
+            this.gleamingTimer += frameTime;
+            if (this.gleamingTimer >= COLOR_CHANGING_PERIOD) {
                 TankColor currColor = this.identifier.getColor();
                 this.identifier.setColor(currColor.next());
-                this.colorPlayingTimer = 0;
+                this.gleamingTimer = 0;
             }
         }
     }

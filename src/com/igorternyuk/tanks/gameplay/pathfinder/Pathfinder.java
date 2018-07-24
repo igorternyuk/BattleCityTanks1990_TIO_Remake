@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 /**
  *
@@ -25,17 +26,25 @@ public class Pathfinder {
     private TileMap tileMap;
     private Spot[][] grid;
     private List<Spot> optimalPath = new ArrayList<>();
+    private BiFunction<Spot, Spot, Double> heurisicFuction;
 
     public Pathfinder(TileMap tileMap) {
         setTileMap(tileMap);
+        this.heurisicFuction = (first, second) -> {
+            return this.calcManhattanDistance(first, second);
+        };
     }
-    
-    public final void setTileMap(TileMap tileMap){
+
+    public Pathfinder(TileMap tileMap, BiFunction<Spot, Spot, Double> heuristic) {
+        setTileMap(tileMap);
+        this.heurisicFuction = heuristic;
+    }
+
+    public final void setTileMap(TileMap tileMap) {
         this.tileMap = tileMap;
         this.grid = new Spot[this.tileMap.getTilesInHeight()][this.tileMap.
                 getTilesInWidth()];
         fillGrid();
-        //this.tileMap.print();
     }
 
     public TileMap getTileMap() {
@@ -49,8 +58,8 @@ public class Pathfinder {
     public List<Spot> getOptimalPath() {
         return this.optimalPath;
     }
-    
-    public Map<Direction, Spot> getNeighbours(Spot spot) {
+
+    public Map<Direction, Spot> getNeighboursVonNeumann(Spot spot) {
         Map<Direction, Spot> neighbours = new HashMap<>();
         for (Direction dir : Direction.values()) {
             int newCol = spot.col + dir.getDx();
@@ -64,33 +73,33 @@ public class Pathfinder {
     }
     
     public boolean calcPath(Spot start, Spot end, int agentDimension) {
-        
-        int[][] clearanceMap = this.tileMap.getClearanceMap();        
-        Set<Spot> closedSet = new HashSet<>();        
+
+        int[][] clearanceMap = this.tileMap.getClearanceMap();
+        Set<Spot> closedSet = new HashSet<>();
         Queue<Spot> openSet = new PriorityQueue<>();
 
         openSet.add(start);
 
         while (!openSet.isEmpty()) {
             Spot current = openSet.poll();
-            
+
             if (current.equals(end)) {
                 restoreOptimalPath(current);
                 return true;
             }
 
             closedSet.add(current);
-            Map<Direction, Spot> neighbours = getNeighbours(current);
+            Map<Direction, Spot> neighbours = getNeighboursVonNeumann(current);
             neighbours.forEach((direction, currNeighbour) -> {
-                
+
                 boolean alreadyClosed = closedSet.contains(currNeighbour);
                 int currGap = clearanceMap[currNeighbour.row][currNeighbour.col];
                 boolean clearanceSufficient = currGap >= agentDimension;
-                
+
                 if (!alreadyClosed && clearanceSufficient) {
-                    
+
                     double tmpCost = current.cost + 1;
-                    
+
                     if (openSet.contains(currNeighbour)) {
                         if (tmpCost < currNeighbour.cost) {
                             currNeighbour.cost = tmpCost;
@@ -101,7 +110,7 @@ public class Pathfinder {
                         }
                     } else {
                         currNeighbour.cost = tmpCost;
-                        currNeighbour.heuristic = heuristicFunction(
+                        currNeighbour.heuristic = heurisicFuction.apply(
                                 currNeighbour, end);
                         currNeighbour.evaluation = currNeighbour.cost
                                 + currNeighbour.heuristic;
@@ -119,7 +128,7 @@ public class Pathfinder {
     private void restoreOptimalPath(Spot end) {
         this.optimalPath.clear();
         Spot current = end;
-        while(current.prev != null){
+        while (current.prev != null) {
             this.optimalPath.add(current);
             current = current.prev;
         }
@@ -131,11 +140,17 @@ public class Pathfinder {
                 < grid[row].length;
     }
 
-    private double heuristicFunction(Spot source, Spot target) {
+    private double calcManhattanDistance(Spot source, Spot target) {
         return Math.abs(source.col - target.col) + Math.abs(source.row
                 - target.row);
     }
-    
+
+    private double calcEuclidianDistance(Spot source, Spot target) {
+        double dx = source.col - target.col;
+        double dy = source.row - target.row;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
     private void fillGrid() {
         for (int row = 0; row < this.grid.length; ++row) {
             for (int col = 0; col < this.grid[row].length; ++col) {
@@ -145,8 +160,8 @@ public class Pathfinder {
             }
         }
     }
-    
-    public static class Spot implements Comparable<Spot>{
+
+    public static class Spot implements Comparable<Spot> {
 
         private int row;
         private int col;
@@ -182,25 +197,25 @@ public class Pathfinder {
         public Direction getDirFromPrev() {
             return this.dirFromPrev;
         }
-        
-        public double distanceEuclidian(Spot target){
+
+        public double distanceEuclidian(Spot target) {
             int dx = (this.col - target.col) * Game.HALF_TILE_SIZE;
             int dy = (this.row - target.row) * Game.HALF_TILE_SIZE;
             return Math.sqrt(dx * dx + dy * dy);
         }
-        
-        public double distanceManhattan(Spot target){
+
+        public double distanceManhattan(Spot target) {
             int dx = (this.col - target.col) * Game.HALF_TILE_SIZE;
             int dy = (this.row - target.row) * Game.HALF_TILE_SIZE;
             return dx + dy;
         }
 
-        public void draw(Graphics2D g){
+        public void draw(Graphics2D g) {
             g.setColor(Color.cyan);
-            g.fillRect((int)(col * Game.HALF_TILE_SIZE * Game.SCALE)
-                    , (int)(row * Game.HALF_TILE_SIZE * Game.SCALE)
-                    , (int)(Game.HALF_TILE_SIZE * Game.SCALE)
-                    , (int)(Game.HALF_TILE_SIZE * Game.SCALE));
+            g.fillRect((int) (col * Game.HALF_TILE_SIZE * Game.SCALE),
+                     (int) (row * Game.HALF_TILE_SIZE * Game.SCALE),
+                     (int) (Game.HALF_TILE_SIZE * Game.SCALE),
+                     (int) (Game.HALF_TILE_SIZE * Game.SCALE));
         }
 
         @Override
@@ -221,7 +236,7 @@ public class Pathfinder {
             }
 
             final Spot other = (Spot) obj;
-            
+
             return Objects.equal(this.row, other.row)
                     && Objects.equal(this.col, other.col);
         }

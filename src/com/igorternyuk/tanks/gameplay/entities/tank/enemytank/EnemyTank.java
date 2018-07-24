@@ -22,7 +22,6 @@ import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -65,9 +64,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         this.number = number;
         this.health = type.getHealth();
 
-        checkIfBonus();
-
-        if (this.bonus) {
+        if (checkIfBonus()) {
             destroyExistingPowerUps();
         }
 
@@ -77,32 +74,47 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
                 Heading.getHeading(direction), type);
         updateAnimation();
         this.firingSpots = getFiringSpotsToAttackTheEagle();
-        selectRandomFirePointToAttackEagle();
+        selectRandomFiringPointToAttackEagle();
         this.moving = true;
-    }
-
-    private void destroyExistingPowerUps() {
-        this.level.getEntityManager().getEntitiesByType(EntityType.POWER_UP).
-                forEach(powerUp -> powerUp.destroy());
     }
 
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
         super.update(keyboardState, frameTime);
+        updateGleamingColor(frameTime);
+        executeMovementLogic(frameTime);
+        updateShootingTimer(frameTime);
+        updateAnimation();
+    }
 
+    @Override
+    public void draw(Graphics2D g) {
+        super.draw(g);
+        this.shortestPath.forEach(spot -> spot.draw(g));
+    }
+    
+    public void executeMovementLogic(double frameTime){
         if (this.frozen) {
             handleIfFrozen(frameTime);
             return;
         }
-
-        updateGleamingColor(frameTime);
-
-        if (!this.moving && !this.firingSpotReached && this.gotStuck) {
+        
+        if(this.firingSpotReached){
+            return;
+        }
+        
+        if (!this.moving && this.gotStuck) {
+            checkMapCollision();
             selectRandomDirrection();
             return;
         }
         
-        if(this.moving){
+        /*if (!this.moving && !this.firingSpotReached && this.gotStuck) {
+            selectRandomDirrection();
+            return;
+        }*/
+
+        if (this.moving) {
             move(frameTime);
             fixBounds();
 
@@ -112,55 +124,13 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             } else {
                 this.movingAlongShortestPath = false;
             }
-            
+
             checkIfFiringSpotToAttackEagleReached();
         }
-        
-        updateShootingTimer(frameTime);
-        updateAnimation();
-    }
-
-    @Override
-    public void draw(Graphics2D g) {
-        super.draw(g);
-        //this.shortestPath.forEach(spot -> spot.draw(g));
     }
     
-    private boolean checkCollisions(double frameTime) {
-
-        if(checkMapCollision()){
-            selectRandomDirrection();
-            move(frameTime);
-            return true;
-        }
-        
-        if(checkCollisionsWithSplashes()){
-            selectRandomDirrection();
-            move(frameTime);
-            return true;
-        }
-        
-        return handleCollisionsWithOtherTanks();
-    }
-
-    private void checkIfFiringSpotToAttackEagleReached() {
-        for(int i = 0; i < this.firingSpots.size(); ++i){
-            if(firingSpots.get(i).getSpot().equals(getCurrentSpot())){
-                this.firingSpotReached = true;
-                setDirection(firingSpots.get(i).getFireDirection());
-                this.moving = false;
-            }
-        }
-    }
-
-    private void updateShootingTimer(double frameTime) {
-        this.shootingTimer += frameTime;
-        if (this.shootingTimer >= SHOOTING_PERIOD) {
-            this.shootingTimer = 0;
-            if (this.firingSpotReached || isFireLineFreeOfPartnerTanks()) {
-                fire();
-            }
-        }
+    public void freeze() {
+        this.frozen = true;
     }
 
     private void handleIfFrozen(double frameTime) {
@@ -170,23 +140,9 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             this.frozen = false;
         }
     }
-
-    public void freeze() {
-        this.frozen = true;
-    }
-
+    
     public EnemyTankType getType() {
         return this.identifier.getType();
-    }
-
-    private void checkIfBonus() {
-        for (int num : BONUS_TANKS_NUMBERS) {
-            if (this.number == num) {
-                this.bonus = true;
-                this.gleaming = true;
-                break;
-            }
-        }
     }
 
     public int getScore() {
@@ -204,6 +160,212 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     public EnemyTankIdentifier getIdentifier() {
         return this.identifier;
     }
+    
+    private boolean checkCollisions(double frameTime) {
+
+        if (checkMapCollision()) {
+            selectRandomDirrection();
+            move(frameTime);
+            return true;
+        }
+
+        if (handleCollisionsWithSplashes()) {
+            selectRandomDirrection();
+            move(frameTime);
+            return true;
+        }
+
+        return handleCollisionsWithOtherTanks(frameTime);
+    }
+
+    private void createPowerUp() {
+        int randX = this.random.nextInt(Game.TILES_IN_WIDTH - 1)
+                * Game.HALF_TILE_SIZE;
+        int randY = this.random.nextInt(Game.TILES_IN_HEIGHT - 1)
+                * Game.HALF_TILE_SIZE;
+        PowerUp powerUp = new PowerUp(this.level, PowerUpType.randomType(),
+                randX, randY);
+        powerUp.startInfiniteBlinking(0.4);
+        this.level.getEntityManager().addEntity(powerUp);
+    }
+
+    @Override
+    protected List<Tank> getOtherTanks() {
+        List<Tank> otherTanks = super.getOtherTanks();
+        otherTanks.add((Tank) this.level.getPlayer());
+        return otherTanks;
+    }
+
+    private void updateAnimation() {
+        this.animationManager.setCurrentAnimation(this.identifier);
+        this.animationManager.getCurrentAnimation().start(
+                AnimationPlayMode.LOOP);
+    }
+
+    private Spot getCurrentSpot() {
+        int currRow = (int) getY() / Game.HALF_TILE_SIZE;
+        int currCol = (int) getX() / Game.HALF_TILE_SIZE;
+        Spot currSpot = new Spot(currRow, currCol, true);
+        return currSpot;
+    }
+
+    private Spot getPlayerSpot() {
+        Player player = this.level.getPlayer();
+        int targetCol = (int) player.getX() / Game.HALF_TILE_SIZE;
+        int targetRow = (int) player.getY() / Game.HALF_TILE_SIZE;
+        return new Spot(targetRow, targetCol, true);
+    }
+
+    private void updateDirection() {
+        if (this.movingAlongShortestPath) {
+            moveAlongShortestPath();
+        } else {
+            if (checkIfNeedRecalculateShortestPath()) {
+                selectShortestPathDirection();
+            }
+        }
+    }
+    
+    @Override
+    public void setDirection(Direction direction) {
+        super.setDirection(direction);
+        this.identifier.setHeading(Heading.getHeading(direction));
+    }
+    
+    private List<Direction> getAllPossibleDirections() {
+        List<Direction> allPossibleDirections = new ArrayList<>(Direction.
+                values().length);
+        for (Direction dir : Direction.values()) {
+            if (canMoveInDirection(dir)) {
+                allPossibleDirections.add(dir);
+            }
+        }
+        return allPossibleDirections;
+    }
+
+    private void selectRandomDirrection() {
+        List<Direction> allPossibleDirections = getAllPossibleDirections();
+
+        if (allPossibleDirections.isEmpty()) {
+            this.gotStuck = true;
+            System.out.println("Got stuck!!!");
+            this.moving = false;
+            return;
+        } else {
+            this.gotStuck = false;
+            System.out.println("No stuck!!!");
+        }
+        int rand = this.random.nextInt(allPossibleDirections.size());
+        setDirection(Direction.values()[rand]);
+        System.out.println("Selected direction = " + direction);
+        this.moving = true;
+    }
+
+    private void selectShortestPathDirection() {
+
+        if (this.currTarget == null) {
+            selectRandomDirrection();
+            return;
+        }
+
+        Pathfinder pathfinder = new Pathfinder(this.level.getTileMap());
+        if (pathfinder.calcPath(getCurrentSpot(), this.currTarget,
+                TANK_DIMENSION)) {
+            this.shortestPath = pathfinder.getOptimalPath();
+            if (!this.shortestPath.isEmpty()) {
+                this.movingAlongShortestPath = true;
+                this.nextPosition = this.shortestPath.get(0);
+                Direction selectedDir = this.nextPosition.getDirFromPrev();
+                setDirection(selectedDir);
+            } else {
+                selectRandomDirrection();
+            }
+
+        } else {
+            selectRandomDirrection();
+        }
+    }
+
+    private boolean checkIfNeedRecalculateShortestPath() {
+        if (this.direction.isHorizontal()) {
+            if ((int) getX() % Game.TILE_SIZE == 0) {
+                return true;
+            }
+        } else if (this.direction.isVertical()) {
+            if ((int) getY() % Game.TILE_SIZE == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private void moveAlongShortestPath() {
+        if (checkIfNextPositionReached()) {
+            this.shortestPath.remove(this.nextPosition);
+            if (!this.shortestPath.isEmpty()) {
+                this.nextPosition = this.shortestPath.get(0);
+                setDirection(this.nextPosition.getDirFromPrev());
+            } else {
+                selectRandomDirrection();
+                this.movingAlongShortestPath = false;
+            }
+        }
+    }
+    
+    private boolean checkIfNextPositionReached() {
+        return this.movingAlongShortestPath
+                && getCurrentSpot().equals(this.nextPosition);
+    }
+    
+    private void updateTarget(double frameTime) {
+        this.targetTimer += frameTime;
+        if (this.targetTimer < TARGET_CHANGING_PERIOD) {
+            if (this.number % 2 == 0) {
+                targetEagle();
+            } else {
+                targetPlayer();
+            }
+        } else if (this.targetTimer < 2 * TARGET_CHANGING_PERIOD) {
+            if (this.number % 2 == 0) {
+                targetPlayer();
+            } else {
+                targetEagle();
+            }
+        } else {
+            this.targetTimer = 0;
+        }
+    }
+
+    private void targetPlayer() {
+        Spot playerSpot = getPlayerSpot();
+        if (this.currTarget.distanceManhattan(playerSpot)
+                > MIN_TARGET_POSITION_CHANGE_TO_RECALCULATE_PATH) {
+            this.currTarget = playerSpot;
+            this.movingAlongShortestPath = false;
+        }
+    }
+
+    private void targetEagle() {
+        boolean isCurrTargetEagle = this.firingSpots.stream().anyMatch(
+                firingSpot -> {
+            return firingSpot.getSpot().equals(this.currTarget);
+        });
+
+        if (!isCurrTargetEagle) {
+            selectRandomFiringPointToAttackEagle();
+            this.movingAlongShortestPath = false;
+        }
+    }
+    
+    private void updateShootingTimer(double frameTime) {
+        this.shootingTimer += frameTime;
+        if (this.shootingTimer >= SHOOTING_PERIOD) {
+            this.shootingTimer = 0;
+            if (this.firingSpotReached || isFireLineFreeOfPartnerTanks()) {
+                fire();
+            }
+        }
+    }
 
     @Override
     public void fire() {
@@ -220,6 +382,16 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         }
         this.level.getEntityManager().addEntity(projectile);
         this.canFire = false;
+    }
+    
+    private void checkIfFiringSpotToAttackEagleReached() {
+        for (int i = 0; i < this.firingSpots.size(); ++i) {
+            if (firingSpots.get(i).getSpot().equals(getCurrentSpot())) {
+                this.firingSpotReached = true;
+                setDirection(firingSpots.get(i).getFireDirection());
+                this.moving = false;
+            }
+        }
     }
 
     @Override
@@ -256,222 +428,16 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         }
         destroy();
     }
-
-    private void createPowerUp() {
-        int randX = this.random.nextInt(Game.TILES_IN_WIDTH - 1)
-                * Game.HALF_TILE_SIZE;
-        int randY = this.random.nextInt(Game.TILES_IN_HEIGHT - 1)
-                * Game.HALF_TILE_SIZE;
-        PowerUp powerUp = new PowerUp(this.level, PowerUpType.randomType(),
-                randX, randY);
-        powerUp.startInfiniteBlinking(0.4);
-        this.level.getEntityManager().addEntity(powerUp);
-    }
-
-    @Override
-    public void setDirection(Direction direction) {
-        super.setDirection(direction);
-        this.identifier.setHeading(Heading.getHeading(direction));
-    }
-
-    protected double calcDistance(Point2D source, Point2D target) {
-        double dx = Math.abs(source.getX() - target.getX());
-        double dy = Math.abs(source.getY() - target.getY());
-        return Math.sqrt(dx * dx + dy * dy);
-    }
-
-    @Override
-    protected List<Tank> getOtherTanks() {
-        List<Tank> otherTanks = super.getOtherTanks();
-        otherTanks.add((Tank) this.level.getPlayer());
-        return otherTanks;
-    }
-
-    @Override
-    protected void handleCollisionWithOtherTank(Tank other) {
-        super.handleCollisionWithOtherTank(other);
-    }
-
-    private void updateAnimation() {
-        this.animationManager.setCurrentAnimation(this.identifier);
-        this.animationManager.getCurrentAnimation().start(
-                AnimationPlayMode.LOOP);
-    }
-
-    private Spot getCurrentSpot() {
-        int currRow = (int) getY() / Game.HALF_TILE_SIZE;
-        int currCol = (int) getX() / Game.HALF_TILE_SIZE;
-        Spot currSpot = new Spot(currRow, currCol, true);
-        return currSpot;
-    }
-
-    private Spot getPlayerSpot() {
-        Player player = this.level.getPlayer();
-        int targetCol = (int) player.getX() / Game.HALF_TILE_SIZE;
-        int targetRow = (int) player.getY() / Game.HALF_TILE_SIZE;
-        return new Spot(targetRow, targetCol, true);
-    }
-
+    
     private List<FiringSpot> getFiringSpotsToAttackTheEagle() {
         return this.level.getTileMap().getFiringSpots();
     }
 
-    private boolean checkIfNextPositionReached() {
-        return this.movingAlongShortestPath
-                && getCurrentSpot().equals(this.nextPosition);
-    }
-
-    private void selectRandomFirePointToAttackEagle() {
+    private void selectRandomFiringPointToAttackEagle() {
         int rand = this.random.nextInt(this.firingSpots.size());
         this.currTarget = this.firingSpots.get(rand).getSpot();
     }
-
-    private void updateTarget(double frameTime) {
-        this.targetTimer += frameTime;
-        if (this.targetTimer < TARGET_CHANGING_PERIOD) {
-            if (this.number % 2 == 0) {
-                targetEagle();
-            } else {
-                targetPlayer();
-            }
-        } else if (this.targetTimer < 2 * TARGET_CHANGING_PERIOD) {
-            if (this.number % 2 == 0) {
-                targetPlayer();
-            } else {
-                targetEagle();
-            }
-        } else {
-            this.targetTimer = 0;
-        }
-    }
-
-    private void targetPlayer() {
-        Spot playerSpot = getPlayerSpot();
-        if (this.currTarget.distanceManhattan(playerSpot)
-                > MIN_TARGET_POSITION_CHANGE_TO_RECALCULATE_PATH) {
-            this.currTarget = playerSpot;
-            this.movingAlongShortestPath = false;
-        }
-    }
-
-    private void targetEagle() {
-        boolean isCurrTargetEagle = this.firingSpots.stream().anyMatch(
-                firingSpot -> {
-            return firingSpot.getSpot().equals(this.currTarget);
-        });
-
-        if (!isCurrTargetEagle) {
-            selectRandomFirePointToAttackEagle();
-            this.movingAlongShortestPath = false;
-        }
-    }
-
-    private void updateDirection() {
-        if (this.movingAlongShortestPath) {
-            moveAlongShortestPath();
-        } else {
-            if (checkIfNeedRecalculateShortestPath()) {
-                selectShortestPathDirection();
-            }
-        }
-    }
-
-    private void selectShortestPathDirection() {
-
-        if (this.currTarget == null) {
-            selectRandomDirrection();
-            return;
-        }
-
-        Pathfinder pathfinder = new Pathfinder(this.level.getTileMap());
-        if (pathfinder.calcPath(getCurrentSpot(), this.currTarget,
-                TANK_DIMENSION)) {
-            this.shortestPath = pathfinder.getOptimalPath();
-            if (!this.shortestPath.isEmpty()) {
-                this.movingAlongShortestPath = true;
-                this.nextPosition = this.shortestPath.get(0);
-                Direction selectedDir = this.nextPosition.getDirFromPrev();
-                setDirection(selectedDir);
-            } else {
-                selectRandomDirrection();
-            }
-
-        } else {
-            selectRandomDirrection();
-        }
-    }
-
-    private void selectRandomDirrection() {
-        List<Direction> allPossibleDirections = new ArrayList<>(4);
-        for (Direction dir : Direction.values()) {
-            if (canMoveInDirection(dir)) {
-                allPossibleDirections.add(dir);
-            }
-        }
-
-        if (allPossibleDirections.isEmpty()) {
-            this.gotStuck = true;
-            this.moving = false;
-            System.out.println("Got stuck!! x = " + getX() + " y = " + getY());
-            return;
-        } else {
-            System.out.println("Trying to get out!!");
-            this.gotStuck = false;
-        }
-        int rand = this.random.nextInt(allPossibleDirections.size());
-        setDirection(Direction.values()[rand]);
-        this.moving = true;
-    }
-
-    private void moveAlongShortestPath() {
-        if (checkIfNextPositionReached()) {
-            this.shortestPath.remove(this.nextPosition);
-            if (!this.shortestPath.isEmpty()) {
-                this.nextPosition = this.shortestPath.get(0);
-                setDirection(this.nextPosition.getDirFromPrev());
-            } else {
-                selectRandomDirrection();
-                this.movingAlongShortestPath = false;
-            }
-        }
-    }
-
-    private boolean checkIfNeedRecalculateShortestPath() {
-        if (this.direction.isHorizontal()) {
-            if ((int) getX() % Game.TILE_SIZE == 0) {
-                return true;
-            }
-        } else if (this.direction.isVertical()) {
-            if ((int) getY() % Game.TILE_SIZE == 0) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void updateGleamingColor(double frameTime) {
-        if (this.gleaming) {
-            this.colorPlayingTimer += frameTime;
-            if (this.colorPlayingTimer >= COLOR_CHANGING_PERIOD) {
-                TankColor currColor = this.identifier.getColor();
-                this.identifier.setColor(currColor.next());
-                this.colorPlayingTimer = 0;
-            }
-        }
-    }
-
-    private TankColor calcColorDependingOnHealth() {
-        if (this.health < 25) {
-            return TankColor.GRAY;
-        } else if (this.health < 50) {
-            return TankColor.YELLOW;
-        } else if (this.health < 75) {
-            return TankColor.RED;
-        } else {
-            return TankColor.GREEN;
-        }
-    }
-
+    
     private boolean isFireLineFreeOfPartnerTanks() {
         List<Entity> partners = this.level.getEntityManager().getEntitiesByType(
                 EntityType.ENEMY_TANK);
@@ -505,19 +471,13 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         }
     }
 
-    @Override
-    public final void loadAnimations() {
-
-        this.level.getEnemyTankSpriteSheetMap().keySet().forEach(key -> {
-            this.animationManager.addAnimation(key, new Animation(
-                    this.level.getEnemyTankSpriteSheetMap().get(key), 0.5,
-                    0, 0, Game.TILE_SIZE, Game.TILE_SIZE, 2, Game.TILE_SIZE
-            ));
-        });
+    private void destroyExistingPowerUps() {
+        this.level.getEntityManager().getEntitiesByType(EntityType.POWER_UP).
+                forEach(powerUp -> powerUp.destroy());
     }
-    
-    private TankColor getTankColor(int number, EnemyTankType tankType){
-        
+
+    private TankColor getTankColor(int number, EnemyTankType tankType) {
+
         TankColor color;
 
         if (tankType == EnemyTankType.ARMORED) {
@@ -529,7 +489,52 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
                 color = TankColor.GRAY;
             }
         }
-        
+
         return color;
+    }
+    
+    private void updateGleamingColor(double frameTime) {
+        if (this.gleaming) {
+            this.colorPlayingTimer += frameTime;
+            if (this.colorPlayingTimer >= COLOR_CHANGING_PERIOD) {
+                TankColor currColor = this.identifier.getColor();
+                this.identifier.setColor(currColor.next());
+                this.colorPlayingTimer = 0;
+            }
+        }
+    }
+
+    private TankColor calcColorDependingOnHealth() {
+        if (this.health < 25) {
+            return TankColor.GRAY;
+        } else if (this.health < 50) {
+            return TankColor.YELLOW;
+        } else if (this.health < 75) {
+            return TankColor.RED;
+        } else {
+            return TankColor.GREEN;
+        }
+    }
+    
+    private boolean checkIfBonus() {
+        for (int num : BONUS_TANKS_NUMBERS) {
+            if (this.number == num) {
+                this.bonus = true;
+                this.gleaming = true;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public final void loadAnimations() {
+
+        this.level.getEnemyTankSpriteSheetMap().keySet().forEach(key -> {
+            this.animationManager.addAnimation(key, new Animation(
+                    this.level.getEnemyTankSpriteSheetMap().get(key), 0.5,
+                    0, 0, Game.TILE_SIZE, Game.TILE_SIZE, 2, Game.TILE_SIZE
+            ));
+        });
     }
 }

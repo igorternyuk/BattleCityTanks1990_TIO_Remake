@@ -279,7 +279,7 @@ public class LevelState extends GameState {
     private void startNewGame() {
         this.loaded = false;
         this.entityManager.removeAllEntities();
-        this.stageNumber = 1;
+        this.stageNumber = 2;
         loadMap();
         fillHangar();
         createEntities();
@@ -341,13 +341,6 @@ public class LevelState extends GameState {
         this.rightPanel = new GameInfoPanel(this, RIGHT_PANEL_POSITION.x,
                 RIGHT_PANEL_POSITION.y);
         this.entityManager.addEntity(this.rightPanel);
-        
-        /*EnemyTank first = new EnemyTank(this, 1, EnemyTankType.ARMORED,
-                4 * 16, 5 * 16, Direction.EAST);
-        EnemyTank second = new EnemyTank(this, 2, EnemyTankType.BASIC,
-                6 * 16, 6 * 16, Direction.NORTH);
-        this.entityManager.addEntity(first);
-        this.entityManager.addEntity(second);*/
     }
 
     private void checkCollisions() {
@@ -365,9 +358,7 @@ public class LevelState extends GameState {
 
             if (projectile.getType() == ProjectileType.ENEMY
                     && projectile.collides(this.player)) {
-                System.out.println("Player got hit!");
                 this.player.hit(projectile.getDamage());
-                System.out.println("Player health" + this.player.getHealth());
                 projectile.explode();
             }
             for (int j = enemyTanks.size() - 1; j >= 0; --j) {

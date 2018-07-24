@@ -67,7 +67,7 @@ public class Player extends Tank {
         if (this.moving) {
             move(frameTime);
             checkMapCollision();
-            checkCollisionsWithSplashes();
+            handleCollisionsWithSplashes();
             fixBounds();
         }
         super.update(keyboardState, frameTime);

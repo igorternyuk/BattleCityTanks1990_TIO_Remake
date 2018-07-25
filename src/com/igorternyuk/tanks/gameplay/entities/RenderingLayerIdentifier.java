@@ -5,6 +5,7 @@ package com.igorternyuk.tanks.gameplay.entities;
  * @author igor
  */
 public enum RenderingLayerIdentifier {
+    GAME_INFO,
     EAGLE,
     PROJECTILES,
     SPLASHES,
@@ -13,6 +14,5 @@ public enum RenderingLayerIdentifier {
     PROTECTIONS,
     POWERUPS,
     EXPLOSIONS,
-    GAME_INFO,
     SPLASH_TEXTS;
 }

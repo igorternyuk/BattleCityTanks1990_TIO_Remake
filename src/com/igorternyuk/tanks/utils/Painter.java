@@ -22,8 +22,7 @@ public class Painter {
         g.setColor(color);
         int textWidth = (int) g.getFontMetrics().getStringBounds(text, g).
                 getWidth();
-        g.drawString(text, (Game.WIDTH - Game.RIGHT_PANEL_WIDTH - textWidth) / 2
-                , height);
+        g.drawString(text, (Game.WIDTH - textWidth) / 2, height);
     }
 
     public static void drawNumber(Graphics2D g, int number, Color color, int x,

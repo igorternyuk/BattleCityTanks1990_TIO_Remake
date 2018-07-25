@@ -358,6 +358,7 @@ public class TileMap {
         if (this.eagleProtectionActive) {
             this.eagleProtectionTimer += frameTime;
             if (this.eagleProtectionTimer >= EAGLE_PROTECTION_LIFE_TIME) {
+                this.eagleProtectionTimer = 0;
                 this.eagleProtectionBlinkingTimer = 0;
                 this.eagleProtectionActive = false;
                 this.eagleProtectionBlinking = true;

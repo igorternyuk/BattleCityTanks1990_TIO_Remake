@@ -20,6 +20,7 @@ import java.awt.event.MouseEvent;
  */
 public class Game implements Runnable {
 
+    public static final String TITLE = "BATTLE CITY";
     public static final int WIDTH = 480;
     public static final int HEIGHT = 560;
     public static final int HALF_WIDTH = WIDTH / 2;
@@ -37,7 +38,6 @@ public class Game implements Runnable {
     public static final float FPS = 60.0f;
     public static final float FRAME_TIME = Time.SECOND / FPS;
     public static final float FRAME_TIME_IN_SECONDS = 1 / FPS;
-    private static final String TITLE = "JTanks";
     private static final int CLEAR_COLOR = 0xff000000;
     private static final int NUM_BUFFERS = 4;
     private static final long IDLE_TIME = 1;

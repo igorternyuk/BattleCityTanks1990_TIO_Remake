@@ -63,13 +63,8 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         super(level, EntityType.ENEMY_TANK, x, y, type.getSpeed(), direction);
         this.number = number;
         this.health = type.getHealth();
-
-        if (checkIfBonus()) {
-            destroyExistingPowerUps();
-        }
-
+        checkIfBonus();
         loadAnimations();
-
         this.identifier = new EnemyTankIdentifier(getTankColor(number, type),
                 Heading.getHeading(direction), type);
         updateAnimation();
@@ -110,7 +105,6 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         }
         if (this.moving) {
             move(frameTime);
-            fixBounds();
 
             if (!checkCollisions(frameTime)) {
                 updateTarget(frameTime);
@@ -118,10 +112,13 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             } else {
                 this.movingAlongShortestPath = false;
             }
-
+            
+            fixBounds();
             checkIfFiringSpotToAttackEagleReached();
         }
     }
+    
+    
     
     public void freeze() {
         this.frozen = true;
@@ -180,6 +177,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         PowerUp powerUp = new PowerUp(this.level, PowerUpType.randomType(),
                 randX, randY);
         powerUp.startInfiniteBlinking(0.4);
+        this.level.getEntityManager().removeEntitiesByType(EntityType.POWER_UP);
         this.level.getEntityManager().addEntity(powerUp);
     }
 
@@ -329,12 +327,6 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
 
     private void targetPlayer() {
         Spot playerSpot = getPlayerSpot();
-        /*if (this.currTarget.distanceManhattan(playerSpot)
-                > MIN_TARGET_POSITION_CHANGE_TO_RECALCULATE_PATH) {
-            this.currTarget = playerSpot;
-            this.movingAlongShortestPath = false;
-        }*/
-        
         this.currTarget = playerSpot;
         this.movingAlongShortestPath = false;
     }
@@ -355,7 +347,8 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         this.shootingTimer += frameTime;
         if (this.shootingTimer >= SHOOTING_PERIOD) {
             this.shootingTimer = 0;
-            if (this.firingSpotReached || isFireLineFreeOfPartnerTanks()) {
+            if (!this.frozen && this.firingSpotReached
+                    || isFireLineFreeOfPartnerTanks()) {
                 fire();
             }
         }
@@ -465,10 +458,10 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         }
     }
 
-    private void destroyExistingPowerUps() {
+   /* private void destroyExistingPowerUps() {
         this.level.getEntityManager().getEntitiesByType(EntityType.POWER_UP).
                 forEach(powerUp -> powerUp.destroy());
-    }
+    }*/
 
     private TankColor getTankColor(int number, EnemyTankType tankType) {
 

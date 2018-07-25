@@ -1,5 +1,6 @@
 package com.igorternyuk.tanks.gameplay.entities.tank;
 
+import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.AnimatedEntity;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
@@ -45,6 +46,22 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
     
     public void reverse(){
         setDirection(direction.getOpposite());
+    }
+    
+    protected void fitToTiles(){
+        if(this.direction.isVertical()){
+            double dx = (int)getX() / Game.QUARTER_TILE_SIZE - getX();
+            System.out.println("dx = " + dx);
+            if(Math.abs(dx) < Game.QUARTER_TILE_SIZE / 2){
+                setPosition(getX() + dx, getY());
+            }
+        } else if(this.direction.isHorizontal()){
+            double dy = (int)getY() / Game.QUARTER_TILE_SIZE - getY();
+            System.out.println("dy = " + dy);
+            if(Math.abs(dy) < Game.QUARTER_TILE_SIZE / 2){
+                setPosition(getX(), getY() + dy);
+            }
+        }
     }
     
     protected boolean checkMapCollision() {

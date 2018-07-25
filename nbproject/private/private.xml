@@ -15,6 +15,7 @@
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gamestate/LevelState.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/tank/Tank.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/splash/Splash.java</file>
+            <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/splashing/SplashText.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/tilemap/MetalTile.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/tank/enemytank/EnemyTankType.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/player/PlayerStatistics.java</file>
@@ -24,6 +25,7 @@
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/utils/Painter.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/explosion/Explosion.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/tilemap/AnimatedTile.java</file>
+            <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/EntityType.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/tilemap/TileType.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/EntityManager.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/GameStatus.java</file>
@@ -32,6 +34,7 @@
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gamestate/GameStateManager.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/indicators/GameInfoPanel.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/tank/enemytank/EnemyTank.java</file>
+            <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/RenderingLayerIdentifier.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/tilemap/TileMap.java</file>
         </group>
     </open-files>

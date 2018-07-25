@@ -4,8 +4,8 @@ import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.graphics.images.Background;
 import java.awt.Graphics2D;
 import com.igorternyuk.tanks.input.KeyboardState;
+import com.igorternyuk.tanks.resourcemanager.FontIdentifier;
 import com.igorternyuk.tanks.resourcemanager.ImageIdentifier;
-import com.igorternyuk.tanks.resourcemanager.ResourceManager;
 import com.igorternyuk.tanks.utils.Painter;
 import java.awt.Color;
 import java.awt.Font;
@@ -21,10 +21,8 @@ public class MenuState extends GameState {
     private static final Color COLOR_MENU_TITLE = Color.red.darker().darker();
     private static final Color COLOR_MENU_ITEM = Color.blue;
     private static final Color COLOR_CURRENT_CHOICE = Color.yellow;
-    private static final Font FONT_MENU_TITLE = new Font("Verdana", Font.BOLD,
-            48);
-    private static final Font FONT_MENU_ITEM =
-            new Font("Tahoma", Font.PLAIN, 36);
+    private Font fontMenuTitle; 
+    private Font fontMenuItem; 
     private static final double BACKGROUND_SCROLLING_SPEED = 30;
     
     private Background background;
@@ -33,16 +31,18 @@ public class MenuState extends GameState {
 
     public MenuState(GameStateManager gsm) {
         super(gsm);
-        this.options = new String[]{"Play", "Construction", "Quit"};
+        this.options = new String[]{"PLAY", "CONSTRUCTION", "QUIT"};
     }
 
     @Override
     public void load() {
         System.out.println("Menu state loading...");
-        if (!this.resourceManager.loadImage(ImageIdentifier.MENU_BACKGROUND,
-                "/images/menubg.gif")) {
-            System.out.println("Could not load background image");
-        }
+        this.resourceManager.loadImage(ImageIdentifier.MENU_BACKGROUND,
+                "/images/menubg.gif");
+        this.resourceManager.loadFont(FontIdentifier.BATTLE_CITY, "/fonts/prstart.ttf");
+        Font font = this.resourceManager.getFont(FontIdentifier.BATTLE_CITY);
+        this.fontMenuTitle = font.deriveFont(Font.BOLD, 36);
+        this.fontMenuItem = font.deriveFont(Font.BOLD, 24);
         this.background = new Background(
                 this.resourceManager.getImage(ImageIdentifier.MENU_BACKGROUND));
         this.background.setPosition(0, 0);
@@ -57,6 +57,20 @@ public class MenuState extends GameState {
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
         this.background.update(keyboardState, frameTime);
+    }
+    
+    @Override
+    public void draw(Graphics2D g) {
+        this.background.draw(g);
+        Painter.drawCenteredString(g, Game.TITLE, this.fontMenuTitle,
+                COLOR_MENU_TITLE, Game.HEIGHT / 4);
+        for (int i = 0; i < this.options.length; ++i) {
+            Color color = (i == currentChoice) ?
+                     COLOR_CURRENT_CHOICE :
+                     COLOR_MENU_ITEM;
+            Painter.drawCenteredString(g, this.options[i], this.fontMenuItem,
+                    color, Game.HEIGHT / 3 + (i + 1) * Game.HEIGHT / 12);
+        }
     }
 
     private void correctIndex() {
@@ -112,19 +126,4 @@ public class MenuState extends GameState {
     public void onMouseMoved(MouseEvent e) {
         
     }
-
-    @Override
-    public void draw(Graphics2D g) {
-        this.background.draw(g);
-        Painter.drawCenteredString(g, "JTanks", FONT_MENU_TITLE,
-                COLOR_MENU_TITLE, Game.HEIGHT / 4);
-        for (int i = 0; i < this.options.length; ++i) {
-            Color color = (i == currentChoice) ?
-                     COLOR_CURRENT_CHOICE :
-                     COLOR_MENU_ITEM;
-            Painter.drawCenteredString(g, this.options[i], FONT_MENU_ITEM,
-                    color, Game.HEIGHT / 3 + (i + 1) * Game.HEIGHT / 12);
-        }
-    }
-
 }

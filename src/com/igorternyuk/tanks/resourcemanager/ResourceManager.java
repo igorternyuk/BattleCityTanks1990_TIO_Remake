@@ -1,7 +1,8 @@
 package com.igorternyuk.tanks.resourcemanager;
 
-import com.igorternyuk.tanks.utils.Images;
-import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontFormatException;
+import java.awt.GraphicsEnvironment;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.HashMap;
@@ -26,36 +27,67 @@ public class ResourceManager {
     }
 
     private Map<ImageIdentifier, BufferedImage> images;
+    private Map<FontIdentifier, Font> fonts;
 
     private ResourceManager() {
         this.images = new HashMap<>();
+        this.fonts = new HashMap<>();
     }
 
-    public boolean loadImage(ImageIdentifier identifier, String pathToImage) {
-        //TODO remove return code
-        BufferedImage image = null;
+    public void loadImage(ImageIdentifier identifier, String pathToImage) {
+        BufferedImage image;
         try {
             image = ImageIO.read(
                     this.getClass().getResourceAsStream(pathToImage));
+            this.images.put(identifier, image);
         } catch (IOException ex) {
             Logger.getLogger(ResourceManager.class.getName()).log(Level.SEVERE,
                     null, ex);
-        }
-        if (image != null) {
-            this.images.put(identifier, image);
-            /*this.images.put(identifier, Images.imageToBufferedImage(Images.
-                    makeColorTransparent(image, Color.black)));*/
-            return true;
-        } else {
-            return false;
+            throw new RuntimeException("Image " + pathToImage + " not found");
         }
     }
 
     public BufferedImage getImage(ImageIdentifier identifier) {
+        if (!this.images.containsKey(identifier)) {
+            throw new RuntimeException("Image " + identifier + " not loaded");
+        }
         return this.images.get(identifier);
     }
 
     public void unloadImage(ImageIdentifier identifier) {
         this.images.remove(identifier);
+    }
+
+    public void loadFont(FontIdentifier identifier, String path) {
+        try {
+            Font font = Font.createFont(Font.TRUETYPE_FONT, getClass().
+                    getResourceAsStream(path));
+            String family = font.getFamily();
+            System.out.println("family = " + family);
+            System.out.println("Size = " + font.getSize());
+            this.fonts.put(identifier, font);
+            GraphicsEnvironment ge = GraphicsEnvironment.
+                    getLocalGraphicsEnvironment();
+            ge.registerFont(font);
+        } catch (FontFormatException ex) {
+            Logger.getLogger(ResourceManager.class.getName()).
+                    log(Level.SEVERE, null, ex);
+            throw new RuntimeException("Wrong font format");
+        } catch (IOException ex) {
+            Logger.getLogger(ResourceManager.class.getName()).
+                    log(Level.SEVERE, null, ex);
+            throw new RuntimeException("Could not load font " + path);
+        }
+    }
+
+    public Font getFont(FontIdentifier identifier) {
+        if (!this.fonts.containsKey(identifier)) {
+            throw new RuntimeException("Font " + identifier + " not loaded");
+        }
+        return this.fonts.get(identifier);
+    }
+
+    public void unloadFont(FontIdentifier identifier) {
+        this.fonts.remove(identifier);
     }
 }

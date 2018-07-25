@@ -38,10 +38,14 @@ public class PlayerStatistics {
         resetKilledTanksMap();
     }
 
-    public void reset() {
-        this.score = 0;
-        killedTankCount = 0;
+    public void resetToNextStage() {
+        this.killedTankCount = 0;
         resetKilledTanksMap();
+    }
+    
+    public void resetToNewGame(){
+        resetToNextStage();
+        this.score = 0;
     }
 
     public int getScore() {

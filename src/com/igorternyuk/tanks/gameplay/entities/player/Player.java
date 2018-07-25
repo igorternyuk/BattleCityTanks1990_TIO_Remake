@@ -66,7 +66,10 @@ public class Player extends Tank {
         
         if (this.moving) {
             move(frameTime);
-            checkMapCollision();
+            if(checkMapCollision()){
+                System.out.println("Need to fit");
+                fitToTiles();
+            }
             handleCollisionsWithSplashes();
             fixBounds();
         }
@@ -213,7 +216,7 @@ public class Player extends Tank {
         this.health = 100;
         setPosition(this.respawnX, this.respawnY);
         addProtection();
-        this.playerStatistics.reset();
+        this.playerStatistics.resetToNextStage();
     }
 
     private void setProperAnimation() {

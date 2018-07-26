@@ -71,11 +71,8 @@ public class ScoreScreen {
         }
         if (this.animationFinished && !this.readyToNextStage) {
             this.afterTimer += frameTime;
-            System.out.println("this.afterTimer = " + this.afterTimer);
             if (this.afterTimer >= DELAY_AFTER_ANIMATION) {
                 this.readyToNextStage = true;
-                System.out.println("this.readyToNextStage = "
-                        + this.readyToNextStage);
             }
         }
 
@@ -84,7 +81,6 @@ public class ScoreScreen {
         }
 
         this.animationTimer += frameTime;
-        System.out.println("timer = " + this.animationTimer);
         if (this.animationTimer >= DELAY) {
             this.animationTimer = 0;
             int prev = this.currMap.get(this.currTankType);

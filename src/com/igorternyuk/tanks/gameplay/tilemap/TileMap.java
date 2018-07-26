@@ -262,8 +262,7 @@ public class TileMap {
             throw new RuntimeException("Tile map was not loaded");
         }
         if (!areCoordinatesValid(row, col)) {
-            throw new IllegalArgumentException(
-                    "Row or column index is out of game field bounds");
+            return;
         }
 
         Point selectedPoint = new Point(col * Game.HALF_TILE_SIZE,

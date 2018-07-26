@@ -38,14 +38,9 @@ public class Images {
 
             @Override
             public int filterRGB(int x, int y, int rgb) {
-                //System.out.println("x = " + x + " y = " + y + " rgb = " + String.format("0x%08X", rgb));
-                //System.out.println("marker = " + String.format("0x%08X", markerRGB));
-                //System.out.println("(rgb | 0xFF000000) = " + String.format("0x%08X", (rgb | 0xFF000000)));
                 if ((rgb | 0xFF000000) == 0xFF000000) {
-                    //System.out.println("making transparent marker = " + String.format("0x%08X", markerRGB));
                     return colorToReplaceWith.getRGB();
                 } else {
-                    //System.out.println("NOthing to do");
                     return rgb;
                 }
             }
@@ -64,14 +59,9 @@ public class Images {
 
             @Override
             public int filterRGB(int x, int y, int rgb) {
-                //System.out.println("x = " + x + " y = " + y + " rgb = " + String.format("0x%08X", rgb));
-                //System.out.println("marker = " + String.format("0x%08X", markerRGB));
-                //System.out.println("(rgb | 0xFF000000) = " + String.format("0x%08X", (rgb | 0xFF000000)));
                 if ((rgb | 0xFF000000) == markerRGB) {
-                    //System.out.println("making transparent marker = " + String.format("0x%08X", markerRGB));
                     return 0x00FFFFFF & rgb;
                 } else {
-                    //System.out.println("NOthing to do");
                     return rgb;
                 }
             }

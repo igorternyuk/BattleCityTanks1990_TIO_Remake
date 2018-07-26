@@ -11,6 +11,8 @@ import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
 import com.igorternyuk.tanks.input.KeyboardState;
 import com.igorternyuk.tanks.resourcemanager.ImageIdentifier;
+import com.igorternyuk.tanks.utils.Images;
+import com.igorternyuk.tanks.utils.Painter;
 import com.sun.glass.events.KeyEvent;
 import java.awt.Color;
 import java.awt.Font;
@@ -61,8 +63,8 @@ public class ConstructionState extends GameState {
                 g.setColor(Color.red);
                 g.drawRect((int) (this.tile.getX() * Game.SCALE - 1),
                         (int) (this.tile.getY() * Game.SCALE - 1),
-                        (int)(Game.HALF_TILE_SIZE * Game.SCALE) + 1,
-                        (int)(Game.HALF_TILE_SIZE * Game.SCALE) + 1);
+                        (int) (Game.HALF_TILE_SIZE * Game.SCALE) + 1,
+                        (int) (Game.HALF_TILE_SIZE * Game.SCALE) + 1);
             }
             this.tile.draw(g);
         }
@@ -113,15 +115,11 @@ public class ConstructionState extends GameState {
     private List<Point> enemyTankAppearancePositions = new ArrayList<>();
     private List<Point> eagleProtectionPositions = new ArrayList<>();
     private Point selectedTileDrawPosition = new Point();
-    private Pathfinder pathfinder;
-    private List<Spot> optimalPath = new ArrayList<>();
-    private Spot start = new Spot(0, 0, true);
-    private Spot end = new Spot(6, 5, true);
+    private BufferedImage flagImage;
+    private int currLevel = 1;
 
     public ConstructionState(GameStateManager gsm) {
         super(gsm);
-        //optimalPath.add(new Spot(10, 2, false));
-        //optimalPath.add(new Spot(14, 0, false));
     }
 
     private void fillTileButtonArray() {
@@ -153,6 +151,7 @@ public class ConstructionState extends GameState {
                         "State number",
                         "Select the stage you would like to edit",
                         JOptionPane.INFORMATION_MESSAGE));
+                this.currLevel = lvl;
                 System.out.println("lvl = " + lvl);
                 this.tileMap.loadMap("/tilemap/level" + lvl + ".map");
             },
@@ -172,13 +171,15 @@ public class ConstructionState extends GameState {
     @Override
     public void load() {
         this.resourceManager.loadImage(ImageIdentifier.TEXTURE_ATLAS,
-                "/images/texture_atlas_black.png");
+                "/images/texture_atlas.png");
         this.atlas = new TextureAtlas(this.resourceManager.getImage(
                 ImageIdentifier.TEXTURE_ATLAS));
         this.spriteSheetManager = SpriteSheetManager.getInstance();
         for (SpriteSheetIdentifier identifier : SpriteSheetIdentifier.values()) {
             this.spriteSheetManager.put(identifier, this.atlas);
         }
+        this.flagImage = Images.resizeImage(this.spriteSheetManager.get(
+                SpriteSheetIdentifier.LEVEL_FLAG), Game.SCALE);
         tileMap = new TileMap(Game.SCALE);
         tileMap.loadMap("/tilemap/level1.map");
         this.enemyTankAppearancePositions.addAll(this.tileMap.
@@ -187,12 +188,12 @@ public class ConstructionState extends GameState {
                 getEagleProtectionPositions());
         fillTileButtonArray();
         fillButtonArray();
-        this.pathfinder = new Pathfinder(this.tileMap);
-        loaded = true;
+        this.loaded = true;
     }
 
     @Override
     public void unload() {
+        this.resourceManager.unloadImage(ImageIdentifier.TEXTURE_ATLAS);
     }
 
     @Override
@@ -209,23 +210,6 @@ public class ConstructionState extends GameState {
 
     @Override
     public void onKeyReleased(int keyCode) {
-        if(keyCode == KeyEvent.VK_ENTER){
-            int[][] clearanceMap = this.tileMap.getClearanceMap();
-            for(int row = 0; row < 10; ++row){
-                for(int col = 0; col < 10; ++col){
-                    System.out.print(clearanceMap[row][col] + " ");
-                }
-                System.out.println("");
-            }
-        } else if(keyCode == KeyEvent.VK_SPACE){
-            if(this.pathfinder.calcPath(start, end, 2)){
-                System.out.println("Optimal path found");
-                this.optimalPath = this.pathfinder.getOptimalPath();
-                System.out.println("this.optimalPath.size() = " + this.optimalPath.size());
-            } else {
-                System.out.println("Path not found");
-            }
-        }
     }
 
     @Override
@@ -268,8 +252,17 @@ public class ConstructionState extends GameState {
             }
             int row = (int) (e.getY() / Game.SCALE / Game.HALF_TILE_SIZE);
             int col = (int) (e.getX() / Game.SCALE / Game.HALF_TILE_SIZE);
-            System.out.println("this.selectedTileType = " + this.selectedTileType);
-            this.tileMap.set(row, col, this.selectedTileType);
+            System.out.println("this.selectedTileType = "
+                    + this.selectedTileType);
+            if (releasedButton == MouseEvent.BUTTON1) {
+                this.tileMap.set(row, col, this.selectedTileType);
+            } else if (releasedButton == MouseEvent.BUTTON2) {
+                this.tileMap.set(row, col, this.selectedTileType);
+                this.tileMap.set(row + 1, col, this.selectedTileType);
+                this.tileMap.set(row, col + 1, this.selectedTileType);
+                this.tileMap.set(row + 1, col + 1, this.selectedTileType);
+            }
+
         }
     }
 
@@ -277,7 +270,8 @@ public class ConstructionState extends GameState {
         return this.tileMap.checkIfPointIsInTheMapBounds(clickPosition)
                 && !checkIfInEagleProtectionArea(clickPosition)
                 && !checkIfInEnemyAppearancePositions(clickPosition)
-                && !checkIfInEagleArea(clickPosition);
+                && !checkIfInEagleArea(clickPosition)
+                && !checkPlayerRespawnPosiiton(clickPosition);
     }
 
     private boolean checkIfInEagleProtectionArea(Point pos) {
@@ -310,6 +304,14 @@ public class ConstructionState extends GameState {
         return eagleArea.contains(pos);
     }
 
+    private boolean checkPlayerRespawnPosiiton(Point pos) {
+        Rectangle playerRespawnArea =
+                new Rectangle(LevelState.PLAYER_RESPAWN_POSITION.x,
+                        LevelState.PLAYER_RESPAWN_POSITION.y, Game.TILE_SIZE,
+                        Game.TILE_SIZE);
+        return playerRespawnArea.contains(pos);
+    }
+
     private void saveMapToFile() {
         this.tileMap.saveMapToFile();
     }
@@ -332,7 +334,15 @@ public class ConstructionState extends GameState {
         drawGrid(g);
         drawSelectedTile(g);
         drawAllButtons(g);
-        this.optimalPath.forEach(spot -> spot.draw(g));
+        drawCurrentLevel(g);
+
+    }
+
+    private void drawCurrentLevel(Graphics2D g) {
+        g.setColor(Color.WHITE);
+        g.drawImage(this.flagImage, Game.WIDTH - 48, Game.HEIGHT - 64, null);
+        Painter.drawNumber(g, currLevel, Color.white, Game.WIDTH - 48,
+                Game.HEIGHT - 32, 2);
     }
 
     private void drawTileMap(Graphics2D g) {
@@ -346,41 +356,53 @@ public class ConstructionState extends GameState {
                     get(
                             this.selectedTileType);
             g.drawImage(currTileImage,
-                    (int)(this.selectedTileDrawPosition.x * Game.SCALE),
-                    (int)(this.selectedTileDrawPosition.y * Game.SCALE),
+                    (int) (this.selectedTileDrawPosition.x * Game.SCALE),
+                    (int) (this.selectedTileDrawPosition.y * Game.SCALE),
                     Game.TILE_SIZE, Game.TILE_SIZE, null);
         }
     }
 
     private void highlightForbiddenTiles(Graphics2D g) {
-        g.setColor(Color.red);
+        g.setColor(Color.white);
         this.tileMap.getEagleProtectionPositions().forEach((p) -> {
             g.fillRect((int) (p.x * Game.SCALE), (int) (p.y * Game.SCALE),
                     (int) (Game.HALF_TILE_SIZE * Game.SCALE),
                     (int) (Game.HALF_TILE_SIZE * Game.SCALE));
         });
 
-        g.setColor(Color.red);
         this.tileMap.getEnemyTankAppearencePositions().forEach(p -> {
             g.fillRect((int) (p.x * Game.SCALE), (int) (p.y * Game.SCALE),
                     (int) (Game.TILE_SIZE * Game.SCALE),
                     (int) (Game.TILE_SIZE * Game.SCALE));
         });
+
+        Point p = LevelState.PLAYER_RESPAWN_POSITION;
+        g.fillRect((int) (p.x * Game.SCALE), (int) (p.y * Game.SCALE),
+                (int) (Game.TILE_SIZE * Game.SCALE),
+                (int) (Game.TILE_SIZE * Game.SCALE));
     }
 
     private void drawGrid(Graphics2D g) {
         g.setColor(GRID_COLOR);
         for (int i = 0; i <= Game.TILES_IN_WIDTH; ++i) {
-            g.drawLine((int) (i * Game.HALF_TILE_SIZE * Game.SCALE), 0,
-                    (int) (i * Game.HALF_TILE_SIZE * Game.SCALE),
-                    (int) (Game.TILES_IN_HEIGHT * Game.HALF_TILE_SIZE
-                    * Game.SCALE));
+            int x = (int) (i * Game.HALF_TILE_SIZE * Game.SCALE);
+            if(x % (int)(Game.TILE_SIZE * Game.SCALE) == 0){
+                g.setColor(Color.green.darker());
+            } else {
+                g.setColor(GRID_COLOR);
+            }
+            g.drawLine(x, 0, x, (int) (Game.TILES_IN_HEIGHT
+                    * Game.HALF_TILE_SIZE * Game.SCALE));
         }
         for (int i = 0; i <= Game.TILES_IN_HEIGHT; ++i) {
-            g.drawLine(0, (int) (i * Game.HALF_TILE_SIZE * Game.SCALE),
-                    (int) (Game.TILES_IN_WIDTH * Game.HALF_TILE_SIZE
-                    * Game.SCALE),
-                    (int) (i * Game.HALF_TILE_SIZE * Game.SCALE));
+            int y = (int) (i * Game.HALF_TILE_SIZE * Game.SCALE);
+            if(y % (int)(Game.TILE_SIZE * Game.SCALE) == 0){
+                g.setColor(Color.green.darker());
+            } else {
+                g.setColor(GRID_COLOR);
+            }
+            g.drawLine(0, y, (int) (Game.TILES_IN_WIDTH * Game.HALF_TILE_SIZE
+                    * Game.SCALE), y);
         }
     }
 

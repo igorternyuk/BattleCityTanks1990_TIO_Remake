@@ -69,17 +69,18 @@ public class LevelState extends GameState {
     public static final int TANKS_TOTAL = 20;
     protected static final Point EAGLE_POSITION = new Point(12
             * Game.HALF_TILE_SIZE, 24 * Game.HALF_TILE_SIZE);
+    protected static final Point PLAYER_RESPAWN_POSITION = new Point(9
+            * Game.HALF_TILE_SIZE, 24 * Game.HALF_TILE_SIZE);
     private Font fontGameStatus = new Font("Verdana", Font.BOLD,
             48);
     private Font fontNextStageSplash =
             new Font("Verdana", Font.BOLD | Font.ITALIC, 48);
-    private static final Point PLAYER_RESPAWN_POSITION = new Point(8
-            * Game.HALF_TILE_SIZE, 24 * Game.HALF_TILE_SIZE);
+
     private static final Point RIGHT_PANEL_POSITION = new Point(26
             * Game.HALF_TILE_SIZE, 0 * Game.HALF_TILE_SIZE);
 
     private static final int TANKS_ON_FIELD_MAX = 4;
-    private static final int STAGE_MAX = 10;
+    private static final int STAGE_MAX = 25;
     private static final double NEXT_STAGE_SPLASH_DELAY = 6;
 
     private TextureAtlas atlas;
@@ -138,10 +139,10 @@ public class LevelState extends GameState {
         this.resourceManager.unloadFont(FontIdentifier.BATTLE_CITY);
         unloadSounds();
     }
-    
-    private void unloadSounds(){
+
+    private void unloadSounds() {
         AudioIdentifier[] identifiers = AudioIdentifier.values();
-        for(AudioIdentifier identifier: identifiers){
+        for (AudioIdentifier identifier : identifiers) {
             this.resourceManager.unloadAudio(identifier);
         }
     }
@@ -328,7 +329,6 @@ public class LevelState extends GameState {
             this.stageNumber = 1;
         }
         this.highestScore = this.player.getTotalScore();
-        saveHighestScore();
         loadMap();
         this.entityManager.removeEntitiesExcepts(EntityType.PLAYER_TANK,
                 EntityType.RIGHT_PANEL, EntityType.EAGLE);
@@ -628,8 +628,8 @@ public class LevelState extends GameState {
     }
 
     private void checkIfScoreScreen() {
-        
-        if(this.scoreScreenActive){
+
+        if (this.scoreScreenActive) {
             if (this.scoreScreen.isReadyToNextStage()) {
                 this.scoreScreenActive = false;
                 if (this.gameStatus != GameStatus.GAME_OVER) {
@@ -637,7 +637,7 @@ public class LevelState extends GameState {
                 }
             }
         } else {
-            if(!this.scoreScreen.isReadyToNextStage()){
+            if (!this.scoreScreen.isReadyToNextStage()) {
                 this.scoreScreenActive = true;
             }
         }

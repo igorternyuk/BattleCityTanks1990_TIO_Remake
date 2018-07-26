@@ -27,7 +27,8 @@ public enum SpriteSheetIdentifier {
     ENEMY_TANK_SIGN(new Rectangle(320,192,8,8), new Color(0xFFFFFFFF)),
     RIGHT_PANEL(new Rectangle(368,0,32,240), new Color(0xFF000001)),
     EMPTY(new Rectangle(288, 48, 16, 16), new Color(0xFFFFFFFF)),
-    GRAY_TILE(new Rectangle(368, 208, 16, 16), new Color(0xFFFFFFFF));
+    GRAY_TILE(new Rectangle(368, 208, 16, 16), new Color(0xFFFFFFFF)),
+    LEVEL_FLAG(new Rectangle(376, 184, 16, 16), new Color(0x636363));
 
     private Rectangle boundingRect;
     private Color colorToFilter;

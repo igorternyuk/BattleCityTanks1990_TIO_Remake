@@ -1,6 +1,7 @@
 package com.igorternyuk.tanks.gamestate;
 
 import com.igorternyuk.tanks.gameplay.Game;
+import com.igorternyuk.tanks.gameplay.GameStatus;
 import com.igorternyuk.tanks.gameplay.entities.player.Player;
 import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTankType;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
@@ -26,7 +27,7 @@ public class ScoreScreen {
 
     private static final Color COLOR_TOTAL_SCORE = new Color(238, 188, 96);
     private static final double DELAY = 0.1;
-    private static final double DELAY_AFTER_ANIMATION = 5;
+    private static final double DELAY_AFTER_ANIMATION = 3;
     private Font fontLarger;
     private Font fontSmaller;
     private LevelState level;
@@ -64,6 +65,10 @@ public class ScoreScreen {
     }
 
     public void update(KeyboardState keyboardState, double frameTime) {
+        if (this.readyToNextStage && this.level.getGameStatus()
+                == GameStatus.GAME_OVER) {
+            return;
+        }
         if (this.animationFinished && !this.readyToNextStage) {
             this.afterTimer += frameTime;
             System.out.println("this.afterTimer = " + this.afterTimer);
@@ -115,7 +120,7 @@ public class ScoreScreen {
         g.setColor(Color.red);
         g.drawString("I-PLAYER", 40, 180);
         g.setColor(COLOR_TOTAL_SCORE);
-        g.drawString("" + this.player.getStatistics().getScore(), 250, 180);
+        g.drawString("" + this.player.getStatistics().getTotalScore(), 250, 180);
 
         g.setColor(Color.white);
         g.setFont(this.fontSmaller);

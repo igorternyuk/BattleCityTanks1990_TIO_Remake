@@ -20,7 +20,11 @@ import com.igorternyuk.tanks.graphics.animations.Animation;
 import com.igorternyuk.tanks.graphics.animations.AnimationPlayMode;
 import com.igorternyuk.tanks.input.KeyboardState;
 import com.igorternyuk.tanks.resourcemanager.AudioIdentifier;
+import com.igorternyuk.tanks.resourcemanager.FontIdentifier;
 import com.igorternyuk.tanks.resourcemanager.ResourceManager;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
@@ -36,7 +40,7 @@ public class Player extends Tank {
     private static final double PROTECTION_TIME = 23;
     private static final double SLIDING_DURATION = 0.25;
     private static final double SHOT_DELAY = 0.15;
-    
+
     private PlayerTankIdentifier identifier;
     private double respawnX, respawnY;
     private boolean hasProtection = false;
@@ -46,6 +50,7 @@ public class Player extends Tank {
     private boolean onIce = false;
     private boolean sliding = false;
     private double slidingTimer = 0;
+    private Font font;
 
     private PlayerStatistics statistics = new PlayerStatistics(this);
 
@@ -58,6 +63,8 @@ public class Player extends Tank {
         this.identifier = new PlayerTankIdentifier(TankColor.YELLOW,
                 Heading.getHeading(direction), type);
         setProperAnimation();
+        this.font = ResourceManager.getInstance().getFont(
+                FontIdentifier.BATTLE_CITY).deriveFont(Font.BOLD, 14);
     }
 
     @Override
@@ -65,10 +72,10 @@ public class Player extends Tank {
 
         updateSlidingTimer(frameTime);
         handleUserInput(keyboardState);
-        
+
         if (this.moving) {
             move(frameTime);
-            if(checkMapCollision()){
+            if (checkMapCollision()) {
                 fitToTiles();
             }
             handleCollisionsWithSplashes();
@@ -95,10 +102,32 @@ public class Player extends Tank {
     @Override
     public void draw(Graphics2D g) {
         super.draw(g);
-        this.statistics.draw(g);
+        drawHealthBar(g);
     }
-    
-    
+
+    private void drawHealthBar(Graphics2D g) {
+        int gameFieldBottom = Game.HEIGHT - Game.STATISTICS_PANEL_HEIGHT;
+        g.setColor(Color.black);
+        g.fillRect(0, gameFieldBottom, Game.WIDTH, Game.STATISTICS_PANEL_HEIGHT);
+        g.setColor(Color.white);
+        g.fillRect(0, gameFieldBottom, Game.WIDTH, 3);
+
+        g.setColor(Color.white);
+        g.setFont(this.font);
+        g.drawString("SCORE: " + this.statistics.getTotalScore(), 5, gameFieldBottom
+                + 2 * Game.TILE_SIZE);
+        g.drawString("HEALTH: ", Game.WIDTH / 2, gameFieldBottom
+                + 2 * Game.TILE_SIZE);
+        g.fillRect(380, gameFieldBottom + Game.TILE_SIZE, this.health / 20
+                * Game.TILE_SIZE, Game.TILE_SIZE);
+        g.setColor(Color.white.darker());
+        g.setStroke(new BasicStroke(3));
+        for (int i = 0; i < 5; ++i) {
+            g.drawRect(380 + i * Game.TILE_SIZE, gameFieldBottom
+                    + Game.TILE_SIZE, Game.TILE_SIZE, Game.TILE_SIZE);
+        }
+        g.setStroke(new BasicStroke(1));
+    }
 
     public void setSliding(boolean sliding) {
         this.sliding = this.onIce && sliding;
@@ -120,8 +149,8 @@ public class Player extends Tank {
         this.statistics.addPowerUp(powerup);
     }
 
-    public int getScore() {
-        return this.statistics.getScore();
+    public int getTotalScore() {
+        return this.statistics.getTotalScore();
     }
 
     public void promote() {
@@ -267,18 +296,18 @@ public class Player extends Tank {
         if (keyboardState.isKeyPressed(KeyEvent.VK_F)) {
             fire();
         }
-        
+
         boolean canSteer = false;
-        
+
         if (this.sliding) {
-            if(!this.moving){
+            if (!this.moving) {
                 canSteer = true;
             }
         } else {
             canSteer = true;
         }
-        
-        if(canSteer){
+
+        if (canSteer) {
             steer(keyboardState);
         }
     }

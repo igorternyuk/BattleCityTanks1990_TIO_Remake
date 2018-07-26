@@ -92,7 +92,6 @@ public class LevelState extends GameState {
     private EntityManager entityManager;
     private GameInfoPanel rightPanel;
     private int highestScore = 0;
-
     private int stageNumber = 1;
     private Stack<EnemyTankType> hangar = new Stack<>();
     private Map<PowerUpType, Runnable> onPowerUpCollectedHandlers =
@@ -124,7 +123,6 @@ public class LevelState extends GameState {
         loadMap();
         loadHighestScore();
         startNewGame();
-        this.resourceManager.getAudio(AudioIdentifier.PLAYER_IDLE);
         this.scoreScreen = new ScoreScreen(this);
         this.loaded = true;
     }
@@ -132,95 +130,47 @@ public class LevelState extends GameState {
     @Override
     public void unload() {
         saveHighestScore();
+        this.tileMap = null;
         for (SpriteSheetIdentifier identifier : SpriteSheetIdentifier.values()) {
             this.spriteSheetManager.remove(identifier);
         }
         this.resourceManager.unloadImage(ImageIdentifier.TEXTURE_ATLAS);
-        this.tileMap = null;
+        this.resourceManager.unloadFont(FontIdentifier.BATTLE_CITY);
+        unloadSounds();
     }
-
-    private void loadHighestScore() {
-
-        try (InputStream in = getClass().getResourceAsStream(
-                "/statistics/highestScore");
-                BufferedReader br =
-                new BufferedReader(new InputStreamReader(in));) {
-            String line = br.readLine();
-            this.highestScore = Integer.parseInt(line);
-
-        } catch (IOException ex) {
-            Logger.getLogger(LevelState.class.getName()).log(Level.SEVERE, null,
-                    ex);
+    
+    private void unloadSounds(){
+        AudioIdentifier[] identifiers = AudioIdentifier.values();
+        for(AudioIdentifier identifier: identifiers){
+            this.resourceManager.unloadAudio(identifier);
         }
-    }
-
-    private void saveHighestScore() {
-        try (PrintWriter writer = new PrintWriter(
-                new File(Files.class.getResource("/statistics/highestScore").
-                        getPath()))) {
-            writer.print(this.highestScore);
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(LevelState.class.getName()).log(Level.SEVERE, null,
-                    ex);
-        }
-    }
-
-    private void loadSounds() {
-        this.resourceManager.loadAudio(AudioIdentifier.NEXT_STAGE,
-                "/sounds/nextStage.wav");
-        this.resourceManager.loadAudio(AudioIdentifier.PLAYER_MOVES,
-                "/sounds/playerMoving.wav");
-        this.resourceManager.loadAudio(AudioIdentifier.PLAYER_IDLE,
-                "/sounds/playerIdle.wav");
-        this.resourceManager.loadAudio(AudioIdentifier.SHOT, "/sounds/shot.wav");
-        this.resourceManager.loadAudio(AudioIdentifier.EXPLOSION,
-                "/sounds/explosion.wav");
-        this.resourceManager.loadAudio(AudioIdentifier.BONUS_APPEARES,
-                "/sounds/bonusAppeares.wav");
-        this.resourceManager.loadAudio(AudioIdentifier.BONUS_COLLECTED,
-                "/sounds/bonusCollected.wav");
-        this.resourceManager.loadAudio(AudioIdentifier.SCORE_SCREEN,
-                "/sounds/scoreScreen.wav");
-    }
-
-    private void loadFonts() {
-        this.resourceManager.loadFont(FontIdentifier.BATTLE_CITY,
-                "/fonts/prstart.ttf");
-        Font font = this.resourceManager.getFont(FontIdentifier.BATTLE_CITY);
-        this.fontGameStatus = font.deriveFont(Font.BOLD, 36);
-        this.fontNextStageSplash = font.deriveFont(Font.BOLD | Font.ITALIC, 34);
-    }
-
-    private void loadImages() {
-        this.resourceManager.loadImage(ImageIdentifier.TEXTURE_ATLAS,
-                "/images/texture_atlas.png");
-        this.atlas = new TextureAtlas(this.resourceManager.getImage(
-                ImageIdentifier.TEXTURE_ATLAS));
-        loadSprites();
-    }
-
-    private void loadMap() {
-        this.tileMap = new TileMap(Game.SCALE);
-        this.tileMap.loadMap("/tilemap/level" + this.stageNumber + ".map");
     }
 
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
+
         if (!this.loaded) {
             return;
         }
 
-        if (this.gameStatus != GameStatus.PLAY) {
+        if (this.gameStatus == GameStatus.PAUSED) {
             return;
         }
-        
+
         checkIfNextStage();
-        
-        if(this.scoreScreenActive){
+
+        if (this.scoreScreenActive) {
             this.scoreScreen.update(keyboardState, frameTime);
             return;
         }
-        
+
+        if (this.gameStatus == GameStatus.GAME_OVER) {
+            if (this.scoreScreen.isReadyToNextStage()) {
+                this.scoreScreenActive = false;
+            }
+            return;
+        }
+
         updateSounds();
 
         this.tileMap.update(keyboardState, frameTime);
@@ -233,7 +183,6 @@ public class LevelState extends GameState {
         checkCollisions();
         checkPowerUps();
         checkGameStatus();
-        
     }
 
     @Override
@@ -241,16 +190,21 @@ public class LevelState extends GameState {
         if (!this.loaded) {
             return;
         }
-        
-        if(this.scoreScreenActive){
+
+        if (this.scoreScreenActive) {
             this.scoreScreen.draw(g);
-            return;
+        } else {
+            if (this.gameStatus == GameStatus.PLAY) {
+                this.tileMap.draw(g);
+                this.entityManager.draw(g);
+                this.tileMap.drawBushes(g);
+                this.entityManager.getEntitiesByType(EntityType.SPLASH_TEXT).
+                        forEach(
+                                e -> e.draw(g));
+            } else {
+                drawGameStatus(g);
+            }
         }
-        
-        this.tileMap.draw(g);
-        this.entityManager.draw(g);
-        this.tileMap.drawBushes(g);
-        drawGameStatus(g);
     }
 
     private void updateSounds() {
@@ -368,10 +322,13 @@ public class LevelState extends GameState {
     }
 
     private void nextStage() {
+        this.scoreScreen.reset();
         ++this.stageNumber;
         if (this.stageNumber > STAGE_MAX) {
             this.stageNumber = 1;
         }
+        this.highestScore = this.player.getTotalScore();
+        saveHighestScore();
         loadMap();
         this.entityManager.removeEntitiesExcepts(EntityType.PLAYER_TANK,
                 EntityType.RIGHT_PANEL, EntityType.EAGLE);
@@ -508,6 +465,9 @@ public class LevelState extends GameState {
         if (this.eagle.getState() == EagleState.DEAD
                 || !this.player.isAlive()) {
             this.gameStatus = GameStatus.GAME_OVER;
+            this.highestScore = this.player.getStatistics().getTotalScore();
+            saveHighestScore();
+            stopPlayerSounds();
         }
     }
 
@@ -537,9 +497,6 @@ public class LevelState extends GameState {
             case KeyEvent.VK_F:
                 this.player.setCanFire(true);
                 break;
-            case KeyEvent.VK_Z:
-                this.scoreScreenActive = !this.scoreScreenActive;
-                break;
             default:
                 break;
         }
@@ -558,6 +515,7 @@ public class LevelState extends GameState {
     private void togglePause() {
         if (this.gameStatus == GameStatus.PLAY) {
             this.gameStatus = GameStatus.PAUSED;
+            stopPlayerSounds();
         } else if (this.gameStatus == GameStatus.PAUSED) {
             this.gameStatus = GameStatus.PLAY;
         }
@@ -660,20 +618,27 @@ public class LevelState extends GameState {
     }
 
     private void checkIfNextStage() {
-        if (this.gameStatus == GameStatus.PLAY
-                && this.hangar.isEmpty()
+        if (this.gameStatus == GameStatus.GAME_OVER
+                || (this.hangar.isEmpty()
                 && this.entityManager.getEntitiesByType(EntityType.ENEMY_TANK).
-                        isEmpty()) {
-            /////////////////Show statistics screen//////////////
+                        isEmpty())) {
             stopPlayerSounds();
-            if(!this.scoreScreenActive){
-                this.scoreScreen.reset();
-                this.scoreScreenActive = true;
-            } else {
-                if(this.scoreScreen.isReadyToNextStage()){
-                    this.scoreScreenActive = false;
+            checkIfScoreScreen();
+        }
+    }
+
+    private void checkIfScoreScreen() {
+        
+        if(this.scoreScreenActive){
+            if (this.scoreScreen.isReadyToNextStage()) {
+                this.scoreScreenActive = false;
+                if (this.gameStatus != GameStatus.GAME_OVER) {
                     nextStage();
                 }
+            }
+        } else {
+            if(!this.scoreScreen.isReadyToNextStage()){
+                this.scoreScreenActive = true;
             }
         }
     }
@@ -701,8 +666,71 @@ public class LevelState extends GameState {
                         EntityType.EXPLOSION);
         this.entityManager.addRenderingLayer(RenderingLayerIdentifier.GAME_INFO,
                 EntityType.INDICATOR, EntityType.RIGHT_PANEL);
-        this.entityManager.addRenderingLayer(
-                RenderingLayerIdentifier.SPLASH_TEXTS,
-                EntityType.SPLASH_TEXT);
+    }
+
+    private void loadHighestScore() {
+
+        try (InputStream in = getClass().getResourceAsStream(
+                "/statistics/highestScore");
+                BufferedReader br =
+                new BufferedReader(new InputStreamReader(in));) {
+            String line = br.readLine();
+            this.highestScore = Integer.parseInt(line);
+            System.out.println("Highest score loaded = " + this.highestScore);
+
+        } catch (IOException ex) {
+            Logger.getLogger(LevelState.class.getName()).log(Level.SEVERE, null,
+                    ex);
+        }
+    }
+
+    private void saveHighestScore() {
+        try (PrintWriter writer = new PrintWriter(
+                new File(Files.class.getResource("/statistics/highestScore").
+                        getPath()))) {
+            writer.print(this.highestScore);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(LevelState.class.getName()).log(Level.SEVERE, null,
+                    ex);
+        }
+    }
+
+    private void loadSounds() {
+        this.resourceManager.loadAudio(AudioIdentifier.NEXT_STAGE,
+                "/sounds/nextStage.wav");
+        this.resourceManager.loadAudio(AudioIdentifier.PLAYER_MOVES,
+                "/sounds/playerMoving.wav");
+        this.resourceManager.loadAudio(AudioIdentifier.PLAYER_IDLE,
+                "/sounds/playerIdle.wav");
+        this.resourceManager.loadAudio(AudioIdentifier.SHOT, "/sounds/shot.wav");
+        this.resourceManager.loadAudio(AudioIdentifier.EXPLOSION,
+                "/sounds/explosion.wav");
+        this.resourceManager.loadAudio(AudioIdentifier.BONUS_APPEARES,
+                "/sounds/bonusAppeares.wav");
+        this.resourceManager.loadAudio(AudioIdentifier.BONUS_COLLECTED,
+                "/sounds/bonusCollected.wav");
+        this.resourceManager.loadAudio(AudioIdentifier.SCORE_SCREEN,
+                "/sounds/scoreScreen.wav");
+    }
+
+    private void loadFonts() {
+        this.resourceManager.loadFont(FontIdentifier.BATTLE_CITY,
+                "/fonts/prstart.ttf");
+        Font font = this.resourceManager.getFont(FontIdentifier.BATTLE_CITY);
+        this.fontGameStatus = font.deriveFont(Font.BOLD, 36);
+        this.fontNextStageSplash = font.deriveFont(Font.BOLD | Font.ITALIC, 34);
+    }
+
+    private void loadImages() {
+        this.resourceManager.loadImage(ImageIdentifier.TEXTURE_ATLAS,
+                "/images/texture_atlas.png");
+        this.atlas = new TextureAtlas(this.resourceManager.getImage(
+                ImageIdentifier.TEXTURE_ATLAS));
+        loadSprites();
+    }
+
+    private void loadMap() {
+        this.tileMap = new TileMap(Game.SCALE);
+        this.tileMap.loadMap("/tilemap/level" + this.stageNumber + ".map");
     }
 }

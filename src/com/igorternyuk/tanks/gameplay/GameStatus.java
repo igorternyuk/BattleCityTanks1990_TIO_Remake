@@ -9,7 +9,7 @@ import java.awt.Color;
 public enum GameStatus {
    PLAY("", Color.white),
     PAUSED("GAME PAUSED", Color.yellow),
-    GAME_OVER("GAME OVER!", Color.red);
+    GAME_OVER("GAME OVER", Color.red);
     
     String description;
     Color color;

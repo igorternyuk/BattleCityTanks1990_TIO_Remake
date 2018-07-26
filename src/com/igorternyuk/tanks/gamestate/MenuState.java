@@ -59,29 +59,6 @@ public class MenuState extends GameState {
         createMenuItems();
     }
 
-    private void createMenuItems() {
-        addMenuItem("PLAY", () -> {
-            this.gameStateManager.setGameState(GameStateManager.LEVEL_STATE);
-        });
-
-        addMenuItem("CONSTRUCTION", () -> {
-            this.gameStateManager.setGameState(
-                    GameStateManager.CONSTRUCTION_STATE);
-        });
-
-        addMenuItem("QUIT", () -> {
-            this.gameStateManager.getGame().onWindowCloseRequest();
-        });
-    }
-
-    private void addMenuItem(String title, Runnable action) {
-        int lastIndex = this.menuItems.size() - 1;
-        int currY = Game.HEIGHT / 2 + (lastIndex + 1) * Game.HEIGHT / 12;
-        MenuItem menuItem = new MenuItem(lastIndex + 1, title,
-                new Rectangle(0, currY, Game.WIDTH, 32), action);
-        this.menuItems.add(menuItem);
-    }
-
     @Override
     public void load() {
         System.out.println("Menu state loading...");
@@ -163,11 +140,35 @@ public class MenuState extends GameState {
 
     @Override
     public void onMouseMoved(MouseEvent e) {
+        System.out.println("currY = " + e.getY());
         for(int i = 0; i < this.menuItems.size(); ++i){
             MenuItem currMenuItem = this.menuItems.get(i);
             if(currMenuItem.bounds.contains(e.getX(), e.getY())){
                 this.currentChoice = currMenuItem.index;
             }
         }
+    }
+    
+    private void createMenuItems() {
+        addMenuItem("PLAY", () -> {
+            this.gameStateManager.setGameState(GameStateManager.LEVEL_STATE);
+        });
+
+        addMenuItem("CONSTRUCTION", () -> {
+            this.gameStateManager.setGameState(
+                    GameStateManager.CONSTRUCTION_STATE);
+        });
+
+        addMenuItem("QUIT", () -> {
+            this.gameStateManager.getGame().onWindowCloseRequest();
+        });
+    }
+
+    private void addMenuItem(String title, Runnable action) {
+        int lastIndex = this.menuItems.size() - 1;
+        int currY = Game.HEIGHT / 2 + (lastIndex + 1) * Game.HEIGHT / 12;
+        MenuItem menuItem = new MenuItem(lastIndex + 1, title,
+                new Rectangle(0, currY, Game.WIDTH, 32), action);
+        this.menuItems.add(menuItem);
     }
 }

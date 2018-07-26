@@ -19,6 +19,8 @@ import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.graphics.animations.Animation;
 import com.igorternyuk.tanks.graphics.animations.AnimationPlayMode;
 import com.igorternyuk.tanks.input.KeyboardState;
+import com.igorternyuk.tanks.resourcemanager.AudioIdentifier;
+import com.igorternyuk.tanks.resourcemanager.ResourceManager;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -38,13 +40,13 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     private static final double TARGET_CHANGING_PERIOD = 20;
     private static final double FROZEN_TIME = 10;
     private static final double SHOOTING_PERIOD = 2;
-    
+
     private int number;
     private EnemyTankIdentifier identifier;
     private boolean bonus = false;
     private boolean gleaming = false;
     private double gleamingTimer;
-    
+
     private boolean movingAlongShortestPath = false;
     private List<Spot> shortestPath = new ArrayList<>();
     private Spot nextPosition;
@@ -57,7 +59,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     private double shootingTimer = 0;
     private boolean firingSpotReached = false;
     private final Random random = new Random();
-    
+
     public EnemyTank(LevelState level, int number, EnemyTankType type, double x,
             double y, Direction direction) {
         super(level, EntityType.ENEMY_TANK, x, y, type.getSpeed(), direction);
@@ -87,17 +89,17 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         super.draw(g);
         this.shortestPath.forEach(spot -> spot.draw(g));
     }
-    
-    public void executeMovementLogic(double frameTime){
+
+    public void executeMovementLogic(double frameTime) {
         if (this.frozen) {
             handleIfFrozen(frameTime);
             return;
         }
-        
-        if(this.firingSpotReached){
+
+        if (this.firingSpotReached) {
             return;
         }
-        
+
         if (!this.moving && this.gotStuck) {
             checkMapCollision();
             selectRandomDirrection();
@@ -112,14 +114,12 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             } else {
                 this.movingAlongShortestPath = false;
             }
-            
+
             fixBounds();
             checkIfFiringSpotToAttackEagleReached();
         }
     }
-    
-    
-    
+
     public void freeze() {
         this.frozen = true;
     }
@@ -131,7 +131,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             this.frozen = false;
         }
     }
-    
+
     public EnemyTankType getType() {
         return this.identifier.getType();
     }
@@ -151,7 +151,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     public EnemyTankIdentifier getIdentifier() {
         return this.identifier;
     }
-    
+
     private boolean checkCollisions(double frameTime) {
 
         if (checkMapCollision()) {
@@ -179,6 +179,8 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         powerUp.startInfiniteBlinking(0.4);
         this.level.getEntityManager().removeEntitiesByType(EntityType.POWER_UP);
         this.level.getEntityManager().addEntity(powerUp);
+        ResourceManager.getInstance().getAudio(AudioIdentifier.BONUS_APPEARES).
+                play();
     }
 
     @Override
@@ -217,13 +219,13 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             }
         }
     }
-    
+
     @Override
     public void setDirection(Direction direction) {
         super.setDirection(direction);
         this.identifier.setHeading(Heading.getHeading(direction));
     }
-    
+
     private List<Direction> getAllPossibleDirections() {
         List<Direction> allPossibleDirections = new ArrayList<>(Direction.
                 values().length);
@@ -237,7 +239,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
 
     private void selectRandomDirrection() {
         List<Direction> allPossibleDirections = getAllPossibleDirections();
-        
+
         if (allPossibleDirections.isEmpty()) {
             this.gotStuck = true;
             this.moving = false;
@@ -287,7 +289,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         }
         return false;
     }
-    
+
     private void moveAlongShortestPath() {
         if (checkIfNextPositionReached()) {
             this.shortestPath.remove(this.nextPosition);
@@ -300,12 +302,12 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             }
         }
     }
-    
+
     private boolean checkIfNextPositionReached() {
         return this.movingAlongShortestPath
                 && getCurrentSpot().equals(this.nextPosition);
     }
-    
+
     private void updateTarget(double frameTime) {
         this.targetTimer += frameTime;
         if (this.targetTimer < TARGET_CHANGING_PERIOD) {
@@ -342,13 +344,13 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             this.movingAlongShortestPath = false;
         }
     }
-    
+
     private void updateShootingTimer(double frameTime) {
         this.shootingTimer += frameTime;
         if (this.shootingTimer >= SHOOTING_PERIOD) {
             this.shootingTimer = 0;
-            if (!this.frozen && this.firingSpotReached
-                    || isFireLineFreeOfPartnerTanks()) {
+            if (!this.frozen && (this.firingSpotReached
+                    || isFireLineFreeOfPartnerTanks())) {
                 fire();
             }
         }
@@ -369,8 +371,9 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         }
         this.level.getEntityManager().addEntity(projectile);
         this.canFire = false;
+        ResourceManager.getInstance().getAudio(AudioIdentifier.SHOT).play();
     }
-    
+
     private void checkIfFiringSpotToAttackEagleReached() {
         for (int i = 0; i < this.firingSpots.size(); ++i) {
             if (firingSpots.get(i).getSpot().equals(getCurrentSpot())) {
@@ -415,7 +418,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         }
         destroy();
     }
-    
+
     private List<FiringSpot> getFiringSpotsToAttackTheEagle() {
         return this.level.getTileMap().getFiringSpots();
     }
@@ -424,7 +427,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         int rand = this.random.nextInt(this.firingSpots.size());
         this.currTarget = this.firingSpots.get(rand).getSpot();
     }
-    
+
     private boolean isFireLineFreeOfPartnerTanks() {
         List<Entity> partners = this.level.getEntityManager().getEntitiesByType(
                 EntityType.ENEMY_TANK);
@@ -458,11 +461,10 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         }
     }
 
-   /* private void destroyExistingPowerUps() {
+    /* private void destroyExistingPowerUps() {
         this.level.getEntityManager().getEntitiesByType(EntityType.POWER_UP).
                 forEach(powerUp -> powerUp.destroy());
     }*/
-
     private TankColor getTankColor(int number, EnemyTankType tankType) {
 
         TankColor color;
@@ -479,7 +481,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
 
         return color;
     }
-    
+
     private void updateGleamingColor(double frameTime) {
         if (this.gleaming) {
             this.gleamingTimer += frameTime;
@@ -502,7 +504,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             return TankColor.GREEN;
         }
     }
-    
+
     private boolean checkIfBonus() {
         for (int num : BONUS_TANKS_NUMBERS) {
             if (this.number == num) {

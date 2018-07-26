@@ -1,5 +1,6 @@
 package com.igorternyuk.tanks.gamestate;
 
+import com.igorternyuk.tanks.audio.Audio;
 import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.GameStatus;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
@@ -32,6 +33,8 @@ import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
 import java.awt.Graphics2D;
 import com.igorternyuk.tanks.input.KeyboardState;
+import com.igorternyuk.tanks.resourcemanager.AudioIdentifier;
+import com.igorternyuk.tanks.resourcemanager.FontIdentifier;
 import com.igorternyuk.tanks.resourcemanager.ImageIdentifier;
 import com.igorternyuk.tanks.utils.Painter;
 import java.awt.Color;
@@ -57,9 +60,9 @@ public class LevelState extends GameState {
     public static final int TANKS_TOTAL = 20;
     protected static final Point EAGLE_POSITION = new Point(12
             * Game.HALF_TILE_SIZE, 24 * Game.HALF_TILE_SIZE);
-    private static final Font FONT_GAME_STATUS = new Font("Verdana", Font.BOLD,
+    private Font fontGameStatus = new Font("Verdana", Font.BOLD,
             48);
-    private Font FONT_STAGE_SPLASH =
+    private Font fontNextStageSplash =
             new Font("Verdana", Font.BOLD | Font.ITALIC, 48);
     private static final Point PLAYER_RESPAWN_POSITION = new Point(8
             * Game.HALF_TILE_SIZE, 24 * Game.HALF_TILE_SIZE);
@@ -94,39 +97,66 @@ public class LevelState extends GameState {
         addRenderingLayers();
         createOnPowerUpCollectedHanlers();
     }
-    
-    
 
-    public Stack<EnemyTankType> getHangar() {
-        return this.hangar;
+    @Override
+    public void load() {
+        System.out.println("Level state loading...");
+        loadSounds();
+        loadFonts();
+        loadImages();
+        loadTankSpriteSheetMaps();
+        loadMap();
+        startNewGame();
+        this.resourceManager.getAudio(AudioIdentifier.PLAYER_IDLE);
+        this.loaded = true;
     }
 
-    private boolean needThrowIntoBattleMoreTanks() {
-        long tanksOnTheField = this.entityManager
-                .getEntitiesByType(EntityType.ENEMY_TANK).size();
-        long splashCount = this.entityManager.getEntitiesByType(
-                EntityType.SPLASH).size();
-        return !this.hangar.isEmpty()
-                && (splashCount + tanksOnTheField < TANKS_ON_FIELD_MAX);
+    private void loadSounds() {
+        this.resourceManager.loadAudio(AudioIdentifier.NEXT_STAGE,
+                "/sounds/nextStage.wav");
+        this.resourceManager.loadAudio(AudioIdentifier.PLAYER_MOVES,
+                "/sounds/playerMoving.wav");
+        this.resourceManager.loadAudio(AudioIdentifier.PLAYER_IDLE,
+                "/sounds/playerIdle.wav");
+        this.resourceManager.loadAudio(AudioIdentifier.SHOT, "/sounds/shot.wav");
+        this.resourceManager.loadAudio(AudioIdentifier.EXPLOSION,
+                "/sounds/explosion.wav");
+        this.resourceManager.loadAudio(AudioIdentifier.BONUS_APPEARES,
+                "/sounds/bonusAppeares.wav");
+        this.resourceManager.loadAudio(AudioIdentifier.BONUS_COLLECTED,
+                "/sounds/bonusCollected.wav");
     }
 
-    private void tryToAddMoreTanksIntoBattle() {
-        List<Point> freeEnemyTankAppearancePoints =
-                getFreeAppearancePoints();
-        if (!freeEnemyTankAppearancePoints.isEmpty()) {
-            int randIndex = this.random.nextInt(
-                    freeEnemyTankAppearancePoints.size());
-            Point randAppearencePoint = freeEnemyTankAppearancePoints.get(
-                    randIndex);
-            this.entityManager.addEntity(new Splash(this,
-                    SplashType.NEW_ENEMY_TANK, randAppearencePoint.x,
-                    randAppearencePoint.y));
-        }
+    private void loadFonts() {
+        this.resourceManager.loadFont(FontIdentifier.BATTLE_CITY,
+                "/fonts/prstart.ttf");
+        Font font = this.resourceManager.getFont(FontIdentifier.BATTLE_CITY);
+        this.fontGameStatus = font.deriveFont(Font.BOLD, 36);
+        this.fontNextStageSplash = font.deriveFont(Font.BOLD | Font.ITALIC, 34);
+    }
+
+    private void loadImages() {
+        this.resourceManager.loadImage(ImageIdentifier.TEXTURE_ATLAS,
+                "/images/texture_atlas.png");
+        this.atlas = new TextureAtlas(this.resourceManager.getImage(
+                ImageIdentifier.TEXTURE_ATLAS));
+        loadSprites();
+    }
+
+    private void loadMap() {
+        this.tileMap = new TileMap(Game.SCALE);
+        this.tileMap.loadMap("/tilemap/level" + this.stageNumber + ".map");
     }
 
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
-        if (!this.loaded || this.gameStatus != GameStatus.PLAY) {
+        if (!this.loaded) {
+            return;
+        }
+        
+        updateSounds();
+        
+        if(this.gameStatus != GameStatus.PLAY){
             return;
         }
 
@@ -153,6 +183,62 @@ public class LevelState extends GameState {
         this.tileMap.drawBushes(g);
         drawGameStatus(g);
         drawPlayerStatistics(g);
+    }
+    
+    private void updateSounds(){
+        if(this.gameStatus != GameStatus.PLAY){
+            stopPlayerSounds();
+            return;
+        }
+
+        if (!this.resourceManager.getAudio(AudioIdentifier.NEXT_STAGE).
+                isPlaying()) {
+            if (this.player.isMoving()) {
+                this.resourceManager.getAudio(AudioIdentifier.PLAYER_IDLE).
+                        stop();
+                this.resourceManager.getAudio(AudioIdentifier.PLAYER_MOVES).
+                        loop();
+            } else {
+                this.resourceManager.getAudio(AudioIdentifier.PLAYER_MOVES).
+                        stop();
+                this.resourceManager.getAudio(AudioIdentifier.PLAYER_IDLE).
+                        loop();
+            }
+        } else {
+            stopPlayerSounds();
+        }
+    }
+    
+    private void stopPlayerSounds(){
+        this.resourceManager.getAudio(AudioIdentifier.PLAYER_IDLE).stop();
+        this.resourceManager.getAudio(AudioIdentifier.PLAYER_MOVES).stop();
+    }
+
+    public Stack<EnemyTankType> getHangar() {
+        return this.hangar;
+    }
+
+    private boolean needThrowIntoBattleMoreTanks() {
+        long tanksOnTheField = this.entityManager
+                .getEntitiesByType(EntityType.ENEMY_TANK).size();
+        long splashCount = this.entityManager.getEntitiesByType(
+                EntityType.SPLASH).size();
+        return !this.hangar.isEmpty()
+                && (splashCount + tanksOnTheField < TANKS_ON_FIELD_MAX);
+    }
+
+    private void tryToAddMoreTanksIntoBattle() {
+        List<Point> freeEnemyTankAppearancePoints =
+                getFreeAppearancePoints();
+        if (!freeEnemyTankAppearancePoints.isEmpty()) {
+            int randIndex = this.random.nextInt(
+                    freeEnemyTankAppearancePoints.size());
+            Point randAppearencePoint = freeEnemyTankAppearancePoints.get(
+                    randIndex);
+            this.entityManager.addEntity(new Splash(this,
+                    SplashType.NEW_ENEMY_TANK, randAppearencePoint.x,
+                    randAppearencePoint.y));
+        }
     }
 
     private void onBonusCollected(PowerUp powerUp) {
@@ -213,25 +299,6 @@ public class LevelState extends GameState {
         return this.entityManager.getAllEntities();
     }
 
-    @Override
-    public void load() {
-        System.out.println("Level state loading...");
-        this.resourceManager.loadImage(ImageIdentifier.TEXTURE_ATLAS,
-                "/images/texture_atlas_black.png");
-        this.atlas = new TextureAtlas(this.resourceManager.getImage(
-                ImageIdentifier.TEXTURE_ATLAS));
-        loadSprites();
-        loadTankSpriteSheetMaps();
-        this.tileMap = new TileMap(Game.SCALE);
-        loadMap();
-        startNewGame();
-        this.loaded = true;
-    }
-
-    private void loadMap() {
-        this.tileMap.loadMap("/tilemap/level" + this.stageNumber + ".map");
-    }
-
     private void nextStage() {
         ++this.stageNumber;
         if (this.stageNumber > STAGE_MAX) {
@@ -245,12 +312,13 @@ public class LevelState extends GameState {
         fillHangar();
         gameStatus = GameStatus.PLAY;
         this.loaded = true;
+        this.resourceManager.getAudio(AudioIdentifier.NEXT_STAGE).play();
     }
-    
-    private void addNewStageSplashText(){
-        String nextStageMessage = " - STAGE - " + this.stageNumber;
+
+    private void addNewStageSplashText() {
+        String nextStageMessage = "-STAGE-" + this.stageNumber;
         this.entityManager.addEntity(new SplashText(
-                this, nextStageMessage, FONT_STAGE_SPLASH, Color.white,
+                this, nextStageMessage, fontNextStageSplash, Color.white,
                 NEXT_STAGE_SPLASH_DELAY));
     }
 
@@ -264,14 +332,15 @@ public class LevelState extends GameState {
     }
 
     private void startNewGame() {
-        this.loaded = false;
         this.entityManager.removeAllEntities();
         this.stageNumber = 1;
         loadMap();
         fillHangar();
         createEntities();
+        this.resourceManager.getAudio(AudioIdentifier.PLAYER_MOVES).stop();
+        this.resourceManager.getAudio(AudioIdentifier.PLAYER_IDLE).stop();
+        this.resourceManager.getAudio(AudioIdentifier.NEXT_STAGE).play();
         gameStatus = GameStatus.PLAY;
-        this.loaded = true;
     }
 
     private void fillHangar() {
@@ -377,12 +446,10 @@ public class LevelState extends GameState {
     }
 
     private void checkGameStatus() {
-        /*if(!this.player.isAlive()){
-            this.gameStatus = GameStatus.PLAYER_LOST;
+        if (this.eagle.getState() == EagleState.DEAD
+                || !this.player.isAlive()) {
+            this.gameStatus = GameStatus.GAME_OVER;
         }
-        if(getEnemies().isEmpty()){
-            this.gameStatus = GameStatus.PLAYER_WON;
-        }*/
     }
 
     @Override
@@ -490,7 +557,8 @@ public class LevelState extends GameState {
 
     private void drawGameStatus(Graphics2D g) {
         Painter.drawCenteredString(g, this.gameStatus.getDescription(),
-                FONT_GAME_STATUS, this.gameStatus.getColor(), Game.HEIGHT / 2);
+                fontGameStatus, this.gameStatus.getColor(),
+                (Game.HEIGHT - Game.STATISTICS_PANEL_HEIGHT) / 2);
     }
 
     private void drawPlayerStatistics(Graphics2D g) {
@@ -538,30 +606,36 @@ public class LevelState extends GameState {
                 && this.hangar.isEmpty()
                 && this.entityManager.getEntitiesByType(EntityType.ENEMY_TANK).
                         isEmpty()) {
+            /////////////////Show statistics screen//////////////
             nextStage();
         }
     }
-    
-    private void addRenderingLayers(){
+
+    private void addRenderingLayers() {
         this.entityManager.addRenderingLayer(RenderingLayerIdentifier.EAGLE,
                 EntityType.EAGLE);
-        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.PROJECTILES,
+        this.entityManager.addRenderingLayer(
+                RenderingLayerIdentifier.PROJECTILES,
                 EntityType.PROJECTILE);
         this.entityManager.addRenderingLayer(RenderingLayerIdentifier.SPLASHES,
                 EntityType.SPLASH);
         this.entityManager.addRenderingLayer(RenderingLayerIdentifier.TANKS,
                 EntityType.PLAYER_TANK, EntityType.ENEMY_TANK);
-        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.SCORE_TEXTS,
+        this.entityManager.addRenderingLayer(
+                RenderingLayerIdentifier.SCORE_TEXTS,
                 EntityType.SCRORE_TEXT);
-        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.PROTECTIONS,
+        this.entityManager.addRenderingLayer(
+                RenderingLayerIdentifier.PROTECTIONS,
                 EntityType.PROTECTION);
         this.entityManager.addRenderingLayer(RenderingLayerIdentifier.POWERUPS,
                 EntityType.POWER_UP);
-        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.EXPLOSIONS,
-                EntityType.EXPLOSION);
+        this.entityManager.
+                addRenderingLayer(RenderingLayerIdentifier.EXPLOSIONS,
+                        EntityType.EXPLOSION);
         this.entityManager.addRenderingLayer(RenderingLayerIdentifier.GAME_INFO,
                 EntityType.INDICATOR, EntityType.RIGHT_PANEL);
-        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.SPLASH_TEXTS,
+        this.entityManager.addRenderingLayer(
+                RenderingLayerIdentifier.SPLASH_TEXTS,
                 EntityType.SPLASH_TEXT);
     }
 }

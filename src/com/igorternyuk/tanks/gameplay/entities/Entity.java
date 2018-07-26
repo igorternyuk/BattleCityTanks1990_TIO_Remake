@@ -6,6 +6,8 @@ import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
 import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
 import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.input.KeyboardState;
+import com.igorternyuk.tanks.resourcemanager.AudioIdentifier;
+import com.igorternyuk.tanks.resourcemanager.ResourceManager;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -151,6 +153,7 @@ public abstract class Entity {
         int dy = (getHeight()- explosion.getHeight()) / 2;
         explosion.setPosition(this.x + dx, this.y + dy);
         this.level.getEntityManager().addEntity(explosion);
+        ResourceManager.getInstance().getAudio(AudioIdentifier.EXPLOSION).play();
     }
 
     public void setDirection(Direction direction) {

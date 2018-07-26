@@ -8,9 +8,8 @@ import java.awt.Color;
  */
 public enum GameStatus {
    PLAY("", Color.white),
-    PAUSED("Game paused", Color.yellow.darker()),
-    PLAYER_WON("You won!!!", Color.green.darker()),
-    PLAYER_LOST("You lost!", Color.red.darker());
+    PAUSED("GAME PAUSED", Color.yellow),
+    GAME_OVER("GAME OVER!", Color.red);
     
     String description;
     Color color;

@@ -19,6 +19,8 @@ import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.graphics.animations.Animation;
 import com.igorternyuk.tanks.graphics.animations.AnimationPlayMode;
 import com.igorternyuk.tanks.input.KeyboardState;
+import com.igorternyuk.tanks.resourcemanager.AudioIdentifier;
+import com.igorternyuk.tanks.resourcemanager.ResourceManager;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
@@ -67,7 +69,6 @@ public class Player extends Tank {
         if (this.moving) {
             move(frameTime);
             if(checkMapCollision()){
-                System.out.println("Need to fit");
                 fitToTiles();
             }
             handleCollisionsWithSplashes();
@@ -184,6 +185,7 @@ public class Player extends Tank {
         }
         this.level.getEntityManager().addEntity(projectile);
         this.canFire = false;
+        ResourceManager.getInstance().getAudio(AudioIdentifier.SHOT).play();
     }
 
     @Override

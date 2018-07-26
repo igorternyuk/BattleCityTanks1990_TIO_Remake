@@ -1,5 +1,6 @@
 package com.igorternyuk.tanks.resourcemanager;
 
+import com.igorternyuk.tanks.audio.Audio;
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.GraphicsEnvironment;
@@ -28,13 +29,19 @@ public class ResourceManager {
 
     private Map<ImageIdentifier, BufferedImage> images;
     private Map<FontIdentifier, Font> fonts;
+    private Map<AudioIdentifier, Audio> audios;
 
     private ResourceManager() {
         this.images = new HashMap<>();
         this.fonts = new HashMap<>();
+        this.audios = new HashMap<>();
     }
 
     public void loadImage(ImageIdentifier identifier, String pathToImage) {
+        if (this.images.containsKey(identifier)) {
+            return;
+        }
+
         BufferedImage image;
         try {
             image = ImageIO.read(
@@ -59,12 +66,12 @@ public class ResourceManager {
     }
 
     public void loadFont(FontIdentifier identifier, String path) {
+        if (this.fonts.containsKey(identifier)) {
+            return;
+        }
         try {
             Font font = Font.createFont(Font.TRUETYPE_FONT, getClass().
                     getResourceAsStream(path));
-            String family = font.getFamily();
-            System.out.println("family = " + family);
-            System.out.println("Size = " + font.getSize());
             this.fonts.put(identifier, font);
             GraphicsEnvironment ge = GraphicsEnvironment.
                     getLocalGraphicsEnvironment();
@@ -89,5 +96,24 @@ public class ResourceManager {
 
     public void unloadFont(FontIdentifier identifier) {
         this.fonts.remove(identifier);
+    }
+
+    public void loadAudio(AudioIdentifier identifier, String path) {
+        if (this.audios.containsKey(identifier)) {
+            return;
+        }
+        Audio audio = new Audio(path);
+        this.audios.put(identifier, audio);
+    }
+
+    public Audio getAudio(AudioIdentifier identifier) {
+        if (!this.audios.containsKey(identifier)) {
+            throw new RuntimeException("Audio " + identifier + " not loaded");
+        }
+        return this.audios.get(identifier);
+    }
+
+    public void unloadAudio(AudioIdentifier identifier) {
+        this.audios.remove(identifier);
     }
 }

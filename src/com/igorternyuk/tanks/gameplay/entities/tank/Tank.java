@@ -50,15 +50,15 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
     
     protected void fitToTiles(){
         if(this.direction.isVertical()){
-            double dx = (int)getX() / Game.QUARTER_TILE_SIZE - getX();
-            System.out.println("dx = " + dx);
-            if(Math.abs(dx) < Game.QUARTER_TILE_SIZE / 2){
+            int c = (int)getX() / Game.QUARTER_TILE_SIZE;
+            double dx = c *  Game.QUARTER_TILE_SIZE - getX();
+            if(Math.abs(dx) < Game.QUARTER_TILE_SIZE){
                 setPosition(getX() + dx, getY());
             }
         } else if(this.direction.isHorizontal()){
-            double dy = (int)getY() / Game.QUARTER_TILE_SIZE - getY();
-            System.out.println("dy = " + dy);
-            if(Math.abs(dy) < Game.QUARTER_TILE_SIZE / 2){
+            int r = (int)getY() / Game.QUARTER_TILE_SIZE;
+            double dy = r * Game.QUARTER_TILE_SIZE - getY();
+            if(Math.abs(dy) < Game.QUARTER_TILE_SIZE){
                 setPosition(getX(), getY() + dy);
             }
         }
@@ -140,7 +140,7 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
         switch (this.direction) {
             case NORTH:
                 departure.x = (int) ((left() + right() - projectileWidth) / 2);
-                departure.y = (int) top()/* - projectileHeight*/;
+                departure.y = (int) top();
                 break;
             case SOUTH:
                 departure.x = (int) ((left() + right() - projectileWidth) / 2);
@@ -152,7 +152,7 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
                 break;
             case WEST:
                 departure.y = (int) ((top() + bottom() - projectileHeight) / 2);
-                departure.x = (int) left()/* - projectileWidth*/;
+                departure.x = (int) left();
                 break;
             default:
                 break;

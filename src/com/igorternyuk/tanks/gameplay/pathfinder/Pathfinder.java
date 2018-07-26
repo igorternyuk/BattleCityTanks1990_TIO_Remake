@@ -162,7 +162,7 @@ public class Pathfinder {
     }
 
     public static class Spot implements Comparable<Spot> {
-
+        
         private int row;
         private int col;
         private boolean traversable;
@@ -211,7 +211,7 @@ public class Pathfinder {
         }
 
         public void draw(Graphics2D g) {
-            g.setColor(Color.cyan);
+            g.setColor(new Color(99,99,99,99));
             g.fillRect((int) (col * Game.HALF_TILE_SIZE * Game.SCALE),
                      (int) (row * Game.HALF_TILE_SIZE * Game.SCALE),
                      (int) (Game.HALF_TILE_SIZE * Game.SCALE),

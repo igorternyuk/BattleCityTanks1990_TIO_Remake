@@ -413,10 +413,16 @@ public class TileMap {
 
     private void specifyFireSpots() {
         this.firePoints.add(new FiringSpot(new Spot(24, 6, true), Direction.EAST));
+        this.firePoints.add(new FiringSpot(new Spot(23, 6, true), Direction.EAST));
         this.firePoints.add(new FiringSpot(new Spot(24, 7, true), Direction.EAST));
+        this.firePoints.add(new FiringSpot(new Spot(23, 7, true), Direction.EAST));
         this.firePoints.add(new FiringSpot(new Spot(24, 17, true), Direction.WEST));
+        this.firePoints.add(new FiringSpot(new Spot(23, 17, true), Direction.WEST));
         this.firePoints.add(new FiringSpot(new Spot(24, 18, true), Direction.WEST));
+        this.firePoints.add(new FiringSpot(new Spot(23, 18, true), Direction.WEST));
+        this.firePoints.add(new FiringSpot(new Spot(20, 11, true), Direction.SOUTH));
         this.firePoints.add(new FiringSpot(new Spot(20, 12, true), Direction.SOUTH));
+        this.firePoints.add(new FiringSpot(new Spot(20, 13, true), Direction.SOUTH));
     }
 
     private void specifyEagleProtectionPositions() {

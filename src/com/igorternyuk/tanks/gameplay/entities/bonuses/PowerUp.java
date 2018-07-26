@@ -10,6 +10,8 @@ import com.igorternyuk.tanks.graphics.images.Sprite;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
 import com.igorternyuk.tanks.input.KeyboardState;
+import com.igorternyuk.tanks.resourcemanager.AudioIdentifier;
+import com.igorternyuk.tanks.resourcemanager.ResourceManager;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
@@ -35,11 +37,12 @@ public class PowerUp extends Entity {
         ScoreIcrementText text = new ScoreIcrementText(this.level, this.type.
                 getScore(), this.x, this.y);
         text.startInfiniteBlinking(0.2);
-        text.startInfiniteBlinking(0.2);
         int dx = (getWidth() - text.getWidth()) / 2;
         int dy = (getHeight()- text.getHeight()) / 2;
         text.setPosition(getX() + dx, getY() + dy);
         this.level.getEntityManager().addEntity(text);
+        ResourceManager.getInstance().getAudio(AudioIdentifier.BONUS_COLLECTED).
+                play();
         destroy();
     }
 

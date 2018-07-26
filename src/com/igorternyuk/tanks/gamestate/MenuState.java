@@ -21,7 +21,7 @@ import java.util.List;
  */
 public class MenuState extends GameState {
 
-    private static final Color COLOR_MENU_ITEM = Color.blue;
+    private static final Color COLOR_MENU_ITEM = new Color(0, 148, 255);
     private static final Color COLOR_CURRENT_CHOICE = Color.yellow;
 
     private class MenuItem {
@@ -99,6 +99,7 @@ public class MenuState extends GameState {
     @Override
     public void unload() {
         this.resourceManager.unloadImage(ImageIdentifier.MENU_BACKGROUND);
+        this.resourceManager.unloadFont(FontIdentifier.BATTLE_CITY);
     }
 
     @Override

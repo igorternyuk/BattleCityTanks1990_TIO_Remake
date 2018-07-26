@@ -47,7 +47,7 @@ public class Player extends Tank {
     private boolean sliding = false;
     private double slidingTimer = 0;
 
-    private PlayerStatistics playerStatistics = new PlayerStatistics(this);
+    private PlayerStatistics statistics = new PlayerStatistics(this);
 
     public Player(LevelState level, PlayerTankType type, double x, double y,
             Direction direction) {
@@ -95,8 +95,10 @@ public class Player extends Tank {
     @Override
     public void draw(Graphics2D g) {
         super.draw(g);
-        this.playerStatistics.draw(g);
+        this.statistics.draw(g);
     }
+    
+    
 
     public void setSliding(boolean sliding) {
         this.sliding = this.onIce && sliding;
@@ -106,20 +108,20 @@ public class Player extends Tank {
         return this.identifier;
     }
 
-    public PlayerStatistics getPlayerStatistics() {
-        return this.playerStatistics;
+    public PlayerStatistics getStatistics() {
+        return this.statistics;
     }
 
     public void registerKilledTank(EnemyTank enemyTank) {
-        this.playerStatistics.addKilledTank(enemyTank);
+        this.statistics.addKilledTank(enemyTank);
     }
 
     public void collectPowerUp(PowerUp powerup) {
-        this.playerStatistics.addPowerUp(powerup);
+        this.statistics.addPowerUp(powerup);
     }
 
     public int getScore() {
-        return this.playerStatistics.getScore();
+        return this.statistics.getScore();
     }
 
     public void promote() {
@@ -218,7 +220,7 @@ public class Player extends Tank {
         this.health = 100;
         setPosition(this.respawnX, this.respawnY);
         addProtection();
-        this.playerStatistics.resetToNextStage();
+        this.statistics.resetToNextStage();
     }
 
     private void setProperAnimation() {
@@ -284,7 +286,6 @@ public class Player extends Tank {
     private void updateProtectionTimer(double frameTime) {
         if (this.hasProtection) {
             this.protectionTimer += frameTime;
-            //System.out.println("this.protectionTimer = " + this.protectionTimer);
             if (this.protectionTimer >= PROTECTION_TIME) {
                 this.protectionTimer = 0;
                 this.hasProtection = false;

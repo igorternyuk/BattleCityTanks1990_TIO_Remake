@@ -27,6 +27,7 @@ public class PlayerStatistics {
             new Color(0, 148, 255);
     private Player player;
     private int score = 0;
+    private int stageScore = 0;
     private int killedTankCount = 0;
     private Map<EnemyTankType, Integer> killedEnemyTanks = new HashMap<>();
     private final Font fontSmaller;
@@ -43,6 +44,7 @@ public class PlayerStatistics {
 
     public void resetToNextStage() {
         this.killedTankCount = 0;
+        this.stageScore = 0;
         resetKilledTanksMap();
     }
 
@@ -53,6 +55,10 @@ public class PlayerStatistics {
 
     public int getScore() {
         return this.score;
+    }
+    
+    public int getStageScore(){
+        return this.stageScore;
     }
 
     public int getKilledTankCount() {
@@ -69,11 +75,13 @@ public class PlayerStatistics {
         this.killedEnemyTanks.put(enemyTank.getType(), killedTanksEithSuchType
                 + 1);
         this.score += enemyTank.getScore();
+        this.stageScore += enemyTank.getScore();
         ++this.killedTankCount;
     }
 
     public void addPowerUp(PowerUp powerUp) {
         this.score += powerUp.getScore();
+        this.stageScore += powerUp.getScore();
     }
 
     public void update(KeyboardState keyboardState, double frameTime) {

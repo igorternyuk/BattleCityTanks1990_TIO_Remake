@@ -32,6 +32,14 @@ public enum EnemyTankType {
         this.projectileType = ProjectileType.ENEMY;
     }
     
+    public EnemyTankType next(){
+        int nextOrdinal = ordinal() + 1;
+        if(nextOrdinal > EnemyTankType.values().length - 1){
+            nextOrdinal = 0;
+        }
+        return EnemyTankType.values()[nextOrdinal];
+    }
+    
     public double getSpeed() {
         return this.speed;
     }

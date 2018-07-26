@@ -163,7 +163,6 @@ public class MenuState extends GameState {
 
     @Override
     public void onMouseMoved(MouseEvent e) {
-        System.out.println("currY = " + e.getY());
         for(int i = 0; i < this.menuItems.size(); ++i){
             MenuItem currMenuItem = this.menuItems.get(i);
             if(currMenuItem.bounds.contains(e.getX(), e.getY())){

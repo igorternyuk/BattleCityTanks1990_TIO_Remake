@@ -11,5 +11,6 @@ public enum AudioIdentifier {
     SHOT,
     EXPLOSION,
     BONUS_APPEARES,
-    BONUS_COLLECTED;
+    BONUS_COLLECTED,
+    SCORE_SCREEN;
 }

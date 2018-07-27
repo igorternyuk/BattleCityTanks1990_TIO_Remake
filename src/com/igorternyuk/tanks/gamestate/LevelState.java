@@ -35,8 +35,8 @@ import com.igorternyuk.tanks.input.KeyboardState;
 import com.igorternyuk.tanks.resourcemanager.AudioIdentifier;
 import com.igorternyuk.tanks.resourcemanager.FontIdentifier;
 import com.igorternyuk.tanks.resourcemanager.ImageIdentifier;
+import com.igorternyuk.tanks.utils.BrickFont;
 import com.igorternyuk.tanks.utils.Files;
-import com.igorternyuk.tanks.utils.Painter;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Point;
@@ -497,6 +497,9 @@ public class LevelState extends GameState {
             case KeyEvent.VK_F:
                 this.player.setCanFire(true);
                 break;
+            case KeyEvent.VK_M:
+                this.gameStateManager.setGameState(GameStateManager.MENU_STATE);
+                break;
             default:
                 break;
         }
@@ -576,9 +579,14 @@ public class LevelState extends GameState {
     }
 
     private void drawGameStatus(Graphics2D g) {
-        Painter.drawCenteredString(g, this.gameStatus.getDescription(),
-                fontGameStatus, this.gameStatus.getColor(),
-                (Game.HEIGHT - Game.STATISTICS_PANEL_HEIGHT) / 2);
+        if(this.gameStatus == GameStatus.PAUSED){
+            BrickFont.drawWithBricksCentralized(g, "GAME", Game.HEIGHT / 3);
+            BrickFont.drawWithBricksCentralized(g, "PAUSED", Game.HEIGHT / 2);
+        } else if(this.gameStatus == GameStatus.GAME_OVER){
+            BrickFont.drawWithBricksCentralized(g, "GAME", Game.HEIGHT / 3);
+            BrickFont.drawWithBricksCentralized(g, "OVER", Game.HEIGHT / 2);
+        }
+        
     }
 
     private void createOnPowerUpCollectedHanlers() {

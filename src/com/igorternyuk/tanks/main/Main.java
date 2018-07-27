@@ -1,6 +1,7 @@
 package com.igorternyuk.tanks.main;
 
 import com.igorternyuk.tanks.gameplay.Game;
+import com.igorternyuk.tanks.utils.BrickFont;
 
 
 /**

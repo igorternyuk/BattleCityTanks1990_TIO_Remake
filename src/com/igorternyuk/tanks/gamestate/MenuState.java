@@ -2,10 +2,14 @@ package com.igorternyuk.tanks.gamestate;
 
 import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.graphics.images.Background;
+import com.igorternyuk.tanks.graphics.images.TextureAtlas;
+import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
+import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
 import java.awt.Graphics2D;
 import com.igorternyuk.tanks.input.KeyboardState;
 import com.igorternyuk.tanks.resourcemanager.FontIdentifier;
 import com.igorternyuk.tanks.resourcemanager.ImageIdentifier;
+import com.igorternyuk.tanks.utils.BrickFont;
 import com.igorternyuk.tanks.utils.Painter;
 import java.awt.Color;
 import java.awt.Font;
@@ -38,8 +42,8 @@ public class MenuState extends GameState {
             this.bounds = bounds;
             this.action = action;
         }
-        
-        public void draw(Graphics2D g){
+
+        public void draw(Graphics2D g) {
             Color color = (this.index == currentChoice) ?
                     COLOR_CURRENT_CHOICE :
                     COLOR_MENU_ITEM;
@@ -49,10 +53,11 @@ public class MenuState extends GameState {
     }
 
     private Font fontMenuItem;
-
-    private Background background;
+    private TextureAtlas atlas;
+    private SpriteSheetManager spriteSheetManager;
     private int currentChoice = 0;
     private List<MenuItem> menuItems = new ArrayList<>();
+    private boolean loaded = false;
 
     public MenuState(GameStateManager gsm) {
         super(gsm);
@@ -62,31 +67,36 @@ public class MenuState extends GameState {
     @Override
     public void load() {
         System.out.println("Menu state loading...");
-        this.resourceManager.loadImage(ImageIdentifier.MENU_BACKGROUND,
-                "/images/menuScreen.png");
         this.resourceManager.loadFont(FontIdentifier.BATTLE_CITY,
                 "/fonts/prstart.ttf");
         Font font = this.resourceManager.getFont(FontIdentifier.BATTLE_CITY);
         this.fontMenuItem = font.deriveFont(Font.BOLD, 24);
-        this.background = new Background(
-                this.resourceManager.getImage(ImageIdentifier.MENU_BACKGROUND));
-        this.background.setPosition(0, 0);
+        this.resourceManager.loadImage(ImageIdentifier.TEXTURE_ATLAS,
+                "/images/texture_atlas.png");
+        this.atlas = new TextureAtlas(this.resourceManager.getImage(
+                ImageIdentifier.TEXTURE_ATLAS));
+        this.spriteSheetManager = SpriteSheetManager.getInstance();
+        this.spriteSheetManager.put(SpriteSheetIdentifier.BRICK, this.atlas);
+        this.loaded = true;
     }
 
     @Override
     public void unload() {
-        this.resourceManager.unloadImage(ImageIdentifier.MENU_BACKGROUND);
         this.resourceManager.unloadFont(FontIdentifier.BATTLE_CITY);
+        this.resourceManager.unloadImage(ImageIdentifier.TEXTURE_ATLAS);
     }
 
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
-        this.background.update(keyboardState, frameTime);
     }
 
     @Override
     public void draw(Graphics2D g) {
-        this.background.draw(g);
+        if(!this.loaded){
+            return;
+        }
+        BrickFont.drawWithBricksCentralized(g, "BATTLE", Game.HEIGHT / 6);
+        BrickFont.drawWithBricksCentralized(g, "CITY", Game.HEIGHT / 3);
         this.menuItems.forEach(menuItem -> menuItem.draw(g));
     }
 
@@ -130,24 +140,24 @@ public class MenuState extends GameState {
 
     @Override
     public void onMouseReleased(MouseEvent e) {
-        boolean hoverMenuArea = this.menuItems.stream().anyMatch(menuItem -> { 
+        boolean hoverMenuArea = this.menuItems.stream().anyMatch(menuItem -> {
             return menuItem.bounds.contains(e.getX(), e.getY());
         });
-        if(hoverMenuArea){
+        if (hoverMenuArea) {
             select(this.currentChoice);
         }
     }
 
     @Override
     public void onMouseMoved(MouseEvent e) {
-        for(int i = 0; i < this.menuItems.size(); ++i){
+        for (int i = 0; i < this.menuItems.size(); ++i) {
             MenuItem currMenuItem = this.menuItems.get(i);
-            if(currMenuItem.bounds.contains(e.getX(), e.getY())){
+            if (currMenuItem.bounds.contains(e.getX(), e.getY())) {
                 this.currentChoice = currMenuItem.index;
             }
         }
     }
-    
+
     private void createMenuItems() {
         addMenuItem("PLAY", () -> {
             this.gameStateManager.setGameState(GameStateManager.LEVEL_STATE);

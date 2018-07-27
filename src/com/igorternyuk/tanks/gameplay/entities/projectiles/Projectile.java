@@ -38,7 +38,7 @@ public class Projectile extends Entity {
         this.sprite = new Sprite(image, this.x, this.y, Game.SCALE);
         updateSprite();
     }
-
+    
     public ProjectileType getType() {
         return this.type;
     }
@@ -82,12 +82,12 @@ public class Projectile extends Entity {
 
     @Override
     public int getWidth() {
-        return this.sprite.getWidth();
+        return this.antiarmour ? Game.HALF_TILE_SIZE : this.sprite.getWidth();
     }
 
     @Override
     public int getHeight() {
-        return this.sprite.getHeight();
+        return this.antiarmour ? Game.HALF_TILE_SIZE : this.sprite.getHeight();
     }
 
     @Override

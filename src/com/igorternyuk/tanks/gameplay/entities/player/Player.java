@@ -45,7 +45,7 @@ public class Player extends Tank {
     private double respawnX, respawnY;
     private boolean hasProtection = false;
     private double protectionTimer;
-    private int lives = 5;
+    private int lives = 2;
     private double lastShootTimer;
     private boolean onIce = false;
     private boolean sliding = false;

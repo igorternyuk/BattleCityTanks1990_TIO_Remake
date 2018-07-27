@@ -148,7 +148,7 @@ public class ConstructionState extends GameState {
                         "State number",
                         "Select the stage you would like to edit",
                         JOptionPane.INFORMATION_MESSAGE));
-                this.currLevel = lvl;
+                this.currLevel = lvl % (LevelState.STAGE_MAX + 1);
                 System.out.println("lvl = " + lvl);
                 this.tileMap.loadMap("/tilemap/level" + lvl + ".map");
             },

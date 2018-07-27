@@ -68,7 +68,7 @@ import java.util.logging.Logger;
 public class LevelState extends GameState {
 
     public static final int TANKS_TOTAL = 20;
-    public static final int STAGE_MAX = 36;
+    public static final int STAGE_MAX = 40;
     protected static final Point EAGLE_POSITION = new Point(12
             * Game.HALF_TILE_SIZE, 24 * Game.HALF_TILE_SIZE);
     protected static final Point PLAYER_RESPAWN_POSITION = new Point(9
@@ -115,7 +115,7 @@ public class LevelState extends GameState {
         {10, 4, 4, 2}, {0, 8, 2, 10}, {4, 6, 4, 6}, {2, 8, 2, 8},
         {15, 2, 2, 1}, {0, 4, 10, 6}, {4, 8, 4, 4}, {3, 8, 3, 6},
         {6, 4, 2, 8}, {4, 4, 4, 8}, {0, 10, 4, 6}, {0, 6, 4, 10},
-        {0, 4, 0, 16}
+        {0, 4, 0, 16}, {0, 2, 1, 17}, {0, 1, 1, 18}, {0, 2, 2, 16}
     };
     
     public LevelState(GameStateManager gameStateManager) {
@@ -392,7 +392,7 @@ public class LevelState extends GameState {
 
     private void fillHangar() {
         this.hangar.clear();
-        int index = this.stageNumber % STAGE_MAX;
+        int index = (this.stageNumber - 1) % STAGE_MAX;
         int[] enemyTypes = this.enemyGroups[index];
         EnemyTankType[] allEnemyTankTypes = EnemyTankType.values();
         for (int i = 0; i < enemyTypes.length; ++i) {

@@ -148,8 +148,7 @@ public class ConstructionState extends GameState {
                         "State number",
                         "Select the stage you would like to edit",
                         JOptionPane.INFORMATION_MESSAGE));
-                this.currLevel = lvl % (LevelState.STAGE_MAX + 1);
-                System.out.println("lvl = " + lvl);
+                this.currLevel = (lvl - 1) % LevelState.STAGE_MAX + 1;
                 this.tileMap.loadMap("/tilemap/level" + lvl + ".map");
             },
             () -> {
@@ -211,8 +210,6 @@ public class ConstructionState extends GameState {
 
     @Override
     public void onMouseReleased(MouseEvent e) {
-        System.out.println("clicked row = " + e.getY() / 2 / 8);
-        System.out.println("clicked col = " + e.getX() / 2 / 8);
         int releasedButton = e.getButton();
         if (releasedButton == MouseEvent.BUTTON3) {
             this.tileSelected = false;
@@ -230,7 +227,6 @@ public class ConstructionState extends GameState {
                 (int) (e.getY() / Game.SCALE));
 
         if (!this.tileSelected) {
-            System.out.println("Tile is not selected");
             for (int i = 0; i < this.tileButtons.size(); ++i) {
                 TileButton currButton = this.tileButtons.get(i);
                 if (currButton.boundingRect.inside(clickedPoint.x,
@@ -242,15 +238,11 @@ public class ConstructionState extends GameState {
                 }
             }
         } else {
-            System.out.println("Tile selected");
             if (!checkIfClickPositionAcceptable(clickedPoint)) {
-                System.out.println("Position is not acceptable");
                 return;
             }
             int row = (int) (e.getY() / Game.SCALE / Game.HALF_TILE_SIZE);
             int col = (int) (e.getX() / Game.SCALE / Game.HALF_TILE_SIZE);
-            System.out.println("this.selectedTileType = "
-                    + this.selectedTileType);
             if (releasedButton == MouseEvent.BUTTON1) {
                 this.tileMap.set(row, col, this.selectedTileType);
             } else if (releasedButton == MouseEvent.BUTTON2) {

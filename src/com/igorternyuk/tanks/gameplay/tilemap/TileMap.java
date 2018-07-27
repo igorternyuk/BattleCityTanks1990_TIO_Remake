@@ -397,6 +397,9 @@ public class TileMap {
     }
 
     public void drawBushes(Graphics2D g) {
+        if (!this.mapLoaded) {
+            return;
+        }
         for (int i = this.bushTiles.size() - 1; i >= 0; --i) {
             this.bushTiles.get(i).draw(g);
         }

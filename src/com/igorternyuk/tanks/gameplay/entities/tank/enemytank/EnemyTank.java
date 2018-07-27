@@ -168,6 +168,13 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
 
         return handleCollisionsWithOtherTanks(frameTime);
     }
+    
+    @Override
+    protected void handleCollisionWithOtherTank(Tank other, double frameTime){
+        super.handleCollisionWithOtherTank(other, frameTime);
+        reverse();
+        move(frameTime);
+    }
 
     private void createPowerUp() {
         int randX = this.random.nextInt(Game.TILES_IN_WIDTH - 1)
@@ -461,10 +468,6 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         }
     }
 
-    /* private void destroyExistingPowerUps() {
-        this.level.getEntityManager().getEntitiesByType(EntityType.POWER_UP).
-                forEach(powerUp -> powerUp.destroy());
-    }*/
     private TankColor getTankColor(int number, EnemyTankType tankType) {
 
         TankColor color;

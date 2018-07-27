@@ -112,14 +112,18 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
         Rectangle thisBoundingRect = this.getBoundingRect();
         Rectangle otherBoundingRect = other.getBoundingRect();
         if(thisBoundingRect.intersects(otherBoundingRect)){
-            Rectangle intersection = thisBoundingRect.
-                intersection(otherBoundingRect);
-            correctPositionAfterIntersection(intersection);
-            reverse();
-            move(frameTime);
+            handleCollisionWithOtherTank(other, frameTime);
             return true;
         }
         return false;        
+    }
+    
+    protected void handleCollisionWithOtherTank(Tank other, double frameTime){
+        Rectangle thisBoundingRect = this.getBoundingRect();
+        Rectangle otherBoundingRect = other.getBoundingRect();
+        Rectangle intersection = thisBoundingRect.
+                intersection(otherBoundingRect);
+        correctPositionAfterIntersection(intersection);
     }
 
     private void correctPositionAfterIntersection(Rectangle intersection) {

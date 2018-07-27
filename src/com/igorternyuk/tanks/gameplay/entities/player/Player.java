@@ -79,6 +79,7 @@ public class Player extends Tank {
                 fitToTiles();
             }
             handleCollisionsWithSplashes();
+            handleCollisionsWithOtherTanks(frameTime);
             fixBounds();
         }
         super.update(keyboardState, frameTime);

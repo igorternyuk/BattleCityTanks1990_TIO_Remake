@@ -41,7 +41,7 @@ public enum TankColor {
     }
 
     public Point getOffsetFromTankSpriteSheetTopLeftCorner() {
-        return offsetFromTankSpriteSheetTopLeftCorner;
+        return this.offsetFromTankSpriteSheetTopLeftCorner;
     }
     
     public abstract TankColor next();

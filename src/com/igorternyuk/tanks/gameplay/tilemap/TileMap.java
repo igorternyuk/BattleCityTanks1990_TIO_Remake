@@ -209,13 +209,9 @@ public class TileMap {
         int[][] map = Files.loadMapFromFile(pathToMapFile);
         this.bushTiles.clear();
         this.waterTiles.clear();
-        System.out.println("map[25][0] = " + map[25][0]);
         createTilesFromMap(map);
-        System.out.println("Number of bush tiles = " + this.bushTiles.size());
-
         pathToTheCurrentMapFile = pathToMapFile;
         this.mapLoaded = true;
-        System.out.println("The tile map was successfully loaded");
     }
 
     public void saveMapToFile() {
@@ -323,6 +319,9 @@ public class TileMap {
     }
 
     public void update(KeyboardState keyboardState, double frameTime) {
+        if(!this.mapLoaded){
+            return;
+        }
         for (int row = 0; row < this.tiles.length; ++row) {
             for (int col = 0; col < this.tiles[row].length; ++col) {
                 Tile currTile = this.tiles[row][col];

@@ -71,8 +71,6 @@ public class LevelState extends GameState {
             * Game.HALF_TILE_SIZE, 24 * Game.HALF_TILE_SIZE);
     protected static final Point PLAYER_RESPAWN_POSITION = new Point(9
             * Game.HALF_TILE_SIZE, 24 * Game.HALF_TILE_SIZE);
-    private Font fontGameStatus = new Font("Verdana", Font.BOLD,
-            48);
     private Font fontNextStageSplash =
             new Font("Verdana", Font.BOLD | Font.ITALIC, 48);
 
@@ -82,6 +80,7 @@ public class LevelState extends GameState {
     private static final int TANKS_ON_FIELD_MAX = 4;
     private static final int STAGE_MAX = 25;
     private static final double NEXT_STAGE_SPLASH_DELAY = 6;
+    private static final double GAME_OVER_SCREEN_DELAY = 3;
 
     private TextureAtlas atlas;
     private SpriteSheetManager spriteSheetManager;
@@ -102,6 +101,8 @@ public class LevelState extends GameState {
     private boolean loaded = false;
     private boolean scoreScreenActive = false;
     private ScoreScreen scoreScreen;
+    private boolean gameOverScreenActive = false;
+    private double gameOverScreenTimer = 0;
 
     public LevelState(GameStateManager gameStateManager) {
         super(gameStateManager);
@@ -131,13 +132,13 @@ public class LevelState extends GameState {
     @Override
     public void unload() {
         saveHighestScore();
-        this.tileMap = null;
         for (SpriteSheetIdentifier identifier : SpriteSheetIdentifier.values()) {
             this.spriteSheetManager.remove(identifier);
         }
         this.resourceManager.unloadImage(ImageIdentifier.TEXTURE_ATLAS);
         this.resourceManager.unloadFont(FontIdentifier.BATTLE_CITY);
         unloadSounds();
+        this.loaded = false;
     }
 
     private void unloadSounds() {
@@ -159,15 +160,25 @@ public class LevelState extends GameState {
         }
 
         checkIfNextStage();
-
+        
+        if(this.gameOverScreenActive){
+            this.gameOverScreenTimer += frameTime;
+            if(this.gameOverScreenTimer > GAME_OVER_SCREEN_DELAY){
+                this.gameOverScreenTimer = 0;
+                this.gameOverScreenActive = false;
+                this.gameStateManager.setGameState(GameStateManager.MENU_STATE);
+            }
+        }
+        
         if (this.scoreScreenActive) {
             this.scoreScreen.update(keyboardState, frameTime);
             return;
         }
-
+        
         if (this.gameStatus == GameStatus.GAME_OVER) {
             if (this.scoreScreen.isReadyToNextStage()) {
                 this.scoreScreenActive = false;
+                this.gameOverScreenActive = true;
             }
             return;
         }
@@ -235,6 +246,12 @@ public class LevelState extends GameState {
     private void stopPlayerSounds() {
         this.resourceManager.getAudio(AudioIdentifier.PLAYER_IDLE).stop();
         this.resourceManager.getAudio(AudioIdentifier.PLAYER_MOVES).stop();
+    }
+    
+    private void stopAllSounds(){
+        for(AudioIdentifier identifier: AudioIdentifier.values()){
+            this.resourceManager.getAudio(identifier).stop();
+        }
     }
 
     public Stack<EnemyTankType> getHangar() {
@@ -361,7 +378,7 @@ public class LevelState extends GameState {
 
     private void fillHangar() {
         this.hangar.clear();
-        for (int i = TANKS_TOTAL; i > 0; --i) {
+        for (int i = TANKS_TOTAL; i >= 0; --i) {
             EnemyTankType[] allEnemyTankTypes = EnemyTankType.values();
             EnemyTankType randomType = EnemyTankType.values()[this.random.
                     nextInt(allEnemyTankTypes.length)];
@@ -498,6 +515,7 @@ public class LevelState extends GameState {
                 this.player.setCanFire(true);
                 break;
             case KeyEvent.VK_M:
+                stopAllSounds();
                 this.gameStateManager.setGameState(GameStateManager.MENU_STATE);
                 break;
             default:
@@ -537,8 +555,9 @@ public class LevelState extends GameState {
         this.playerSpriteSheetMap = new HashMap<>();
         for (TankColor color : TankColor.values()) {
             for (Alliance alliance : Alliance.values()) {
-                Point topLeft = color.
+                Point p = color.
                         getOffsetFromTankSpriteSheetTopLeftCorner();
+                Point topLeft = new Point(p.x, p.y);
                 topLeft.x += alliance.
                         getOffsetFromSameColorTankSpriteSheetTopLeftCorner().x;
                 topLeft.y += alliance.
@@ -647,6 +666,10 @@ public class LevelState extends GameState {
         } else {
             if (!this.scoreScreen.isReadyToNextStage()) {
                 this.scoreScreenActive = true;
+            } else {
+                if (this.gameStatus != GameStatus.GAME_OVER) {
+                    nextStage();
+                }
             }
         }
     }
@@ -725,7 +748,6 @@ public class LevelState extends GameState {
         this.resourceManager.loadFont(FontIdentifier.BATTLE_CITY,
                 "/fonts/prstart.ttf");
         Font font = this.resourceManager.getFont(FontIdentifier.BATTLE_CITY);
-        this.fontGameStatus = font.deriveFont(Font.BOLD, 36);
         this.fontNextStageSplash = font.deriveFont(Font.BOLD | Font.ITALIC, 34);
     }
 

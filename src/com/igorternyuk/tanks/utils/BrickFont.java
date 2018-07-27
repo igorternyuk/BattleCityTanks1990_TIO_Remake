@@ -14,7 +14,7 @@ import java.util.Map;
  */
 public class BrickFont {
 
-    private static final String[][] letters = {
+    private static final String[][] ALPHABET = {
         //A 1
         {
             " XX ",
@@ -223,18 +223,18 @@ public class BrickFont {
         }
     };
 
-    private static final Map<Character, String[]> alphabet = createAlphabet();
+    private static final Map<Character, String[]> ALPHABET_MAP = createAlphabet();
 
     private static Map<Character, String[]> createAlphabet() {
         Map<Character, String[]> alphabetMap = new HashMap<>();
         for (int i = 65; i <= 90; ++i) {
-            alphabetMap.put((char) i, letters[i - 65]);
+            alphabetMap.put((char) i, ALPHABET[i - 65]);
         }
         return alphabetMap;
     }
 
     public static int getLetterWidth(Character letter) {
-        return alphabet.get(letter)[0].length();
+        return ALPHABET_MAP.get(letter)[0].length();
     }
 
     public static void drawWithBricksCentralized(Graphics2D g, String word,
@@ -250,6 +250,7 @@ public class BrickFont {
         for (char letter : wordLetters) {
             width += (getLetterWidth(letter) + 1) * BRICK_SIZE;
         }
+        
         width -= BRICK_SIZE;
 
         int topLeftX = (Game.WIDTH - width) / 2;
@@ -260,7 +261,9 @@ public class BrickFont {
 
     public static void drawWithBricks(Graphics2D g, String word, int topLeftX,
             int topLeftY) {
-
+        
+        word = word.toUpperCase();
+        
         BufferedImage brickImage = Images.resizeImage(SpriteSheetManager.
                 getInstance().get(SpriteSheetIdentifier.BRICK), 0.75
                 * Game.SCALE);
@@ -272,7 +275,7 @@ public class BrickFont {
         int right = topLeftX;
 
         for (int k = 0; k < wordLetters.length; ++k) {
-            String[] letter = alphabet.get(wordLetters[k]);
+            String[] letter = ALPHABET_MAP.get(wordLetters[k]);
             for (int y = 0; y < letter.length; ++y) {
                 String row = letter[y];
                 char[] lettersInRow = row.toCharArray();

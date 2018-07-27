@@ -1,8 +1,6 @@
 package com.igorternyuk.tanks.gamestate;
 
 import com.igorternyuk.tanks.gameplay.Game;
-import com.igorternyuk.tanks.gameplay.pathfinder.Pathfinder;
-import com.igorternyuk.tanks.gameplay.pathfinder.Pathfinder.Spot;
 import com.igorternyuk.tanks.gameplay.tilemap.Tile;
 import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
 import com.igorternyuk.tanks.gameplay.tilemap.TileType;
@@ -13,7 +11,6 @@ import com.igorternyuk.tanks.input.KeyboardState;
 import com.igorternyuk.tanks.resourcemanager.ImageIdentifier;
 import com.igorternyuk.tanks.utils.Images;
 import com.igorternyuk.tanks.utils.Painter;
-import com.sun.glass.events.KeyEvent;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;

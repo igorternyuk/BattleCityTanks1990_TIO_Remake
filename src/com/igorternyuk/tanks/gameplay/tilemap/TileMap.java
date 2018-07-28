@@ -82,7 +82,7 @@ public class TileMap {
         this.lastCollided = Tile.createTile(TileType.EMPTY, new Point(),
                 this.tileTypeImageMap.get(TileType.EMPTY), this.scale);
     }
-
+    
     public List<Point> getEnemyTankAppearencePositions() {
         return Collections.unmodifiableList(this.enemyTankAppearancePositions);
     }
@@ -253,6 +253,8 @@ public class TileMap {
         }
         this.tiles[row][col] = tile;
     }
+    
+    
 
     public void activateEagleProtection() {
         buildMetalWallsAroundEagle();
@@ -272,6 +274,14 @@ public class TileMap {
     public void deactivateEagleProtection() {
         restoreRegularEagleProtection();
         this.eagleProtectionActive = false;
+    }
+    
+    public void destroyAllProtections(){
+        this.eagleProtectionTilePositions.forEach(point -> {
+            int row = point.y / Game.HALF_TILE_SIZE;
+            int col = point.x / Game.HALF_TILE_SIZE;
+            destroyTile(row, col);
+        });
     }
 
     private void restoreRegularEagleProtection() {

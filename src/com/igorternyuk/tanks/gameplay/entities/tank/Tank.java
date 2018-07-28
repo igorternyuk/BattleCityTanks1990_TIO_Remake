@@ -6,12 +6,14 @@ import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
-import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
 import com.igorternyuk.tanks.gameplay.entities.splash.Splash;
 import com.igorternyuk.tanks.gameplay.tilemap.Tile;
 import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
 import com.igorternyuk.tanks.gamestate.LevelState;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.List;
@@ -30,16 +32,18 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
     protected double freezeTimer = 0;
     protected double frozenTime = 0;
     protected boolean canClearBushes = false;
-    
+
     public Tank(LevelState level, EntityType type, double x, double y,
             double speed, Direction direction) {
         super(level, type, x, y, speed, direction);
     }
-    
+
     public abstract void promote();
+
     public abstract void promoteToHeavy();
+
     public abstract void fire();
-    
+
     public void freeze(double duration) {
         this.frozenTime = duration;
         this.frozen = true;
@@ -72,27 +76,27 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
     public void setCanFire(boolean canFire) {
         this.canFire = canFire;
     }
-    
-    public void reverse(){
+
+    public void reverse() {
         setDirection(direction.getOpposite());
     }
-    
-    protected void fitToTiles(){
-        if(this.direction.isVertical()){
-            int c = (int)getX() / Game.QUARTER_TILE_SIZE;
-            double dx = c *  Game.QUARTER_TILE_SIZE - getX();
-            if(Math.abs(dx) < Game.QUARTER_TILE_SIZE){
+
+    protected void fitToTiles() {
+        if (this.direction.isVertical()) {
+            int c = (int) getX() / Game.QUARTER_TILE_SIZE;
+            double dx = c * Game.QUARTER_TILE_SIZE - getX();
+            if (Math.abs(dx) < Game.QUARTER_TILE_SIZE) {
                 setPosition(getX() + dx, getY());
             }
-        } else if(this.direction.isHorizontal()){
-            int r = (int)getY() / Game.QUARTER_TILE_SIZE;
+        } else if (this.direction.isHorizontal()) {
+            int r = (int) getY() / Game.QUARTER_TILE_SIZE;
             double dy = r * Game.QUARTER_TILE_SIZE - getY();
-            if(Math.abs(dy) < Game.QUARTER_TILE_SIZE){
+            if (Math.abs(dy) < Game.QUARTER_TILE_SIZE) {
                 setPosition(getX(), getY() + dy);
             }
         }
     }
-    
+
     protected boolean checkMapCollision() {
         TileMap tileMap = this.level.getTileMap();
         if (tileMap.hasCollision(this)) {
@@ -102,7 +106,7 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
         }
         return false;
     }
-    
+
     protected boolean handleCollisionsWithSplashes() {
         List<Entity> splashes = this.level.getEntityManager().getEntitiesByType(
                 EntityType.SPLASH);
@@ -140,14 +144,14 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
     protected boolean checkCollisionWithOtherTank(Tank other, double frameTime) {
         Rectangle thisBoundingRect = this.getBoundingRect();
         Rectangle otherBoundingRect = other.getBoundingRect();
-        if(thisBoundingRect.intersects(otherBoundingRect)){
+        if (thisBoundingRect.intersects(otherBoundingRect)) {
             handleCollisionWithOtherTank(other, frameTime);
             return true;
         }
-        return false;        
+        return false;
     }
-    
-    protected void handleCollisionWithOtherTank(Tank other, double frameTime){
+
+    protected void handleCollisionWithOtherTank(Tank other, double frameTime) {
         Rectangle thisBoundingRect = this.getBoundingRect();
         Rectangle otherBoundingRect = other.getBoundingRect();
         Rectangle intersection = thisBoundingRect.
@@ -164,7 +168,7 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
                     getOpposite().getDx(), this.y);
         }
     }
-    
+
     protected Point calcProjectileDeparturePosition() {
         Point departure = new Point();
         int projectileWidth = ProjectileType.getSourceRect(this.direction).width;
@@ -191,5 +195,27 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
                 break;
         }
         return departure;
+    }
+
+    @Override
+    public void draw(Graphics2D g) {
+        super.draw(g);
+        if (this.canTraverseWater) {
+            drawOutline(g);
+        }
+    }
+
+    protected void drawOutline(Graphics2D g) {
+        g.setColor(Color.red);
+        g.setStroke(new BasicStroke(3));
+        Rectangle boundingRect = getBoundingRect();
+        Rectangle ouline = new Rectangle(
+                (int)(Game.SCALE * boundingRect.x - 1),
+                (int)(Game.SCALE * boundingRect.y - 1),
+                (int)(Game.SCALE * boundingRect.width + 1),
+                (int)(Game.SCALE * boundingRect.height + 1));
+        g.drawRoundRect(ouline.x, ouline.y, ouline.width,
+                ouline.height, 5, 5);
+        g.setStroke(new BasicStroke(1));
     }
 }

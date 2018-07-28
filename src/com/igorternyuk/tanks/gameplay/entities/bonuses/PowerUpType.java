@@ -21,9 +21,8 @@ public enum PowerUpType {
     private static final Random random = new Random();
 
     public static PowerUpType randomType() {
-        /*int randNumber = random.nextInt(PowerUpType.values().length);
-        return PowerUpType.values()[randNumber];*/
-        return  PowerUpType.GUN;
+        int randNumber = random.nextInt(PowerUpType.values().length);
+        return PowerUpType.values()[randNumber];
     }
 
     private Rectangle sourceRect;

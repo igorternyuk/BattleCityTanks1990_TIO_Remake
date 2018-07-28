@@ -191,10 +191,7 @@ public abstract class Entity {
     }
 
     public boolean collides(Entity other) {
-        return !(right() < other.left()
-                || left() > other.right()
-                || top() > other.bottom()
-                || bottom() < other.top());
+        return getBoundingRect().intersects(other.getBoundingRect());
     }
 
     protected boolean fixBounds() {

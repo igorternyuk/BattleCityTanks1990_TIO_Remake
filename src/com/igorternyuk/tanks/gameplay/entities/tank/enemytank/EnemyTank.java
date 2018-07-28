@@ -4,8 +4,6 @@ import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
-import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUp;
-import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUpType;
 import com.igorternyuk.tanks.gameplay.entities.player.Player;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
@@ -40,7 +38,6 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     private static final double COLOR_CHANGING_PERIOD = 0.15;
     private static final double TARGET_CHANGING_PERIOD = 20;
     private static final double SHOOTING_PERIOD = 2;
-    private static final double RED_BLINKING_PROBABILITY = 0.7;
 
     private int number;
     private EnemyTankIdentifier identifier;
@@ -77,15 +74,23 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         selectRandomFiringPointToAttackEagle();
         this.moving = true;
     }
+
+    public boolean isBonus() {
+        return this.bonus;
+    }
     
     private void checkIfSpecialTank(){
         if (!checkIfBonus()) {
-            if (this.random.nextDouble() < RED_BLINKING_PROBABILITY) {
+            if (this.random.nextDouble() < calcRedBlinkingProbability()) {
                 if(this.identifier.getType() != EnemyTankType.ARMORED){
                     turnRed();
                 }
             }
         }
+    }
+    
+    private double calcRedBlinkingProbability(){
+        return 2 * this.level.getStageNumber() + 8;
     }
 
     public final void turnRed() {
@@ -205,17 +210,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     }
 
     private void createPowerUp() {
-        int randX = this.random.nextInt(Game.TILES_IN_WIDTH - 1)
-                * Game.HALF_TILE_SIZE;
-        int randY = this.random.nextInt(Game.TILES_IN_HEIGHT - 1)
-                * Game.HALF_TILE_SIZE;
-        PowerUp powerUp = new PowerUp(this.level, PowerUpType.randomType(),
-                randX, randY);
-        powerUp.startInfiniteBlinking(0.4);
-        this.level.getEntityManager().removeEntitiesByType(EntityType.POWER_UP);
-        this.level.getEntityManager().addEntity(powerUp);
-        ResourceManager.getInstance().getAudio(AudioIdentifier.BONUS_APPEARES).
-                play();
+        this.level.addRandomPowerUp();
     }
 
     @Override

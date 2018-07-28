@@ -21,8 +21,10 @@ import java.awt.image.BufferedImage;
  */
 public class PowerUp extends Entity {
 
+    private static final double LIFE_TIME = 20;
     private PowerUpType type;
     private Sprite sprite;
+    private double timer = 0;
 
     public PowerUp(LevelState level, PowerUpType type, double x, double y) {
         super(level, EntityType.POWER_UP, x, y, 0, Direction.NORTH);
@@ -31,6 +33,7 @@ public class PowerUp extends Entity {
                 SpriteSheetIdentifier.BONUS);
         this.sprite = new Sprite(image, this.x, this.y, Game.SCALE);
         this.sprite.setSourceRect(this.type.getSourceRect());
+        this.sprite.setPosition(getX(), getY());
     }
 
     public void collect() {
@@ -67,8 +70,11 @@ public class PowerUp extends Entity {
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
         super.update(keyboardState, frameTime);
-        this.sprite.setPosition(getX(), getY());
         updateBlinkTimer(frameTime);
+        this.timer += frameTime;
+        if(this.timer > LIFE_TIME){
+            destroy();
+        }
     }
 
     @Override

@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Stack;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -82,7 +83,10 @@ public class LevelState extends GameState {
 
     private static final int TANKS_ON_FIELD_MAX = 4;
     private static final double PLAYER_PROTECTION_DURATION = 10;
-    private static final double ENEMY_TANK_FROZEN_DURATION = 10;
+    private static final double PLAYER_TANK_FROZEN_DURATION = 10;
+    private static final double ENEMY_TANK_FROZEN_DURATION = 13;
+    private static final double POWERUP_TIMER_DELAY = 15;
+    private static final double POWERUP_PROBABILITY = 0.6;
     private static final double NEXT_STAGE_SPLASH_DELAY = 6;
     private static final double GAME_OVER_SCREEN_DELAY = 3;
 
@@ -98,7 +102,9 @@ public class LevelState extends GameState {
     private int highestScore = 0;
     private int stageNumber = 1;
     private Stack<EnemyTankType> hangar = new Stack<>();
-    private Map<PowerUpType, Runnable> onPowerUpCollectedHandlers =
+    private Map<PowerUpType, Runnable> onPowerUpCollectedByPlayerHandlers =
+            new HashMap<>();
+    private Map<PowerUpType, Consumer<EnemyTank>> onPowerUpCollectedByEnemyHandlers =
             new HashMap<>();
     private Random random = new Random();
     private GameStatus gameStatus = GameStatus.PLAY;
@@ -122,12 +128,14 @@ public class LevelState extends GameState {
 
     private double respawnTimer = 0;
     private double respawnDelay = 0;
+    private double powerUpTimer = 0;
 
     public LevelState(GameStateManager gameStateManager) {
         super(gameStateManager);
         this.entityManager = new EntityManager(this);
         addRenderingLayers();
-        createOnPowerUpCollectedByPlayerHanlers();
+        createOnPowerUpCollectedByPlayerHandlers();
+        createOnPowerUpCollectedByEnemyHandlers();
     }
 
     public int getHighestScore() {
@@ -209,6 +217,8 @@ public class LevelState extends GameState {
 
         this.respawnTimer += frameTime;
         
+        updatePowerUpTimer(frameTime);
+
         if (needThrowIntoBattleMoreTanks()) {
             tryToAddMoreTanksIntoBattle();
         }
@@ -239,12 +249,22 @@ public class LevelState extends GameState {
             }
         }
     }
-
+    
+    private void updatePowerUpTimer(double frameTime){
+        this.powerUpTimer += frameTime;
+        if(this.powerUpTimer > POWERUP_TIMER_DELAY){
+            this.powerUpTimer = 0;
+            if(this.random.nextDouble() < POWERUP_PROBABILITY){
+                addRandomPowerUp();
+            }
+        }
+    }
+    
     private void updateSounds() {
         if (!this.loaded) {
             return;
         }
-        
+
         if (this.gameStatus != GameStatus.PLAY) {
             stopPlayerSounds();
             return;
@@ -316,10 +336,29 @@ public class LevelState extends GameState {
         return respawnTime;
     }
 
-    private void onBonusCollected(PowerUp powerUp) {
-        this.onPowerUpCollectedHandlers.get(powerUp.getType()).run();
+    private void onBonusCollectedByPlayer(PowerUp powerUp) {
+        this.onPowerUpCollectedByPlayerHandlers.get(powerUp.getType()).run();
         this.player.collectPowerUp(powerUp);
         powerUp.collect();
+    }
+    
+    private void onBonusCollectedByEnemy(PowerUp powerUp, EnemyTank enemyTank) {
+        this.onPowerUpCollectedByEnemyHandlers.get(powerUp.getType()).accept(
+                enemyTank);
+        powerUp.collect();
+    }
+    
+    public void addRandomPowerUp(){
+        int randX = this.random.nextInt(Game.TILES_IN_WIDTH - 1)
+                * Game.HALF_TILE_SIZE;
+        int randY = this.random.nextInt(Game.TILES_IN_HEIGHT - 1)
+                * Game.HALF_TILE_SIZE;
+        PowerUp powerUp = new PowerUp(this, PowerUpType.randomType(),
+                randX, randY);
+        powerUp.startInfiniteBlinking(0.4);
+        this.entityManager.removeEntitiesByType(EntityType.POWER_UP);
+        this.entityManager.addEntity(powerUp);
+        this.resourceManager.getAudio(AudioIdentifier.BONUS_APPEARES).play();
     }
 
     public int getStageNumber() {
@@ -511,13 +550,22 @@ public class LevelState extends GameState {
     }
 
     private void checkPowerUps() {
-        List<Entity> bonuses = this.entityManager.getEntitiesByType(
+        List<Entity> powerUps = this.entityManager.getEntitiesByType(
                 EntityType.POWER_UP);
-        for (int i = 0; i < bonuses.size(); ++i) {
-            PowerUp bonus = (PowerUp) bonuses.get(i);
-            if (this.player.collides(bonus)) {
-                onBonusCollected(bonus);
-                break;
+        List<Entity> enemyTanks = this.entityManager.getEntitiesByType(
+                EntityType.ENEMY_TANK);
+        for (int i = powerUps.size() - 1; i >= 0; --i) {
+            PowerUp powerUp = (PowerUp) powerUps.get(i);
+            if (this.player.collides(powerUp)) {
+                onBonusCollectedByPlayer(powerUp);
+                continue;
+            }
+            for(int j = enemyTanks.size() - 1; j >= 0; --j){
+                EnemyTank enemyTank = (EnemyTank)enemyTanks.get(j);
+                if(enemyTank.collides(powerUp)){
+                    onBonusCollectedByEnemy(powerUp, enemyTank);
+                    break;
+                }
             }
         }
     }
@@ -652,43 +700,114 @@ public class LevelState extends GameState {
 
     }
 
-    private void createOnPowerUpCollectedByPlayerHanlers() {
-        this.onPowerUpCollectedHandlers.put(PowerUpType.TANK, () -> {
+    private void createOnPowerUpCollectedByPlayerHandlers() {
+        this.onPowerUpCollectedByPlayerHandlers.put(PowerUpType.TANK, () -> {
             this.player.gainExtraLife();
         });
 
-        this.onPowerUpCollectedHandlers.put(PowerUpType.STAR, () -> {
+        this.onPowerUpCollectedByPlayerHandlers.put(PowerUpType.STAR, () -> {
             this.player.promote();
         });
 
-        this.onPowerUpCollectedHandlers.put(PowerUpType.GUN, () -> {
+        this.onPowerUpCollectedByPlayerHandlers.put(PowerUpType.GUN, () -> {
             this.player.promoteToHeavy();
         });
 
-        this.onPowerUpCollectedHandlers.put(PowerUpType.HELMET, () -> {
+        this.onPowerUpCollectedByPlayerHandlers.put(PowerUpType.HELMET, () ->
+        {
             this.player.addProtection(PLAYER_PROTECTION_DURATION);
         });
 
-        this.onPowerUpCollectedHandlers.put(PowerUpType.SHOVEL, () -> {
+        this.onPowerUpCollectedByPlayerHandlers.put(PowerUpType.SHOVEL, () ->
+        {
             this.tileMap.activateEagleProtection();
         });
 
-        this.onPowerUpCollectedHandlers.put(PowerUpType.GRENADE, () -> {
+        this.onPowerUpCollectedByPlayerHandlers.put(PowerUpType.GRENADE, () ->
+        {
             List<Entity> enemyTanks = this.entityManager.getEntitiesByType(
                     EntityType.ENEMY_TANK);
             enemyTanks.stream().map(entity -> (EnemyTank) entity).forEach(
                     enemyTank -> enemyTank.explodeWithGrenade());
         });
 
-        this.onPowerUpCollectedHandlers.put(PowerUpType.TIMER, () -> {
+        this.onPowerUpCollectedByPlayerHandlers.put(PowerUpType.TIMER, () -> {
             List<Entity> enemyTanks = this.entityManager.getEntitiesByType(
                     EntityType.ENEMY_TANK);
             enemyTanks.stream().map(entity -> (EnemyTank) entity).forEach(
                     enemyTank -> enemyTank.freeze(ENEMY_TANK_FROZEN_DURATION));
         });
-        
-        this.onPowerUpCollectedHandlers.put(PowerUpType.SHIP, () -> {
+
+        this.onPowerUpCollectedByPlayerHandlers.put(PowerUpType.SHIP, () -> {
             this.player.setCanTraverseWater(true);
+        });
+    }
+
+    private void createOnPowerUpCollectedByEnemyHandlers() {
+        this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.TANK, (tank) ->
+        {
+            List<Entity> enemies = this.entityManager.getEntitiesByType(
+                    EntityType.ENEMY_TANK);
+            enemies.stream().map(entity -> (EnemyTank) entity).forEach(
+                    enemyTank -> {
+                if (!enemyTank.isBonus()) {
+                    enemyTank.turnRed();
+                }
+            });
+        });
+
+        this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.STAR, (tank) ->
+        {
+            List<Entity> enemies = this.entityManager.getEntitiesByType(
+                    EntityType.ENEMY_TANK);
+            enemies.stream().map(entity -> (EnemyTank) entity).forEach(
+                    enemyTank -> enemyTank.promoteToHeavy());
+        });
+
+        this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.GUN, (tank) ->
+        {
+            this.onPowerUpCollectedByEnemyHandlers.get(PowerUpType.STAR).accept(
+                    tank);
+        });
+
+        this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.HELMET,
+                (tank) -> {
+            List<Entity> enemies = this.entityManager.getEntitiesByType(
+                    EntityType.ENEMY_TANK);
+            enemies.stream().map(entity -> (EnemyTank) entity).forEach(
+                    enemyTank -> {
+                if (enemyTank.getType() == EnemyTankType.ARMORED) {
+                    if (!enemyTank.isBonus()) {
+                        enemyTank.turnRed();
+                    }
+                } else {
+                    enemyTank.promoteToHeavy();
+                }
+            });
+        });
+
+        this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.SHOVEL,
+                (tank) -> {
+            if (this.tileMap.isEagleProtectionActive()) {
+                this.tileMap.deactivateEagleProtection();
+            } else {
+                this.tileMap.destroyAllProtections();
+            }
+        });
+
+        this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.GRENADE,
+                (tank) -> {
+            this.player.explode();
+        });
+
+        this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.TIMER,
+                (tank) -> {
+            this.player.freeze(PLAYER_TANK_FROZEN_DURATION);
+        });
+
+        this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.SHIP, (tank) ->
+        {
+            tank.setCanTraverseWater(true);
         });
     }
 
@@ -812,4 +931,5 @@ public class LevelState extends GameState {
         int mapIndex = this.stageNumber % (STAGE_MAX + 1);
         this.tileMap.loadMap("/tilemap/level" + mapIndex + ".map");
     }
+
 }

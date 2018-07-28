@@ -2,6 +2,7 @@ package com.igorternyuk.tanks.gameplay.tilemap;
 
 import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
+import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
 import com.igorternyuk.tanks.gameplay.entities.tank.Tank;
 import java.awt.Color;
@@ -42,6 +43,7 @@ public class BrickTile extends Tile {
     }
 
     private WallQuarter[][] wall = new WallQuarter[DIMENSION][DIMENSION];
+    private Rectangle boundingRect = new Rectangle();
 
     protected BrickTile(Point position, BufferedImage image, double scale) {
         super(TileType.BRICK, position, image, scale);
@@ -54,6 +56,10 @@ public class BrickTile extends Tile {
                         Game.QUARTER_TILE_SIZE));
             }
         }
+        this.boundingRect.x = wall[0][0].boundingRect.x;
+        this.boundingRect.y = wall[0][0].boundingRect.y;
+        this.boundingRect.width = Game.HALF_TILE_SIZE;
+        this.boundingRect.height = Game.HALF_TILE_SIZE;
     }
 
     public boolean isAlive() {
@@ -69,6 +75,15 @@ public class BrickTile extends Tile {
 
     @Override
     public boolean checkIfCollision(Entity entity) {
+
+        if (entity.getEntityType() == EntityType.PROJECTILE) {
+            Projectile collidingProjectile = (Projectile) entity;
+            if (collidingProjectile.isAntiarmour()) {
+                return collidingProjectile.getBoundingRect().intersects(
+                        this.boundingRect);
+            }
+        }
+
         for (int row = 0; row < this.wall.length; ++row) {
             for (int col = 0; col < this.wall[row].length; ++col) {
                 if (this.wall[row][col].exists
@@ -82,12 +97,24 @@ public class BrickTile extends Tile {
     }
 
     public void handleProjectileCollision(Projectile projectile) {
+        if (projectile.isAntiarmour()) {
+            destroyAllTheWall();
+        } else {
+            for (int row = 0; row < this.wall.length; ++row) {
+                for (int col = 0; col < this.wall[row].length; ++col) {
+                    if (projectile.getBoundingRect().intersects(
+                            this.wall[row][col].boundingRect)) {
+                        this.wall[row][col].exists = false;
+                    }
+                }
+            }
+        }
+    }
+
+    private void destroyAllTheWall() {
         for (int row = 0; row < this.wall.length; ++row) {
             for (int col = 0; col < this.wall[row].length; ++col) {
-                if (projectile.getBoundingRect().intersects(
-                        this.wall[row][col].boundingRect)) {
-                    this.wall[row][col].exists = false;
-                }
+                this.wall[row][col].exists = false;
             }
         }
     }
@@ -97,7 +124,7 @@ public class BrickTile extends Tile {
         outer:
         for (int row = 0; row < this.wall.length; ++row) {
             for (int col = 0; col < this.wall[row].length; ++col) {
-                if(!this.wall[row][col].exists){
+                if (!this.wall[row][col].exists) {
                     continue;
                 }
                 Rectangle tankBoundingRect = tank.getBoundingRect();

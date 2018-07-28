@@ -240,6 +240,10 @@ public class LevelState extends GameState {
     }
 
     private void updateSounds() {
+        if (!this.loaded) {
+            return;
+        }
+        
         if (this.gameStatus != GameStatus.PLAY) {
             stopPlayerSounds();
             return;

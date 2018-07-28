@@ -218,22 +218,6 @@ public class TileMap {
         Files.writeMapToFile(this.pathToTheCurrentMapFile, getCurrentMap());
     }
 
-    public void print() {
-        if (!this.mapLoaded) {
-            return;
-        }
-        for (int row = 0; row < this.tiles.length; ++row) {
-            for (int col = 0; col < this.tiles[row].length; ++col) {
-                if (!getTileType(row, col).isTraversable()) {
-                    System.out.print("X");
-                } else {
-                    System.out.print("_");
-                }
-            }
-            System.out.println("");
-        }
-    }
-
     public TileType getTileType(int row, int col) {
         return getTile(row, col).getType();
     }
@@ -405,39 +389,7 @@ public class TileMap {
         }
     }
 
-    private void specifyEnemyTankAppearancePositions() {
-        for (int i = 0; i < 3; ++i) {
-            this.enemyTankAppearancePositions.add(new Point(6 * i
-                    * Game.TILE_SIZE, 0));
-        }
-    }
-
-    private void specifyFireSpots() {
-        this.firePoints.add(new FiringSpot(new Spot(24, 6, true), Direction.EAST));
-        this.firePoints.add(new FiringSpot(new Spot(23, 6, true), Direction.EAST));
-        this.firePoints.add(new FiringSpot(new Spot(24, 7, true), Direction.EAST));
-        this.firePoints.add(new FiringSpot(new Spot(23, 7, true), Direction.EAST));
-        this.firePoints.add(new FiringSpot(new Spot(24, 17, true), Direction.WEST));
-        this.firePoints.add(new FiringSpot(new Spot(23, 17, true), Direction.WEST));
-        this.firePoints.add(new FiringSpot(new Spot(24, 18, true), Direction.WEST));
-        this.firePoints.add(new FiringSpot(new Spot(23, 18, true), Direction.WEST));
-        this.firePoints.add(new FiringSpot(new Spot(20, 11, true), Direction.SOUTH));
-        this.firePoints.add(new FiringSpot(new Spot(20, 12, true), Direction.SOUTH));
-        this.firePoints.add(new FiringSpot(new Spot(20, 13, true), Direction.SOUTH));
-    }
-
-    private void specifyEagleProtectionPositions() {
-        for (int row = 23; row < 26; ++row) {
-            for (int col = 11; col < 15; ++col) {
-                if (row > 23 && (col == 12 || col == 13)) {
-                    continue;
-                }
-                this.eagleProtectionTilePositions.add(
-                        new Point(col * Game.HALF_TILE_SIZE, row
-                                * Game.HALF_TILE_SIZE));
-            }
-        }
-    }
+    
 
     private void loadSpriteSheet() {
         SpriteSheetManager spriteSheetManager = SpriteSheetManager.getInstance();
@@ -489,17 +441,14 @@ public class TileMap {
     private void updateClearanceMap() {
         for (int row = 0; row < this.tiles.length; ++row) {
             for (int col = 0; col < this.tiles[row].length; ++col) {
-                //System.out.println("row = " + row + " col = " + col);
                 if (!getTile(row, col).getType().isTraversable()) {
                     continue;
                 }
                 int currentClearance = 1;
                 expansion:
                 while (currentClearance < this.tiles.length) {
-                    //System.out.println("currentClearance = " + currentClearance);
                     for (int i = 0; i < currentClearance; ++i) {
                         for (int j = 0; j < currentClearance; ++j) {
-                            //System.out.println("i = " + i + " j = " + j);
                             int r = row + i;
                             int c = col + j;
                             if (!areCoordinatesValid(r, c)) {
@@ -518,5 +467,55 @@ public class TileMap {
         }
 
         this.clearanceMapChanged = false;
+    }
+    
+    private void specifyEnemyTankAppearancePositions() {
+        for (int i = 0; i < 3; ++i) {
+            this.enemyTankAppearancePositions.add(new Point(6 * i
+                    * Game.TILE_SIZE, 0));
+        }
+    }
+
+    private void specifyFireSpots() {
+        this.firePoints.add(new FiringSpot(new Spot(24, 6, true), Direction.EAST));
+        this.firePoints.add(new FiringSpot(new Spot(23, 6, true), Direction.EAST));
+        this.firePoints.add(new FiringSpot(new Spot(24, 7, true), Direction.EAST));
+        this.firePoints.add(new FiringSpot(new Spot(23, 7, true), Direction.EAST));
+        this.firePoints.add(new FiringSpot(new Spot(24, 17, true), Direction.WEST));
+        this.firePoints.add(new FiringSpot(new Spot(23, 17, true), Direction.WEST));
+        this.firePoints.add(new FiringSpot(new Spot(24, 18, true), Direction.WEST));
+        this.firePoints.add(new FiringSpot(new Spot(23, 18, true), Direction.WEST));
+        this.firePoints.add(new FiringSpot(new Spot(20, 11, true), Direction.SOUTH));
+        this.firePoints.add(new FiringSpot(new Spot(20, 12, true), Direction.SOUTH));
+        this.firePoints.add(new FiringSpot(new Spot(20, 13, true), Direction.SOUTH));
+    }
+
+    private void specifyEagleProtectionPositions() {
+        for (int row = 23; row < 26; ++row) {
+            for (int col = 11; col < 15; ++col) {
+                if (row > 23 && (col == 12 || col == 13)) {
+                    continue;
+                }
+                this.eagleProtectionTilePositions.add(
+                        new Point(col * Game.HALF_TILE_SIZE, row
+                                * Game.HALF_TILE_SIZE));
+            }
+        }
+    }
+    
+    public void print() {
+        if (!this.mapLoaded) {
+            return;
+        }
+        for (int row = 0; row < this.tiles.length; ++row) {
+            for (int col = 0; col < this.tiles[row].length; ++col) {
+                if (!getTileType(row, col).isTraversable()) {
+                    System.out.print("X");
+                } else {
+                    System.out.print("_");
+                }
+            }
+            System.out.println("");
+        }
     }
 }

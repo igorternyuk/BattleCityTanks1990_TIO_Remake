@@ -95,8 +95,8 @@ public class MenuState extends GameState {
         if(!this.loaded){
             return;
         }
-        BrickFont.drawWithBricksCentralized(g, "BATTLE", Game.HEIGHT / 6);
-        BrickFont.drawWithBricksCentralized(g, "CITY", Game.HEIGHT / 3);
+        BrickFont.drawWithBricksCentralized(g, "TANK", Game.HEIGHT / 6);
+        BrickFont.drawWithBricksCentralized(g, "1990", Game.HEIGHT / 3);
         this.menuItems.forEach(menuItem -> menuItem.draw(g));
     }
 

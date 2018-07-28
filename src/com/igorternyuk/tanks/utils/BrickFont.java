@@ -14,6 +14,78 @@ import java.util.Map;
  */
 public class BrickFont {
 
+    private static final String[][] DIGITS = {
+        {
+            "XXXX",
+            "X  X",
+            "X  X",
+            "X  X",
+            "XXXX"
+        },
+        {
+            "   X",
+            "   X",
+            "   X",
+            "   X",
+            "   X"
+        },
+        {
+            "XXXX",
+            "   X",
+            "XXXX",
+            "X   ",
+            "XXXX "
+        },
+        {
+            "XXXX",
+            "   X",
+            "XXXX",
+            "   X",
+            "XXXX"
+        },
+        {
+            "X  X",
+            "X  X",
+            "XXXX",
+            "   X",
+            "   X"
+        },
+        {
+            "XXXX",
+            "X   ",
+            "XXXX",
+            "   X",
+            "XXXX"
+        },
+        {
+            "XXXX",
+            "X   ",
+            "XXXX",
+            "X  X",
+            "XXXX"
+        },
+        {
+            "XXXX",
+            "   X",
+            "   X",
+            "   X",
+            "   X"
+        },
+        {
+            "XXXX",
+            "X  X",
+            "XXXX",
+            "X  X",
+            "XXXX"
+        },
+        {
+            "XXXX",
+            "X  X",
+            "XXXX",
+            "   X",
+            "XXXX"
+        }
+    };
     private static final String[][] ALPHABET = {
         //A 1
         {
@@ -223,7 +295,8 @@ public class BrickFont {
         }
     };
 
-    private static final Map<Character, String[]> ALPHABET_MAP = createAlphabet();
+    private static final Map<Character, String[]> ALPHABET_MAP =
+            createAlphabet();
 
     private static Map<Character, String[]> createAlphabet() {
         Map<Character, String[]> alphabetMap = new HashMap<>();
@@ -234,7 +307,11 @@ public class BrickFont {
     }
 
     public static int getLetterWidth(Character letter) {
-        return ALPHABET_MAP.get(letter)[0].length();
+        if(Character.isDigit(letter)){
+            return DIGITS[Character.getNumericValue(letter)].length;
+        } else {
+            return ALPHABET_MAP.get(letter)[0].length();
+        }
     }
 
     public static void drawWithBricksCentralized(Graphics2D g, String word,
@@ -250,7 +327,7 @@ public class BrickFont {
         for (char letter : wordLetters) {
             width += (getLetterWidth(letter) + 1) * BRICK_SIZE;
         }
-        
+
         width -= BRICK_SIZE;
 
         int topLeftX = (Game.WIDTH - width) / 2;
@@ -261,9 +338,9 @@ public class BrickFont {
 
     public static void drawWithBricks(Graphics2D g, String word, int topLeftX,
             int topLeftY) {
-        
+
         word = word.toUpperCase();
-        
+
         BufferedImage brickImage = Images.resizeImage(SpriteSheetManager.
                 getInstance().get(SpriteSheetIdentifier.BRICK), 0.75
                 * Game.SCALE);
@@ -275,7 +352,10 @@ public class BrickFont {
         int right = topLeftX;
 
         for (int k = 0; k < wordLetters.length; ++k) {
-            String[] letter = ALPHABET_MAP.get(wordLetters[k]);
+            char currLetter = wordLetters[k];
+            int index = Character.getNumericValue(currLetter);
+            String[] letter = Character.isDigit(currLetter) ? DIGITS[index] :
+                    ALPHABET_MAP.get(wordLetters[k]);
             for (int y = 0; y < letter.length; ++y) {
                 String row = letter[y];
                 char[] lettersInRow = row.toCharArray();

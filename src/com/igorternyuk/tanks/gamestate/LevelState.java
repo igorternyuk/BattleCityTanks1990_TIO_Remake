@@ -81,7 +81,8 @@ public class LevelState extends GameState {
             * Game.HALF_TILE_SIZE, 0 * Game.HALF_TILE_SIZE);
 
     private static final int TANKS_ON_FIELD_MAX = 4;
-
+    private static final double PLAYER_PROTECTION_DURATION = 10;
+    private static final double ENEMY_TANK_FROZEN_DURATION = 10;
     private static final double NEXT_STAGE_SPLASH_DELAY = 6;
     private static final double GAME_OVER_SCREEN_DELAY = 3;
 
@@ -467,7 +468,7 @@ public class LevelState extends GameState {
                 Direction.NORTH
         );
         this.player = playerTank;
-        this.player.addProtection();
+        //this.player.addProtection(PLAYER_PROTECTION_DURATION);
         this.entityManager.addEntity(playerTank);
         this.eagle = new Eagle(this, EAGLE_POSITION.x, EAGLE_POSITION.y);
         this.entityManager.addEntity(eagle);
@@ -666,7 +667,7 @@ public class LevelState extends GameState {
         });
 
         this.onPowerUpCollectedHandlers.put(PowerUpType.HELMET, () -> {
-            this.player.addProtection();
+            this.player.addProtection(PLAYER_PROTECTION_DURATION);
         });
 
         this.onPowerUpCollectedHandlers.put(PowerUpType.SHOVEL, () -> {
@@ -684,7 +685,7 @@ public class LevelState extends GameState {
             List<Entity> enemyTanks = this.entityManager.getEntitiesByType(
                     EntityType.ENEMY_TANK);
             enemyTanks.stream().map(entity -> (EnemyTank) entity).forEach(
-                    enemyTank -> enemyTank.freeze());
+                    enemyTank -> enemyTank.freeze(ENEMY_TANK_FROZEN_DURATION));
         });
     }
 

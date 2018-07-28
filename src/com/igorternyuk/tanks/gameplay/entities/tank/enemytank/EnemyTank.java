@@ -7,6 +7,7 @@ import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUp;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUpType;
 import com.igorternyuk.tanks.gameplay.entities.player.Player;
+import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
 import com.igorternyuk.tanks.gameplay.entities.tank.Heading;
 import com.igorternyuk.tanks.gameplay.entities.tank.Tank;
@@ -36,10 +37,10 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
 
     private static final int[] BONUS_TANKS_NUMBERS = {4, 11, 18};
     private static final int TANK_DIMENSION = 2;
-    private static final double COLOR_CHANGING_PERIOD = 0.1;
+    private static final double COLOR_CHANGING_PERIOD = 0.15;
     private static final double TARGET_CHANGING_PERIOD = 20;
-    private static final double FROZEN_TIME = 10;
     private static final double SHOOTING_PERIOD = 2;
+    private static final double RED_BLINKING_PROBABILITY = 0.7;
 
     private int number;
     private EnemyTankIdentifier identifier;
@@ -47,14 +48,16 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     private boolean gleaming = false;
     private double gleamingTimer;
 
+    private boolean redBlinking = false;
+    private double redBlinkingTimer = 0;
+
     private boolean movingAlongShortestPath = false;
     private List<Spot> shortestPath = new ArrayList<>();
     private Spot nextPosition;
+
     private Spot currTarget;
     private double targetTimer = 0;
     private List<FiringSpot> firingSpots;
-    private boolean frozen = false;
-    private double freezeTimer = 0;
     private boolean gotStuck = false;
     private double shootingTimer = 0;
     private boolean firingSpotReached = false;
@@ -65,20 +68,38 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         super(level, EntityType.ENEMY_TANK, x, y, type.getSpeed(), direction);
         this.number = number;
         this.health = type.getHealth();
-        checkIfBonus();
-        loadAnimations();
-        this.identifier = new EnemyTankIdentifier(getTankColor(number, type),
+        this.identifier = new EnemyTankIdentifier(getTankColor(type),
                 Heading.getHeading(direction), type);
+        checkIfSpecialTank();
+        loadAnimations();
         updateAnimation();
         this.firingSpots = getFiringSpotsToAttackTheEagle();
         selectRandomFiringPointToAttackEagle();
         this.moving = true;
+    }
+    
+    private void checkIfSpecialTank(){
+        if (!checkIfBonus()) {
+            if (this.random.nextDouble() < RED_BLINKING_PROBABILITY) {
+                if(this.identifier.getType() != EnemyTankType.ARMORED){
+                    turnRed();
+                }
+            }
+        }
+    }
+
+    public final void turnRed() {
+        int shotsToKillRequired = this.random.nextInt(5) + 2;
+        this.health = shotsToKillRequired * PlayerTankType.BASIC.
+                getProjectileDamage();
+        this.redBlinking = true;
     }
 
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
         super.update(keyboardState, frameTime);
         updateGleamingColor(frameTime);
+        updateRedBlinking(frameTime);
         executeMovementLogic(frameTime);
         updateShootingTimer(frameTime);
         updateAnimation();
@@ -120,20 +141,27 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         }
     }
 
-    public void freeze() {
-        this.frozen = true;
-    }
-
-    private void handleIfFrozen(double frameTime) {
-        this.freezeTimer += frameTime;
-        if (this.freezeTimer >= FROZEN_TIME) {
-            this.freezeTimer = 0;
-            this.frozen = false;
-        }
-    }
-
     public EnemyTankType getType() {
         return this.identifier.getType();
+    }
+
+    @Override
+    public void promote() {
+        EnemyTankType currType = this.identifier.getType();
+        if (currType == EnemyTankType.ARMORED) {
+            return;
+        }
+        setTankType(currType.next());
+    }
+
+    @Override
+    public void promoteToHeavy() {
+        setTankType(EnemyTankType.ARMORED);
+    }
+
+    private void setTankType(EnemyTankType tankType) {
+        this.identifier.setType(tankType);
+        this.speed = tankType.getSpeed();
     }
 
     public int getScore() {
@@ -168,9 +196,9 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
 
         return handleCollisionsWithOtherTanks(frameTime);
     }
-    
+
     @Override
-    protected void handleCollisionWithOtherTank(Tank other, double frameTime){
+    protected void handleCollisionWithOtherTank(Tank other, double frameTime) {
         super.handleCollisionWithOtherTank(other, frameTime);
         reverse();
         move(frameTime);
@@ -469,21 +497,9 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         }
     }
 
-    private TankColor getTankColor(int number, EnemyTankType tankType) {
-
-        TankColor color;
-
-        if (tankType == EnemyTankType.ARMORED) {
-            color = TankColor.GREEN;
-        } else {
-            if (number % 2 == 0) {
-                color = TankColor.GREEN;
-            } else {
-                color = TankColor.GRAY;
-            }
-        }
-
-        return color;
+    private TankColor getTankColor(EnemyTankType tankType) {
+        return tankType == EnemyTankType.ARMORED ? TankColor.GREEN :
+                getBaseColor();
     }
 
     private void updateGleamingColor(double frameTime) {
@@ -493,6 +509,24 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
                 TankColor currColor = this.identifier.getColor();
                 this.identifier.setColor(currColor.next());
                 this.gleamingTimer = 0;
+            }
+        }
+    }
+
+    private TankColor getBaseColor() {
+        return this.number % 2 == 0 ? TankColor.GREEN : TankColor.GRAY;
+    }
+
+    private void updateRedBlinking(double frameTime) {
+        if (this.redBlinking) {
+            this.redBlinkingTimer += frameTime;
+            if (this.redBlinkingTimer >= COLOR_CHANGING_PERIOD) {
+                if (this.identifier.getColor() == TankColor.RED) {
+                    this.identifier.setColor(getBaseColor());
+                } else {
+                    this.identifier.setColor(TankColor.RED);
+                }
+                this.redBlinkingTimer = 0;
             }
         }
     }

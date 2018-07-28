@@ -100,14 +100,15 @@ public class Projectile extends Entity {
         Rectangle collisionRect = new Rectangle(spriteBoundingRect.x,
                 spriteBoundingRect.y, spriteBoundingRect.width,
                 spriteBoundingRect.height);
+        int effectiveCollisionSize = 1 + Game.HALF_TILE_SIZE + 1;
         if (this.direction.isVertical()) {
-            int dx = (10 - spriteBoundingRect.width) / 2;
+            int dx = (effectiveCollisionSize - spriteBoundingRect.width) / 2;
             collisionRect.x = spriteBoundingRect.x - dx;
-            collisionRect.width = 10;
+            collisionRect.width = effectiveCollisionSize;
         } else if (this.direction.isHorizontal()) {
-            int dy = (10 - spriteBoundingRect.height) / 2;
+            int dy = (effectiveCollisionSize - spriteBoundingRect.height) / 2;
             collisionRect.y = spriteBoundingRect.y - dy;
-            collisionRect.height = 10;
+            collisionRect.height = effectiveCollisionSize;
         }
         return collisionRect;
     }

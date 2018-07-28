@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
  */
 public class Player extends Tank {
 
-    private static final double PROTECTION_TIME = 23;
+    private static final double RESPAWN_ROTECTION_DURATION = 5;
     private static final double SLIDING_DURATION = 0.25;
     private static final double SHOT_DELAY = 0.15;
 
@@ -45,6 +45,7 @@ public class Player extends Tank {
     private double respawnX, respawnY;
     private boolean hasProtection = false;
     private double protectionTimer;
+    private double protectionTime = 0;
     private int lives = 2;
     private double lastShootTimer;
     private boolean onIce = false;
@@ -59,6 +60,7 @@ public class Player extends Tank {
         super(level, EntityType.PLAYER_TANK, x, y, type.getSpeed(), direction);
         this.respawnX = x;
         this.respawnY = y;
+        addProtection(RESPAWN_ROTECTION_DURATION);
         loadAnimations();
         this.identifier = new PlayerTankIdentifier(TankColor.YELLOW,
                 Heading.getHeading(direction), type);
@@ -69,7 +71,12 @@ public class Player extends Tank {
 
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
-
+        
+        if (this.frozen) {
+            handleIfFrozen(frameTime);
+            return;
+        }
+        
         updateSlidingTimer(frameTime);
         handleUserInput(keyboardState);
 
@@ -154,6 +161,7 @@ public class Player extends Tank {
         return this.statistics.getTotalScore();
     }
 
+    @Override
     public void promote() {
         PlayerTankType currType = this.identifier.getType();
         if (currType == PlayerTankType.ARMORED) {
@@ -162,6 +170,7 @@ public class Player extends Tank {
         setTankType(currType.next());
     }
 
+    @Override
     public void promoteToHeavy() {
         setTankType(PlayerTankType.ARMORED);
     }
@@ -171,7 +180,8 @@ public class Player extends Tank {
         this.speed = tankType.getSpeed();
     }
 
-    public void addProtection() {
+    public final void addProtection(double duration) {
+        this.protectionTime = duration;
         Protection protection = new Protection(this.level,
                 ProtectionType.REGULAR, 0, 0);
         attachChild(protection);
@@ -242,14 +252,14 @@ public class Player extends Tank {
     protected void respawn() {
         this.health = 100;
         setPosition(this.respawnX, this.respawnY);
-        addProtection();
+        addProtection(RESPAWN_ROTECTION_DURATION);
         this.identifier.setType(PlayerTankType.BASIC);
     }
 
     public void reset() {
         this.health = 100;
         setPosition(this.respawnX, this.respawnY);
-        addProtection();
+        addProtection(RESPAWN_ROTECTION_DURATION);
         this.statistics.resetToNextStage();
     }
 
@@ -316,7 +326,7 @@ public class Player extends Tank {
     private void updateProtectionTimer(double frameTime) {
         if (this.hasProtection) {
             this.protectionTimer += frameTime;
-            if (this.protectionTimer >= PROTECTION_TIME) {
+            if (this.protectionTimer >= protectionTime) {
                 this.protectionTimer = 0;
                 this.hasProtection = false;
                 List<Entity> protections = this.children.stream().filter(

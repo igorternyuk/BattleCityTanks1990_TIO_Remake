@@ -6,6 +6,7 @@ import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
+import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
 import com.igorternyuk.tanks.gameplay.entities.splash.Splash;
 import com.igorternyuk.tanks.gameplay.tilemap.Tile;
@@ -24,13 +25,31 @@ import java.util.stream.Collectors;
 public abstract class Tank<I> extends AnimatedEntity<I> {
 
     protected boolean canFire = true;
-
+    protected boolean frozen = false;
+    protected double freezeTimer = 0;
+    protected double frozenTime = 0;
+    
     public Tank(LevelState level, EntityType type, double x, double y,
             double speed, Direction direction) {
         super(level, type, x, y, speed, direction);
     }
-
+    
+    public abstract void promote();
+    public abstract void promoteToHeavy();
     public abstract void fire();
+    
+    public void freeze(double duration) {
+        this.frozenTime = duration;
+        this.frozen = true;
+    }
+
+    protected void handleIfFrozen(double frameTime) {
+        this.freezeTimer += frameTime;
+        if (this.freezeTimer >= this.frozenTime) {
+            this.freezeTimer = 0;
+            this.frozen = false;
+        }
+    }
 
     public void explode() {
         super.explode(ExplosionType.BIG);

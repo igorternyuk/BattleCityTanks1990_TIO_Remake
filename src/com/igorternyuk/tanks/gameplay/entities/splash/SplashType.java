@@ -11,9 +11,9 @@ import java.util.List;
  */
 public enum SplashType {
     BONUS(0.2, new Rectangle(0, 0, Game.TILE_SIZE, Game.TILE_SIZE),
-            Game.TILE_SIZE, 4),
+            Game.TILE_SIZE, 6),
     NEW_ENEMY_TANK(0.2, new Rectangle(0, 0, Game.TILE_SIZE, Game.TILE_SIZE),
-            Game.TILE_SIZE, 4);
+            Game.TILE_SIZE, 6);
 
     private List<Rectangle> frames = new ArrayList<>();
     private double animationSpeed;

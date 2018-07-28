@@ -91,7 +91,7 @@ public class Tile {
     }
     
     public boolean checkIfCollision(Entity entity){
-        if (this.type.isTraversable(entity)) {
+        if (this.type.isTraversable(entity) && this.type != TileType.BUSH) {
             return false;
         }
         Rectangle tankBoundingRect = entity.getBoundingRect();

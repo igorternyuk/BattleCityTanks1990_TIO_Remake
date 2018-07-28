@@ -29,6 +29,7 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
     protected boolean frozen = false;
     protected double freezeTimer = 0;
     protected double frozenTime = 0;
+    protected boolean canClearBushes = false;
     
     public Tank(LevelState level, EntityType type, double x, double y,
             double speed, Direction direction) {

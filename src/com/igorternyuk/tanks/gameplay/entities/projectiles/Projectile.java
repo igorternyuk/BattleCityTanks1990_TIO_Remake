@@ -18,8 +18,6 @@ import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.util.AbstractList;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -32,6 +30,7 @@ public class Projectile extends Entity {
     private int damage = 25;
     private boolean antiarmour = false;
     private Sprite sprite;
+    private boolean canClearBushes = false;
 
     public Projectile(LevelState level, ProjectileType projectileType, double x,
             double y, double speed, Direction direction) {
@@ -41,6 +40,14 @@ public class Projectile extends Entity {
                 SpriteSheetIdentifier.PROJECTILE);
         this.sprite = new Sprite(image, this.x, this.y, Game.SCALE);
         updateSprite();
+    }
+
+    public boolean isCanClearBushes() {
+        return this.canClearBushes;
+    }
+
+    public void setCanClearBushes(boolean canClearBushes) {
+        this.canClearBushes = canClearBushes;
     }
 
     public ProjectileType getType() {
@@ -138,6 +145,14 @@ public class Projectile extends Entity {
                 if (metalTile.checkIfCollision(this)) {
                     metalTile.hit(this);
                     collisionOccured = true;
+                }
+            } else if (collidedTile.getType() == TileType.BUSH) {
+                if (collidedTile.checkIfCollision(this)) {
+                    if (this.canClearBushes) {
+                        tileMap.destroyTile(collidedTile.getRow(), collidedTile.
+                                getColumn());
+                        collisionOccured = true;
+                    }
                 }
             }
         }

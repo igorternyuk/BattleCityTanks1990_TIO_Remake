@@ -51,6 +51,8 @@ public class Player extends Tank {
     private boolean onIce = false;
     private boolean sliding = false;
     private double slidingTimer = 0;
+    private int maxHealth = 100;
+    private int collecredGunCount = 0;
     private Font font;
 
     private PlayerStatistics statistics = new PlayerStatistics(this);
@@ -71,12 +73,12 @@ public class Player extends Tank {
 
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
-        
+
         if (this.frozen) {
             handleIfFrozen(frameTime);
             return;
         }
-        
+
         updateSlidingTimer(frameTime);
         handleUserInput(keyboardState);
 
@@ -122,12 +124,15 @@ public class Player extends Tank {
 
         g.setColor(Color.white);
         g.setFont(this.font);
-        g.drawString("SCORE: " + this.statistics.getTotalScore(), 5, gameFieldBottom
+        g.drawString("SCORE: " + this.statistics.getTotalScore(), 5,
+                gameFieldBottom
                 + 2 * Game.TILE_SIZE);
         g.drawString("HEALTH: ", Game.WIDTH / 2, gameFieldBottom
                 + 2 * Game.TILE_SIZE);
-        g.fillRect(380, gameFieldBottom + Game.TILE_SIZE, this.health / 20
-                * Game.TILE_SIZE, Game.TILE_SIZE);
+        g.fillRect(380, gameFieldBottom + Game.TILE_SIZE,
+                (int) (this.health * 5 * Game.TILE_SIZE / this.maxHealth),
+                 Game.TILE_SIZE
+        );
         g.setColor(Color.white.darker());
         g.setStroke(new BasicStroke(3));
         for (int i = 0; i < 5; ++i) {
@@ -173,6 +178,12 @@ public class Player extends Tank {
     @Override
     public void promoteToHeavy() {
         setTankType(PlayerTankType.ARMORED);
+        this.health = 200;
+        this.maxHealth = 200;
+        ++this.collecredGunCount;
+        if (this.collecredGunCount >= 2) {
+            this.canClearBushes = true;
+        }
     }
 
     private void setTankType(PlayerTankType tankType) {
@@ -225,6 +236,8 @@ public class Player extends Tank {
         if (this.identifier.getType() == PlayerTankType.ARMORED) {
             projectile.setAntiarmour(true);
         }
+
+        projectile.setCanClearBushes(this.canClearBushes);
         this.level.getEntityManager().addEntity(projectile);
         this.canFire = false;
         ResourceManager.getInstance().getAudio(AudioIdentifier.SHOT).play();
@@ -251,6 +264,10 @@ public class Player extends Tank {
 
     protected void respawn() {
         this.health = 100;
+        this.maxHealth = 100;
+        this.canTraverseWater = false;
+        this.canClearBushes = false;
+        this.collecredGunCount = 0;
         setPosition(this.respawnX, this.respawnY);
         addProtection(RESPAWN_ROTECTION_DURATION);
         this.identifier.setType(PlayerTankType.BASIC);

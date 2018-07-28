@@ -15,30 +15,37 @@ public enum PowerUpType {
     STAR,
     GRENADE,
     TANK,
-    GUN;
-    
+    GUN,
+    SHIP;
+
     private static final Random random = new Random();
-    
-    public static PowerUpType randomType(){
-        int randNumber = random.nextInt(PowerUpType.values().length);
-        return PowerUpType.values()[randNumber];
+
+    public static PowerUpType randomType() {
+        /*int randNumber = random.nextInt(PowerUpType.values().length);
+        return PowerUpType.values()[randNumber];*/
+        return  PowerUpType.GUN;
     }
-    
+
     private Rectangle sourceRect;
     private int score;
-    
 
     private PowerUpType() {
-        this.sourceRect = new Rectangle(this.ordinal() * Game.TILE_SIZE, 0,
-                Game.TILE_SIZE, Game.TILE_SIZE);
+        if (this.ordinal() == 7) {
+            this.sourceRect = new Rectangle((this.ordinal() - 1) * Game.TILE_SIZE,
+                    0, Game.TILE_SIZE, Game.TILE_SIZE);
+        } else {
+            this.sourceRect = new Rectangle(this.ordinal() * Game.TILE_SIZE,
+                    Game.TILE_SIZE, Game.TILE_SIZE, Game.TILE_SIZE);
+        }
+
         this.score = 500;
     }
 
     public Rectangle getSourceRect() {
         return this.sourceRect;
     }
-    
-    public int getScore(){
+
+    public int getScore() {
         return this.score;
     }
 }

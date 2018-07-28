@@ -127,7 +127,7 @@ public class LevelState extends GameState {
         super(gameStateManager);
         this.entityManager = new EntityManager(this);
         addRenderingLayers();
-        createOnPowerUpCollectedHanlers();
+        createOnPowerUpCollectedByPlayerHanlers();
     }
 
     public int getHighestScore() {
@@ -652,7 +652,7 @@ public class LevelState extends GameState {
 
     }
 
-    private void createOnPowerUpCollectedHanlers() {
+    private void createOnPowerUpCollectedByPlayerHanlers() {
         this.onPowerUpCollectedHandlers.put(PowerUpType.TANK, () -> {
             this.player.gainExtraLife();
         });
@@ -685,6 +685,10 @@ public class LevelState extends GameState {
                     EntityType.ENEMY_TANK);
             enemyTanks.stream().map(entity -> (EnemyTank) entity).forEach(
                     enemyTank -> enemyTank.freeze(ENEMY_TANK_FROZEN_DURATION));
+        });
+        
+        this.onPowerUpCollectedHandlers.put(PowerUpType.SHIP, () -> {
+            this.player.setCanTraverseWater(true);
         });
     }
 

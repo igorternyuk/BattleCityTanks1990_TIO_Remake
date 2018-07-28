@@ -101,7 +101,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         }
 
         if (!this.moving && this.gotStuck) {
-            checkMapCollision();
+            //checkMapCollision();
             selectRandomDirrection();
             return;
         }
@@ -249,6 +249,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
 
         if (allPossibleDirections.isEmpty()) {
             this.gotStuck = true;
+            checkMapCollision();
             this.moving = false;
             return;
         } else {

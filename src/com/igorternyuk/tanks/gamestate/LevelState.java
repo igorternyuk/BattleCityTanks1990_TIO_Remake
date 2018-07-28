@@ -37,6 +37,7 @@ import com.igorternyuk.tanks.resourcemanager.FontIdentifier;
 import com.igorternyuk.tanks.resourcemanager.ImageIdentifier;
 import com.igorternyuk.tanks.utils.BrickFont;
 import com.igorternyuk.tanks.utils.Files;
+import com.igorternyuk.tanks.utils.Time;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Point;
@@ -80,7 +81,7 @@ public class LevelState extends GameState {
             * Game.HALF_TILE_SIZE, 0 * Game.HALF_TILE_SIZE);
 
     private static final int TANKS_ON_FIELD_MAX = 4;
-    
+
     private static final double NEXT_STAGE_SPLASH_DELAY = 6;
     private static final double GAME_OVER_SCREEN_DELAY = 3;
 
@@ -117,7 +118,10 @@ public class LevelState extends GameState {
         {6, 4, 2, 8}, {4, 4, 4, 8}, {0, 10, 4, 6}, {0, 6, 4, 10},
         {0, 4, 0, 16}, {0, 2, 1, 17}, {0, 1, 1, 18}, {0, 2, 2, 16}
     };
-    
+
+    private double respawnTimer = 0;
+    private double respawnDelay = 0;
+
     public LevelState(GameStateManager gameStateManager) {
         super(gameStateManager);
         this.entityManager = new EntityManager(this);
@@ -174,21 +178,21 @@ public class LevelState extends GameState {
         }
 
         checkIfNextStage();
-        
-        if(this.gameOverScreenActive){
+
+        if (this.gameOverScreenActive) {
             this.gameOverScreenTimer += frameTime;
-            if(this.gameOverScreenTimer > GAME_OVER_SCREEN_DELAY){
+            if (this.gameOverScreenTimer > GAME_OVER_SCREEN_DELAY) {
                 this.gameOverScreenTimer = 0;
                 this.gameOverScreenActive = false;
                 this.gameStateManager.setGameState(GameStateManager.MENU_STATE);
             }
         }
-        
+
         if (this.scoreScreenActive) {
             this.scoreScreen.update(keyboardState, frameTime);
             return;
         }
-        
+
         if (this.gameStatus == GameStatus.GAME_OVER) {
             if (this.scoreScreen.isReadyToNextStage()) {
                 this.scoreScreenActive = false;
@@ -202,6 +206,8 @@ public class LevelState extends GameState {
         this.tileMap.update(keyboardState, frameTime);
         this.entityManager.update(keyboardState, frameTime);
 
+        this.respawnTimer += frameTime;
+        
         if (needThrowIntoBattleMoreTanks()) {
             tryToAddMoreTanksIntoBattle();
         }
@@ -261,9 +267,9 @@ public class LevelState extends GameState {
         this.resourceManager.getAudio(AudioIdentifier.PLAYER_IDLE).stop();
         this.resourceManager.getAudio(AudioIdentifier.PLAYER_MOVES).stop();
     }
-    
-    private void stopAllSounds(){
-        for(AudioIdentifier identifier: AudioIdentifier.values()){
+
+    private void stopAllSounds() {
+        for (AudioIdentifier identifier : AudioIdentifier.values()) {
             this.resourceManager.getAudio(identifier).stop();
         }
     }
@@ -277,7 +283,7 @@ public class LevelState extends GameState {
                 .getEntitiesByType(EntityType.ENEMY_TANK).size();
         long splashCount = this.entityManager.getEntitiesByType(
                 EntityType.SPLASH).size();
-        return !this.hangar.isEmpty()
+        return !this.hangar.isEmpty() && this.respawnTimer > this.respawnDelay
                 && (splashCount + tanksOnTheField < TANKS_ON_FIELD_MAX);
     }
 
@@ -292,7 +298,17 @@ public class LevelState extends GameState {
             this.entityManager.addEntity(new Splash(this,
                     SplashType.NEW_ENEMY_TANK, randAppearencePoint.x,
                     randAppearencePoint.y));
+            this.respawnTimer = 0;
         }
+    }
+
+    private double caclRespawnDelay() {
+        double respawnTime = (200 - 4 * this.stageNumber)
+                / Time.SECONDS_IN_MINUTE;
+        if (respawnTime <= 0) {
+            respawnTime = 0.1;
+        }
+        return respawnTime;
     }
 
     private void onBonusCollected(PowerUp powerUp) {
@@ -359,6 +375,10 @@ public class LevelState extends GameState {
         if (this.stageNumber > STAGE_MAX) {
             this.stageNumber = 1;
         }
+
+        this.respawnDelay = caclRespawnDelay();
+        this.respawnTimer = 0;
+
         this.highestScore = this.player.getTotalScore();
         loadMap();
         this.entityManager.removeEntitiesExcepts(EntityType.PLAYER_TANK,
@@ -387,6 +407,8 @@ public class LevelState extends GameState {
         this.resourceManager.getAudio(AudioIdentifier.PLAYER_MOVES).stop();
         this.resourceManager.getAudio(AudioIdentifier.PLAYER_IDLE).stop();
         this.resourceManager.getAudio(AudioIdentifier.NEXT_STAGE).play();
+        this.respawnDelay = caclRespawnDelay();
+        this.respawnTimer = 0;
         gameStatus = GameStatus.PLAY;
     }
 
@@ -396,8 +418,8 @@ public class LevelState extends GameState {
         int[] enemyTypes = this.enemyGroups[index];
         EnemyTankType[] allEnemyTankTypes = EnemyTankType.values();
         for (int i = 0; i < enemyTypes.length; ++i) {
-            int tanksWithCurrentType = enemyTypes[i]; 
-            for(int j = 0; j < tanksWithCurrentType; ++j){
+            int tanksWithCurrentType = enemyTypes[i];
+            for (int j = 0; j < tanksWithCurrentType; ++j) {
                 this.hangar.push(allEnemyTankTypes[i]);
             }
         }
@@ -616,14 +638,14 @@ public class LevelState extends GameState {
     }
 
     private void drawGameStatus(Graphics2D g) {
-        if(this.gameStatus == GameStatus.PAUSED){
+        if (this.gameStatus == GameStatus.PAUSED) {
             BrickFont.drawWithBricksCentralized(g, "GAME", Game.HEIGHT / 3);
             BrickFont.drawWithBricksCentralized(g, "PAUSED", Game.HEIGHT / 2);
-        } else if(this.gameStatus == GameStatus.GAME_OVER){
+        } else if (this.gameStatus == GameStatus.GAME_OVER) {
             BrickFont.drawWithBricksCentralized(g, "GAME", Game.HEIGHT / 3);
             BrickFont.drawWithBricksCentralized(g, "OVER", Game.HEIGHT / 2);
         }
-        
+
     }
 
     private void createOnPowerUpCollectedHanlers() {

@@ -468,7 +468,6 @@ public class LevelState extends GameState {
                 Direction.NORTH
         );
         this.player = playerTank;
-        //this.player.addProtection(PLAYER_PROTECTION_DURATION);
         this.entityManager.addEntity(playerTank);
         this.eagle = new Eagle(this, EAGLE_POSITION.x, EAGLE_POSITION.y);
         this.entityManager.addEntity(eagle);

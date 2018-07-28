@@ -91,7 +91,7 @@ public class Tile {
     }
     
     public boolean checkIfCollision(Entity entity){
-        if (this.type.isTraversable()) {
+        if (this.type.isTraversable(entity)) {
             return false;
         }
         Rectangle tankBoundingRect = entity.getBoundingRect();
@@ -99,7 +99,7 @@ public class Tile {
     }
 
     public void handleTankCollision(Tank tank) {
-        if (this.type.isTraversable()) {
+        if (this.type.isTraversable(tank)) {
             return;
         }
         Rectangle tankBoundingRect = tank.getBoundingRect();

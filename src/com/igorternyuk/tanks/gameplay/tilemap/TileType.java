@@ -1,6 +1,10 @@
 package com.igorternyuk.tanks.gameplay.tilemap;
 
 import com.igorternyuk.tanks.gameplay.Game;
+import com.igorternyuk.tanks.gameplay.entities.Entity;
+import com.igorternyuk.tanks.gameplay.entities.EntityType;
+import com.igorternyuk.tanks.gameplay.entities.tank.Tank;
+import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTank;
 import java.awt.Rectangle;
 
 /**
@@ -16,7 +20,7 @@ public enum TileType {
         }
 
         @Override
-        public boolean isTraversable() {
+        public boolean isTraversable(Entity entity) {
             return true;
         }
     },
@@ -28,7 +32,7 @@ public enum TileType {
         }
 
         @Override
-        public boolean isTraversable() {
+        public boolean isTraversable(Entity entity) {
             return false;
         }
     },
@@ -40,7 +44,7 @@ public enum TileType {
         }
 
         @Override
-        public boolean isTraversable() {
+        public boolean isTraversable(Entity entity) {
             return false;
         }
     },
@@ -52,7 +56,12 @@ public enum TileType {
         }
 
         @Override
-        public boolean isTraversable() {
+        public boolean isTraversable(Entity entity) {
+            if(entity.getEntityType() == EntityType.ENEMY_TANK
+                    || entity.getEntityType() == EntityType.PLAYER_TANK){
+                Tank tank = (Tank)entity;
+                return tank.isCanTraverseWater();
+            }
             return false;
         }
     },
@@ -64,7 +73,7 @@ public enum TileType {
         }
 
         @Override
-        public boolean isTraversable() {
+        public boolean isTraversable(Entity entity) {
             return true;
         }
     },
@@ -76,7 +85,7 @@ public enum TileType {
         }
 
         @Override
-        public boolean isTraversable() {
+        public boolean isTraversable(Entity entity) {
             return true;
         }
     };
@@ -90,7 +99,7 @@ public enum TileType {
 
     public abstract boolean isDestroyable();
 
-    public abstract boolean isTraversable();
+    public abstract boolean isTraversable(Entity entity);
 
     private int number;
     private Rectangle boundingRect;

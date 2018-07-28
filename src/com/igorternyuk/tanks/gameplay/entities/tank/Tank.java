@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 public abstract class Tank<I> extends AnimatedEntity<I> {
 
     protected boolean canFire = true;
+    protected boolean canTraverseWater = false;
     protected boolean frozen = false;
     protected double freezeTimer = 0;
     protected double frozenTime = 0;
@@ -49,6 +50,14 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
             this.freezeTimer = 0;
             this.frozen = false;
         }
+    }
+
+    public boolean isCanTraverseWater() {
+        return this.canTraverseWater;
+    }
+
+    public void setCanTraverseWater(boolean canTraverseWater) {
+        this.canTraverseWater = canTraverseWater;
     }
 
     public void explode() {

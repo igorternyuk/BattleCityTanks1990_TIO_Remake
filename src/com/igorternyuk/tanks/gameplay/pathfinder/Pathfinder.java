@@ -3,6 +3,7 @@ package com.igorternyuk.tanks.gameplay.pathfinder;
 import com.google.common.base.Objects;
 import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
+import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -23,13 +24,15 @@ import java.util.function.BiFunction;
  */
 public class Pathfinder {
 
+    private Entity entity;
     private TileMap tileMap;
     private Spot[][] grid;
     private List<Spot> optimalPath = new ArrayList<>();
     private BiFunction<Spot, Spot, Double> heurisicFuction;
 
-    public Pathfinder(TileMap tileMap) {
-        setTileMap(tileMap);
+    public Pathfinder(Entity entity) {
+        this.entity = entity;
+        setTileMap(this.entity.getLevelState().getTileMap());
         this.heurisicFuction = (first, second) -> {
             return this.calcManhattanDistance(first, second);
         };
@@ -74,7 +77,7 @@ public class Pathfinder {
     
     public boolean calcPath(Spot start, Spot end, int agentDimension) {
 
-        int[][] clearanceMap = this.tileMap.getClearanceMap();
+        int[][] clearanceMap = this.tileMap.getClearanceMap(this.entity);
         Set<Spot> closedSet = new HashSet<>();
         Queue<Spot> openSet = new PriorityQueue<>();
 
@@ -155,7 +158,7 @@ public class Pathfinder {
         for (int row = 0; row < this.grid.length; ++row) {
             for (int col = 0; col < this.grid[row].length; ++col) {
                 boolean traversable = this.tileMap.getTileType(row, col).
-                        isTraversable();
+                        isTraversable(this.entity);
                 this.grid[row][col] = new Spot(row, col, traversable);
             }
         }

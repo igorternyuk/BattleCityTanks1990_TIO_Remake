@@ -45,6 +45,10 @@ public abstract class Entity {
         this.speed = speed;
         this.direction = direction;
     }
+    
+    public LevelState getLevelState(){
+        return this.level;
+    }
 
     public EntityType getEntityType() {
         return this.entityType;

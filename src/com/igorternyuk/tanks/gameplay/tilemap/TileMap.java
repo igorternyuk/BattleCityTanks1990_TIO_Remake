@@ -56,9 +56,6 @@ public class TileMap {
     
     private double scale;
     private Tile[][] tiles = new Tile[Game.TILES_IN_HEIGHT][Game.TILES_IN_WIDTH];
-    private int[][] clearanceMap =
-            new int[Game.TILES_IN_HEIGHT][Game.TILES_IN_WIDTH];
-    private boolean clearanceMapChanged = true;
     private List<Tile> bushTiles = new ArrayList<>();
     private List<WaterTile> waterTiles = new ArrayList<>();
     private Tile lastCollided;
@@ -100,13 +97,6 @@ public class TileMap {
 
     public Tile getLastCollided() {
         return this.lastCollided;
-    }
-
-    public int[][] getClearanceMap() {
-        if (this.clearanceMapChanged) {
-            updateClearanceMap();
-        }
-        return this.clearanceMap;
     }
 
     public List<Tile> getIntersectedTiles(Entity entity) {
@@ -326,7 +316,6 @@ public class TileMap {
                             currTilePosition, this.tileTypeImageMap.get(
                                     TileType.EMPTY),
                             this.scale);
-                    this.clearanceMapChanged = true;
                 }
             }
         }
@@ -438,10 +427,11 @@ public class TileMap {
         return currMap;
     }
 
-    private void updateClearanceMap() {
+    public int[][] getClearanceMap(Entity entity) {
+        int[][] clearanceMap = new int[getTilesInHeight()][getTilesInWidth()];
         for (int row = 0; row < this.tiles.length; ++row) {
             for (int col = 0; col < this.tiles[row].length; ++col) {
-                if (!getTile(row, col).getType().isTraversable()) {
+                if (!getTile(row, col).getType().isTraversable(entity)) {
                     continue;
                 }
                 int currentClearance = 1;
@@ -454,8 +444,8 @@ public class TileMap {
                             if (!areCoordinatesValid(r, c)) {
                                 break expansion;
                             }
-                            if (getTile(r, c).getType().isTraversable()) {
-                                this.clearanceMap[r][c] = currentClearance - 1;
+                            if (getTile(r, c).getType().isTraversable(entity)) {
+                                clearanceMap[r][c] = currentClearance - 1;
                             } else {
                                 break expansion;
                             }
@@ -465,8 +455,7 @@ public class TileMap {
                 }
             }
         }
-
-        this.clearanceMapChanged = false;
+        return clearanceMap;
     }
     
     private void specifyEnemyTankAppearancePositions() {
@@ -500,22 +489,6 @@ public class TileMap {
                         new Point(col * Game.HALF_TILE_SIZE, row
                                 * Game.HALF_TILE_SIZE));
             }
-        }
-    }
-    
-    public void print() {
-        if (!this.mapLoaded) {
-            return;
-        }
-        for (int row = 0; row < this.tiles.length; ++row) {
-            for (int col = 0; col < this.tiles[row].length; ++col) {
-                if (!getTileType(row, col).isTraversable()) {
-                    System.out.print("X");
-                } else {
-                    System.out.print("_");
-                }
-            }
-            System.out.println("");
         }
     }
 }

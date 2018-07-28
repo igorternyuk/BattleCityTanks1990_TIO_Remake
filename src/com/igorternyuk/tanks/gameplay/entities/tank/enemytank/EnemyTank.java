@@ -295,7 +295,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             return;
         }
 
-        Pathfinder pathfinder = new Pathfinder(this.level.getTileMap());
+        Pathfinder pathfinder = new Pathfinder(this);
         if (pathfinder.calcPath(getCurrentSpot(), this.currTarget,
                 TANK_DIMENSION)) {
             this.shortestPath = pathfinder.getOptimalPath();

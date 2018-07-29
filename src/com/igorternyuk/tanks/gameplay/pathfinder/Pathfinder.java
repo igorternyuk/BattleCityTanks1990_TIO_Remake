@@ -38,8 +38,8 @@ public class Pathfinder {
         };
     }
 
-    public Pathfinder(TileMap tileMap, BiFunction<Spot, Spot, Double> heuristic) {
-        setTileMap(tileMap);
+    public Pathfinder(Entity entity, BiFunction<Spot, Spot, Double> heuristic) {
+        setTileMap(entity.getLevelState().getTileMap());
         this.heurisicFuction = heuristic;
     }
 

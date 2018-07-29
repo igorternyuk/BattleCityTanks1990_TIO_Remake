@@ -29,8 +29,9 @@ import com.igorternyuk.tanks.gameplay.entities.tank.TankColor;
 import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTank;
 import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTankIdentifier;
 import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTankType;
+import com.igorternyuk.tanks.gameplay.tilemap.Tile;
 import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
-import com.igorternyuk.tanks.graphics.images.Sprite;
+import com.igorternyuk.tanks.gameplay.tilemap.TileType;
 import com.igorternyuk.tanks.graphics.images.TextureAtlas;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
@@ -545,8 +546,26 @@ public class LevelState extends GameState {
             boolean collisionWithPlayers = this.players.stream().anyMatch(
                     player -> player.getBoundingRect().
                             intersects(currPointBoundingRect));
+            
+            boolean collisionWithMap = false;
+            int row = point.y / Game.HALF_TILE_SIZE;
+            int col = point.x / Game.HALF_TILE_SIZE;
+            
+            outer:
+            for(int i = 0; i < 2; ++i){
+                for(int j = 0; j < 2; ++j){
+                    Tile tile = this.tileMap.getTile(row + i, col + j);
+                    if(tile.getType().isDestroyable()
+                            || tile.getType() == TileType.WATER){
+                        collisionWithMap = true;
+                        break outer;
+                    }
+                }
+            }
             if (!collisionWithPlayers
-                    && !collisionWithEnemies && !collisionWithSplashes) {
+                    && !collisionWithEnemies
+                        && !collisionWithSplashes
+                                && !collisionWithMap) {
                 freeAppearancePoints.add(point);
             }
         });

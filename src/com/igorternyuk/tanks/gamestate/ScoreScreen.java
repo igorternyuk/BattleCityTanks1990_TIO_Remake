@@ -35,12 +35,14 @@ public class ScoreScreen {
     private Font fontSmaller;
     private LevelState level;
     private List<Player> players = new ArrayList<>();
-    private List<Map<EnemyTankType, Integer>> currMaps = new ArrayList<>();
+    private List<Map<EnemyTankType, Integer>> currentlyDisplayingStatisticalMaps =
+            new ArrayList<>();
     private EnemyTankType currTankType = EnemyTankType.BASIC;
     private double animationTimer = 0;
     private double afterTimer = 0;
-    private boolean animationFinished = false;
+    private List<Boolean> animationFinished = new ArrayList<>();
     private boolean readyToNextStage = false;
+    private int currentPlayerIndex = 0;
 
     public ScoreScreen(LevelState level) {
         this.level = level;
@@ -50,10 +52,13 @@ public class ScoreScreen {
         this.fontSmaller = ResourceManager.getInstance().getFont(
                 FontIdentifier.BATTLE_CITY).deriveFont(Font.BOLD, 18);
         for (int i = 0; i < this.players.size(); ++i) {
-            this.currMaps.add(new HashMap<>());
+            this.currentlyDisplayingStatisticalMaps.add(new HashMap<>());
             for (EnemyTankType type : EnemyTankType.values()) {
-                this.currMaps.get(i).put(type, 0);
+                this.currentlyDisplayingStatisticalMaps.get(i).put(type, 0);
             }
+        }
+        for (int i = 0; i < this.players.size(); ++i) {
+            this.animationFinished.add(false);
         }
     }
 
@@ -63,13 +68,17 @@ public class ScoreScreen {
 
     public void reset() {
         this.animationTimer = 0;
-        this.animationFinished = false;
+        this.animationFinished.clear();
+        for (int i = 0; i < this.players.size(); ++i) {
+            this.animationFinished.add(false);
+        }
         this.currTankType = EnemyTankType.BASIC;
-        this.currMaps.forEach(map -> {
+        this.currentlyDisplayingStatisticalMaps.forEach(map -> {
             map.keySet().forEach(key -> map.put(key, 0));
         });
         this.afterTimer = 0;
         this.readyToNextStage = false;
+        this.currentPlayerIndex = 0;
     }
 
     public void update(KeyboardState keyboardState, double frameTime) {
@@ -77,43 +86,51 @@ public class ScoreScreen {
                 == GameStatus.GAME_OVER) {
             return;
         }
-        if (this.animationFinished && !this.readyToNextStage) {
-            this.afterTimer += frameTime;
-            if (this.afterTimer >= DELAY_AFTER_ANIMATION) {
-                this.readyToNextStage = true;
+        if (this.animationFinished.stream().allMatch(item -> item)) {
+            if (!this.readyToNextStage) {
+                this.afterTimer += frameTime;
+                if (this.afterTimer >= DELAY_AFTER_ANIMATION) {
+                    this.readyToNextStage = true;
+                }
             }
-        }
-
-        if (this.animationFinished) {
             return;
         }
+        updateStatisticalTable(frameTime);
+    }
 
+    private void updateStatisticalTable(double frameTime) {
+        if(this.currentPlayerIndex >= this.players.size()){
+            return;
+        }
         this.animationTimer += frameTime;
-
-        for (int i = 0; i < this.players.size(); ++i) {
-            if (this.animationTimer >= DELAY) {
-                this.animationTimer = 0;
-                int prev = this.currMaps.get(i).get(this.currTankType);
-                ++prev;
-                int max = this.players.get(i).getStatistics().
-                        getKilledEnemyTanks().get(
-                                this.currTankType);
-                boolean next = false;
-                if (prev >= max) {
-                    prev = max;
-                    next = true;
-                }
-                this.currMaps.get(i).put(this.currTankType, prev);
-                if (next) {
-                    this.currTankType = this.currTankType.next();
-                    if (this.currTankType == EnemyTankType.BASIC) {
-                        this.animationFinished = true;
-                    }
-                }
-                ResourceManager.getInstance().getAudio(
-                        AudioIdentifier.SCORE_SCREEN).
-                        play();
+        if (this.animationTimer >= DELAY) {
+            System.out.println("Updating table");
+            this.animationTimer = 0;
+            int prev = this.currentlyDisplayingStatisticalMaps.get(
+                    this.currentPlayerIndex).get(
+                            this.currTankType);
+            ++prev;
+            int max = this.players.get(this.currentPlayerIndex).getStatistics().
+                    getKilledEnemyTanks().get(
+                            this.currTankType);
+            System.out.println("max = " + max);
+            boolean next = false;
+            if (prev >= max) {
+                prev = max;
+                next = true;
             }
+            this.currentlyDisplayingStatisticalMaps.get(this.currentPlayerIndex).put(
+                    this.currTankType, prev);
+            if (next) {
+                this.currTankType = this.currTankType.next();
+                if (this.currTankType == EnemyTankType.BASIC) {
+                    this.animationFinished.set(this.currentPlayerIndex, true);
+                    ++this.currentPlayerIndex;
+                }
+            }
+            ResourceManager.getInstance().getAudio(
+                    AudioIdentifier.SCORE_SCREEN).
+                    play();
         }
     }
 
@@ -131,8 +148,9 @@ public class ScoreScreen {
         EnemyTankType[] enemyTankTypes = EnemyTankType.values();
         for (int i = 0; i < enemyTankTypes.length; ++i) {
             EnemyTankType currEnemyTankType = enemyTankTypes[i];
-            int killedTanksWithCurrType = this.currMaps.get(0).get(
-                    currEnemyTankType);
+            int killedTanksWithCurrType =
+                    this.currentlyDisplayingStatisticalMaps.get(0).get(
+                            currEnemyTankType);
             int pointsForCurrTankType = killedTanksWithCurrType
                     * currEnemyTankType.getScore();
             int currY = 200 + 48 * i;
@@ -153,8 +171,9 @@ public class ScoreScreen {
                         setColor(this.players.get(1).getId().getTankColor().
                                 getColor());
                 g.drawString(">", 265, textY);
-                int killedTanksWithCurrType2 = this.currMaps.get(0).get(
-                        currEnemyTankType);
+                int killedTanksWithCurrType2 =
+                        this.currentlyDisplayingStatisticalMaps.get(1).get(
+                                currEnemyTankType);
                 int pointsForCurrTankType2 = killedTanksWithCurrType
                         * currEnemyTankType.getScore();
                 g.drawString(String.valueOf(killedTanksWithCurrType2), 287,
@@ -192,7 +211,8 @@ public class ScoreScreen {
         g.drawString("TOTAL ", 5, 430);
         for (int i = 0; i < this.players.size(); ++i) {
             int totalTanks = 0;
-            Collection<Integer> tankCounts = this.currMaps.get(i).values();
+            Collection<Integer> tankCounts =
+                    this.currentlyDisplayingStatisticalMaps.get(i).values();
             Iterator<Integer> it = tankCounts.iterator();
             while (it.hasNext()) {
                 totalTanks += it.next();

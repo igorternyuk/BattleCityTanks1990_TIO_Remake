@@ -75,8 +75,8 @@ public class LevelState extends GameState {
     private static final double PLAYER_PROTECTION_DURATION = 10;
     private static final double PLAYER_TANK_FROZEN_DURATION = 5;
     private static final double ENEMY_TANK_FROZEN_DURATION = 13;
-    private static final double POWERUP_TIMER_DELAY = 15;
-    private static final double POWERUP_PROBABILITY = 0.6;
+    private static final double POWERUP_TIMER_DELAY = 10;
+    private static final double POWERUP_PROBABILITY = 0.99;
     private static final double NEXT_STAGE_SPLASH_DELAY = 6;
     private static final double GAME_OVER_SCREEN_DELAY = 3;    
     private static final Point RIGHT_PANEL_POSITION = new Point(26
@@ -607,7 +607,7 @@ public class LevelState extends GameState {
         for (int i = powerUps.size() - 1; i >= 0; --i) {
             PowerUp powerUp = (PowerUp) powerUps.get(i);
             for (int j = 0; j < this.players.size(); ++j) {
-                Player currPlayer = this.players.get(i);
+                Player currPlayer = this.players.get(j);
                 if (currPlayer.collides(powerUp)) {
                     onBonusCollectedByPlayer(currPlayer, powerUp);
                     continue outer;

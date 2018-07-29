@@ -9,15 +9,18 @@
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/pathfinder/Pathfinder.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/bonuses/PowerUpType.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gamestate/ConstructionState.java</file>
+            <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/player/PlayerAction.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/projectiles/Projectile.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/player/Player.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gamestate/LevelState.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/graphics/spritesheets/SpriteSheetManager.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/tank/Tank.java</file>
+            <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/GameMode.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/player/PlayerStatistics.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gamestate/GameState.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/utils/Images.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/tank/TankColor.java</file>
+            <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/player/PlayerIdentifier.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/utils/Painter.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gameplay/entities/splash/SplashType.java</file>
             <file>file:/home/igor/prj/java/TeJavaTanks/Tanks/src/com/igorternyuk/tanks/gamestate/MenuState.java</file>

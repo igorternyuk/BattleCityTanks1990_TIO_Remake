@@ -28,7 +28,9 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -41,7 +43,8 @@ public class Player extends Tank {
     private static final double SLIDING_DURATION = 0.25;
     private static final double SHOT_DELAY = 0.15;
 
-    private PlayerTankIdentifier identifier;
+    private PlayerIdentifier id;
+    private PlayerTankIdentifier tankId;
     private double respawnX, respawnY;
     private boolean hasProtection = false;
     private double protectionTimer;
@@ -54,21 +57,27 @@ public class Player extends Tank {
     private int maxHealth = 100;
     private int collecredGunCount = 0;
     private Font font;
-
     private PlayerStatistics statistics = new PlayerStatistics(this);
 
-    public Player(LevelState level, PlayerTankType type, double x, double y,
+    public Player(LevelState level, int id, PlayerTankType type, double x,
+            double y,
             Direction direction) {
         super(level, EntityType.PLAYER_TANK, x, y, type.getSpeed(), direction);
+        this.id = PlayerIdentifier.getFromNumeric(id);
         this.respawnX = x;
         this.respawnY = y;
         addProtection(RESPAWN_ROTECTION_DURATION);
         loadAnimations();
-        this.identifier = new PlayerTankIdentifier(TankColor.YELLOW,
+        TankColor color = (id == 1) ? TankColor.YELLOW : TankColor.GREEN;
+        this.tankId = new PlayerTankIdentifier(color,
                 Heading.getHeading(direction), type);
         setProperAnimation();
         this.font = ResourceManager.getInstance().getFont(
                 FontIdentifier.BATTLE_CITY).deriveFont(Font.BOLD, 14);
+    }
+
+    public PlayerIdentifier getId() {
+        return this.id;
     }
 
     @Override
@@ -131,7 +140,7 @@ public class Player extends Tank {
                 + 2 * Game.TILE_SIZE);
         g.fillRect(380, gameFieldBottom + Game.TILE_SIZE,
                 (int) (this.health * 5 * Game.TILE_SIZE / this.maxHealth),
-                 Game.TILE_SIZE
+                Game.TILE_SIZE
         );
         g.setColor(Color.white.darker());
         g.setStroke(new BasicStroke(3));
@@ -146,8 +155,8 @@ public class Player extends Tank {
         this.sliding = this.onIce && sliding;
     }
 
-    public PlayerTankIdentifier getIdentifier() {
-        return this.identifier;
+    public PlayerTankIdentifier getTankId() {
+        return this.tankId;
     }
 
     public PlayerStatistics getStatistics() {
@@ -168,7 +177,7 @@ public class Player extends Tank {
 
     @Override
     public void promote() {
-        PlayerTankType currType = this.identifier.getType();
+        PlayerTankType currType = this.tankId.getType();
         if (currType == PlayerTankType.ARMORED) {
             return;
         }
@@ -187,7 +196,7 @@ public class Player extends Tank {
     }
 
     private void setTankType(PlayerTankType tankType) {
-        this.identifier.setType(tankType);
+        this.tankId.setType(tankType);
         this.speed = tankType.getSpeed();
     }
 
@@ -230,10 +239,11 @@ public class Player extends Tank {
         Point departure = calcProjectileDeparturePosition();
         Projectile projectile = new Projectile(level, ProjectileType.PLAYER,
                 departure.x, departure.y,
-                this.identifier.getType().getProjectileSpeed(),
+                this.tankId.getType().getProjectileSpeed(),
                 this.direction);
-        projectile.setDamage(this.identifier.getType().getProjectileDamage());
-        if (this.identifier.getType() == PlayerTankType.ARMORED) {
+        projectile.setDamage(this.tankId.getType().getProjectileDamage());
+        projectile.setOwnerId(this.id.getId());
+        if (this.tankId.getType() == PlayerTankType.ARMORED) {
             projectile.setAntiarmour(true);
         }
 
@@ -270,7 +280,7 @@ public class Player extends Tank {
         this.collecredGunCount = 0;
         setPosition(this.respawnX, this.respawnY);
         addProtection(RESPAWN_ROTECTION_DURATION);
-        this.identifier.setType(PlayerTankType.BASIC);
+        this.tankId.setType(PlayerTankType.BASIC);
     }
 
     public void reset() {
@@ -281,47 +291,64 @@ public class Player extends Tank {
     }
 
     private void setProperAnimation() {
-        this.animationManager.setCurrentAnimation(this.identifier);
+        this.animationManager.setCurrentAnimation(this.tankId);
         this.animationManager.getCurrentAnimation().start(
                 AnimationPlayMode.LOOP);
     }
 
     private void steer(KeyboardState keyboardState) {
         this.moving = false;
+        boolean turnWest = (this.id == PlayerIdentifier.FIRST
+                && keyboardState.isKeyPressed(KeyEvent.VK_LEFT))
+                || (this.id == PlayerIdentifier.SECOND
+                && keyboardState.isKeyPressed(KeyEvent.VK_A));
+        
+        boolean turnEast = (this.id == PlayerIdentifier.FIRST
+                && keyboardState.isKeyPressed(KeyEvent.VK_RIGHT))
+                || (this.id == PlayerIdentifier.SECOND
+                && keyboardState.isKeyPressed(KeyEvent.VK_D));
+        
+        boolean turnNorth = (this.id == PlayerIdentifier.FIRST
+                && keyboardState.isKeyPressed(KeyEvent.VK_UP))
+                || (this.id == PlayerIdentifier.SECOND
+                && keyboardState.isKeyPressed(KeyEvent.VK_W));
+        
+        boolean turnSouth = (this.id == PlayerIdentifier.FIRST
+                && keyboardState.isKeyPressed(KeyEvent.VK_DOWN))
+                || (this.id == PlayerIdentifier.SECOND
+                && keyboardState.isKeyPressed(KeyEvent.VK_S));
 
-        if (keyboardState.isKeyPressed(KeyEvent.VK_A)
-                || keyboardState.isKeyPressed(KeyEvent.VK_LEFT)) {
-            setDirection(Direction.WEST);
-            this.moving = true;
-            this.identifier.setHeading(Heading.WEST);
-            setProperAnimation();
-        } else if (keyboardState.isKeyPressed(KeyEvent.VK_D)
-                || keyboardState.isKeyPressed(KeyEvent.VK_RIGHT)) {
-            setDirection(Direction.EAST);
-            this.moving = true;
-            this.identifier.setHeading(Heading.EAST);
-            setProperAnimation();
-        } else if (keyboardState.isKeyPressed(KeyEvent.VK_W)
-                || keyboardState.isKeyPressed(KeyEvent.VK_UP)) {
-            setDirection(Direction.NORTH);
-            this.moving = true;
-            this.identifier.setHeading(Heading.NORTH);
-            setProperAnimation();
-        } else if (keyboardState.isKeyPressed(KeyEvent.VK_S)
-                || keyboardState.isKeyPressed(KeyEvent.VK_DOWN)) {
-            setDirection(Direction.SOUTH);
-            this.moving = true;
-            this.identifier.setHeading(Heading.SOUTH);
-            setProperAnimation();
+        if (turnWest) {
+            turn(Direction.WEST);
+        } else if (turnEast) {
+            turn(Direction.EAST);
+        } else if (turnNorth) {
+            turn(Direction.NORTH);
+        } else if (turnSouth) {
+            turn(Direction.SOUTH);
         } else {
-            this.moving = false;
-            this.animationManager.getCurrentAnimation().stop();
+            stop();
         }
+    }
+
+    private void turn(Direction direcion) {
+        setDirection(direcion);
+        this.moving = true;
+        this.tankId.setHeading(Heading.getHeading(direction));
+        setProperAnimation();
+    }
+
+    private void stop() {
+        this.moving = false;
+        this.animationManager.getCurrentAnimation().stop();
     }
 
     private void handleUserInput(KeyboardState keyboardState) {
 
-        if (keyboardState.isKeyPressed(KeyEvent.VK_F)) {
+        if ((this.id == PlayerIdentifier.FIRST
+                && keyboardState.isKeyPressed(KeyEvent.VK_F))
+             || (this.id == PlayerIdentifier.SECOND
+                && keyboardState.isKeyPressed(KeyEvent.VK_E))) {
             fire();
         }
 
@@ -355,7 +382,7 @@ public class Player extends Tank {
     }
 
     private void updateShootingTimer(double frameTime) {
-        if (this.identifier.getType() == PlayerTankType.MIDDLE && !this.canFire) {
+        if (this.tankId.getType() == PlayerTankType.MIDDLE && !this.canFire) {
             this.lastShootTimer += frameTime;
             if (this.lastShootTimer >= SHOT_DELAY) {
                 this.lastShootTimer = 0;
@@ -370,5 +397,10 @@ public class Player extends Tank {
         if (!this.onIce) {
             this.sliding = false;
         }
+    }
+
+    @Override
+    public TankColor getTankColor() {
+        return this.tankId.getColor();
     }
 }

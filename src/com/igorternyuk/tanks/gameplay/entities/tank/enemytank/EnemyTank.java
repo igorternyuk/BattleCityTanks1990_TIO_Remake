@@ -5,6 +5,7 @@ import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.player.Player;
+import com.igorternyuk.tanks.gameplay.entities.player.PlayerIdentifier;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
 import com.igorternyuk.tanks.gameplay.entities.tank.Heading;
@@ -40,7 +41,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     private static final double SHOOTING_PERIOD = 2;
 
     private int number;
-    private EnemyTankIdentifier identifier;
+    private EnemyTankIdentifier tankId;
     private boolean bonus = false;
     private boolean gleaming = false;
     private double gleamingTimer;
@@ -65,7 +66,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         super(level, EntityType.ENEMY_TANK, x, y, type.getSpeed(), direction);
         this.number = number;
         this.health = type.getHealth();
-        this.identifier = new EnemyTankIdentifier(getTankColor(type),
+        this.tankId = new EnemyTankIdentifier(getTankColor(type),
                 Heading.getHeading(direction), type);
         checkIfSpecialTank();
         loadAnimations();
@@ -82,7 +83,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     private void checkIfSpecialTank(){
         if (!checkIfBonus()) {
             if (this.random.nextDouble() < calcRedBlinkingProbability()) {
-                if(this.identifier.getType() != EnemyTankType.ARMORED){
+                if(this.tankId.getType() != EnemyTankType.ARMORED){
                     turnRed();
                 }
             }
@@ -127,7 +128,6 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         }
 
         if (!this.moving && this.gotStuck) {
-            //checkMapCollision();
             selectRandomDirrection();
             return;
         }
@@ -147,12 +147,12 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     }
 
     public EnemyTankType getType() {
-        return this.identifier.getType();
+        return this.tankId.getType();
     }
 
     @Override
     public void promote() {
-        EnemyTankType currType = this.identifier.getType();
+        EnemyTankType currType = this.tankId.getType();
         if (currType == EnemyTankType.ARMORED) {
             return;
         }
@@ -165,12 +165,12 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     }
 
     private void setTankType(EnemyTankType tankType) {
-        this.identifier.setType(tankType);
+        this.tankId.setType(tankType);
         this.speed = tankType.getSpeed();
     }
 
     public int getScore() {
-        return this.identifier.getType().getScore();
+        return this.tankId.getType().getScore();
     }
 
     public boolean isGleaming() {
@@ -181,8 +181,8 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         this.gleaming = gleaming;
     }
 
-    public EnemyTankIdentifier getIdentifier() {
-        return this.identifier;
+    public EnemyTankIdentifier getTankId() {
+        return this.tankId;
     }
 
     private boolean checkCollisions(double frameTime) {
@@ -190,12 +190,14 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         if (checkMapCollision()) {
             selectRandomDirrection();
             move(frameTime);
+            System.out.println("Map collision");
             return true;
         }
 
         if (handleCollisionsWithSplashes()) {
             selectRandomDirrection();
             move(frameTime);
+            System.out.println("Collision with splash");
             return true;
         }
 
@@ -216,12 +218,13 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     @Override
     protected List<Tank> getOtherTanks() {
         List<Tank> otherTanks = super.getOtherTanks();
-        otherTanks.add((Tank) this.level.getPlayer());
+        List<Player> players = this.level.getPlayers();
+        players.forEach(player -> otherTanks.add((Tank)player));
         return otherTanks;
     }
 
     private void updateAnimation() {
-        this.animationManager.setCurrentAnimation(this.identifier);
+        this.animationManager.setCurrentAnimation(this.tankId);
         this.animationManager.getCurrentAnimation().start(
                 AnimationPlayMode.LOOP);
     }
@@ -233,8 +236,12 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         return currSpot;
     }
 
-    private Spot getPlayerSpot() {
-        Player player = this.level.getPlayer();
+    private Spot getPlayerSpot(int playerId) {
+        int index = playerId - 1;
+        if(index > this.level.getPlayerCount() - 1){
+            index = 0;
+        }
+        Player player = this.level.getPlayers().get(index);
         int targetCol = (int) player.getX() / Game.HALF_TILE_SIZE;
         int targetRow = (int) player.getY() / Game.HALF_TILE_SIZE;
         return new Spot(targetRow, targetCol, true);
@@ -253,7 +260,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     @Override
     public void setDirection(Direction direction) {
         super.setDirection(direction);
-        this.identifier.setHeading(Heading.getHeading(direction));
+        this.tankId.setHeading(Heading.getHeading(direction));
     }
 
     private List<Direction> getAllPossibleDirections() {
@@ -271,6 +278,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         List<Direction> allPossibleDirections = getAllPossibleDirections();
 
         if (allPossibleDirections.isEmpty()) {
+            System.out.println("Got stuck!");
             this.gotStuck = true;
             checkMapCollision();
             this.moving = false;
@@ -345,11 +353,11 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             if (this.number % 2 == 0) {
                 targetEagle();
             } else {
-                targetPlayer();
+                targetPlayer(PlayerIdentifier.FIRST);
             }
         } else if (this.targetTimer < 2 * TARGET_CHANGING_PERIOD) {
             if (this.number % 2 == 0) {
-                targetPlayer();
+                targetPlayer(PlayerIdentifier.SECOND);
             } else {
                 targetEagle();
             }
@@ -358,8 +366,8 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         }
     }
 
-    private void targetPlayer() {
-        Spot playerSpot = getPlayerSpot();
+    private void targetPlayer(PlayerIdentifier identifier) {
+        Spot playerSpot = getPlayerSpot(identifier.getId());
         this.currTarget = playerSpot;
         this.movingAlongShortestPath = false;
     }
@@ -394,10 +402,10 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         int py = departure.y;
         Projectile projectile = new Projectile(level, this.getType().
                 getProjectileType(), px, py,
-                this.identifier.getType().getProjectileSpeed(),
+                this.tankId.getType().getProjectileSpeed(),
                 this.direction);
-        projectile.setDamage(this.identifier.getType().getProjectileDamage());
-        if (this.identifier.getType() == EnemyTankType.ARMORED) {
+        projectile.setDamage(this.tankId.getType().getProjectileDamage());
+        if (this.tankId.getType() == EnemyTankType.ARMORED) {
             projectile.setAntiarmour(true);
         }
         this.level.getEntityManager().addEntity(projectile);
@@ -419,9 +427,9 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     public void hit(int damage) {
         super.hit(damage);
         if (isAlive()) {
-            if (!this.bonus && this.identifier.getType()
+            if (!this.bonus && this.tankId.getType()
                     == EnemyTankType.ARMORED) {
-                this.identifier.setColor(calcColorDependingOnHealth());
+                this.tankId.setColor(calcColorDependingOnHealth());
                 updateAnimation();
             }
         } else {
@@ -501,8 +509,8 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         if (this.gleaming) {
             this.gleamingTimer += frameTime;
             if (this.gleamingTimer >= COLOR_CHANGING_PERIOD) {
-                TankColor currColor = this.identifier.getColor();
-                this.identifier.setColor(currColor.next());
+                TankColor currColor = this.tankId.getColor();
+                this.tankId.setColor(currColor.next());
                 this.gleamingTimer = 0;
             }
         }
@@ -516,10 +524,10 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         if (this.redBlinking) {
             this.redBlinkingTimer += frameTime;
             if (this.redBlinkingTimer >= COLOR_CHANGING_PERIOD) {
-                if (this.identifier.getColor() == TankColor.RED) {
-                    this.identifier.setColor(getBaseColor());
+                if (this.tankId.getColor() == TankColor.RED) {
+                    this.tankId.setColor(getBaseColor());
                 } else {
-                    this.identifier.setColor(TankColor.RED);
+                    this.tankId.setColor(TankColor.RED);
                 }
                 this.redBlinkingTimer = 0;
             }
@@ -558,5 +566,10 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
                     0, 0, Game.TILE_SIZE, Game.TILE_SIZE, 2, Game.TILE_SIZE
             ));
         });
+    }
+
+    @Override
+    public TankColor getTankColor() {
+        return this.tankId.getColor();
     }
 }

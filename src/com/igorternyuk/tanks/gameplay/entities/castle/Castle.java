@@ -1,4 +1,4 @@
-package com.igorternyuk.tanks.gameplay.entities.eagle;
+package com.igorternyuk.tanks.gameplay.entities.castle;
 
 import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
@@ -17,12 +17,12 @@ import java.awt.image.BufferedImage;
  *
  * @author igor
  */
-public class Eagle extends Entity{
+public class Castle extends Entity{
     
-    private EagleState state = EagleState.ALIVE;
+    private CastleState state = CastleState.ALIVE;
     private Sprite sprite;
 
-    public Eagle(LevelState level, double x, double y) {
+    public Castle(LevelState level, double x, double y) {
         super(level, EntityType.EAGLE, x, y, 0, Direction.NORTH);
         SpriteSheetManager spriteSheetManager = SpriteSheetManager.getInstance();
         BufferedImage spriteSheet = spriteSheetManager.get(
@@ -31,12 +31,12 @@ public class Eagle extends Entity{
         this.sprite.setSourceRect(this.state.getSourceRect());
     }
 
-    public EagleState getState() {
+    public CastleState getState() {
         return this.state;
     }
     
     public void kill(){
-        this.state = EagleState.DEAD;
+        this.state = CastleState.DEAD;
         this.sprite.setSourceRect(this.state.getSourceRect());
         this.explode(ExplosionType.BIG);
     }

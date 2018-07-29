@@ -1,12 +1,11 @@
 package com.igorternyuk.tanks.gamestate;
 
 import com.igorternyuk.tanks.gameplay.Game;
+import com.igorternyuk.tanks.gameplay.GameMode;
 import java.awt.Graphics2D;
 import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -17,8 +16,9 @@ import java.util.function.Supplier;
 public class GameStateManager {
 
     public static final int MENU_STATE = 0;
-    public static final int LEVEL_STATE = 1;
-    public static final int CONSTRUCTION_STATE = 2;
+    public static final int LEVEL_STATE_FOR_ONE_PLAYER = 1;
+    public static final int LEVEL_STATE_FOR_TWO_PLAYERS = 2;
+    public static final int CONSTRUCTION_STATE = 3;
 
     private static GameStateManager instance;
 
@@ -43,8 +43,11 @@ public class GameStateManager {
         this.gameStateFactoty.put(MENU_STATE, () -> {
             return new MenuState(this);
         });
-        this.gameStateFactoty.put(LEVEL_STATE, () -> {
-            return new LevelState(this);
+        this.gameStateFactoty.put(LEVEL_STATE_FOR_ONE_PLAYER, () -> {
+            return new LevelState(this, GameMode.ONE_PLAYER);
+        });
+        this.gameStateFactoty.put(LEVEL_STATE_FOR_TWO_PLAYERS, () -> {
+            return new LevelState(this, GameMode.TWO_PLAYERS);
         });
         this.gameStateFactoty.put(CONSTRUCTION_STATE, () -> {
             return new ConstructionState(this);

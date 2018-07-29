@@ -37,7 +37,9 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
             double speed, Direction direction) {
         super(level, type, x, y, speed, direction);
     }
-
+    
+    public abstract TankColor getTankColor();
+    
     public abstract void promote();
 
     public abstract void promoteToHeavy();
@@ -135,6 +137,7 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
         for (int i = 0; i < otherTanks.size(); ++i) {
             Tank currTank = otherTanks.get(i);
             if (checkCollisionWithOtherTank(currTank, frameTime)) {
+                System.out.println("Collision with other tank");
                 return true;
             }
         }
@@ -206,7 +209,7 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
     }
 
     protected void drawOutline(Graphics2D g) {
-        g.setColor(Color.red);
+        g.setColor(getTankColor().getColor());
         g.setStroke(new BasicStroke(3));
         Rectangle boundingRect = getBoundingRect();
         Rectangle ouline = new Rectangle(

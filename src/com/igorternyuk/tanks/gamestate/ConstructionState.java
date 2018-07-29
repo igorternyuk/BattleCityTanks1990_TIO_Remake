@@ -109,8 +109,7 @@ public class ConstructionState extends GameState {
     private boolean loaded = false;
     private boolean tileSelected = false;
     private TileType selectedTileType;
-    private List<Point> enemyTankAppearancePositions = new ArrayList<>();
-    private List<Point> eagleProtectionPositions = new ArrayList<>();
+    private List<Point> forbiddenPositions = new ArrayList<>(6);
     private Point selectedTileDrawPosition = new Point();
     private BufferedImage flagImage;
     private int currLevel = 1;
@@ -178,10 +177,12 @@ public class ConstructionState extends GameState {
                 SpriteSheetIdentifier.LEVEL_FLAG), Game.SCALE);
         tileMap = new TileMap(Game.SCALE);
         tileMap.loadMap("/tilemap/level1.map");
-        this.enemyTankAppearancePositions.addAll(this.tileMap.
+        this.forbiddenPositions.add(this.tileMap.getCastlePosition());
+        this.forbiddenPositions.addAll(this.tileMap.
                 getEnemyTankAppearencePositions());
-        this.eagleProtectionPositions.addAll(this.tileMap.
+        this.forbiddenPositions.addAll(this.tileMap.
                 getEagleProtectionPositions());
+        this.forbiddenPositions.addAll(this.tileMap.getPlayerRespawnPositions());
         fillTileButtonArray();
         fillButtonArray();
         this.loaded = true;
@@ -257,27 +258,12 @@ public class ConstructionState extends GameState {
 
     private boolean checkIfClickPositionAcceptable(Point clickPosition) {
         return this.tileMap.checkIfPointIsInTheMapBounds(clickPosition)
-                && !checkIfInEagleProtectionArea(clickPosition)
-                && !checkIfInEnemyAppearancePositions(clickPosition)
-                && !checkIfInEagleArea(clickPosition)
-                && !checkPlayerRespawnPosiiton(clickPosition);
+                && !checkIfInForbiddenPosition(clickPosition);
     }
 
-    private boolean checkIfInEagleProtectionArea(Point pos) {
-        for (int i = 0; i < this.eagleProtectionPositions.size(); ++i) {
-            Point point = this.eagleProtectionPositions.get(i);
-            Rectangle currTileBoundingRect = new Rectangle(
-                    point.x, point.y, Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE);
-            if (currTileBoundingRect.contains(pos)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean checkIfInEnemyAppearancePositions(Point pos) {
-        for (int i = 0; i < this.enemyTankAppearancePositions.size(); ++i) {
-            Point point = this.enemyTankAppearancePositions.get(i);
+    private boolean checkIfInForbiddenPosition(Point pos) {
+        for (int i = 0; i < this.forbiddenPositions.size(); ++i) {
+            Point point = this.forbiddenPositions.get(i);
             Rectangle currTileBoundingRect = new Rectangle(
                     point.x, point.y, Game.TILE_SIZE, Game.TILE_SIZE);
             if (currTileBoundingRect.contains(pos)) {
@@ -285,20 +271,6 @@ public class ConstructionState extends GameState {
             }
         }
         return false;
-    }
-
-    private boolean checkIfInEagleArea(Point pos) {
-        Rectangle eagleArea = new Rectangle(LevelState.EAGLE_POSITION.x,
-                LevelState.EAGLE_POSITION.y, Game.TILE_SIZE, Game.TILE_SIZE);
-        return eagleArea.contains(pos);
-    }
-
-    private boolean checkPlayerRespawnPosiiton(Point pos) {
-        Rectangle playerRespawnArea =
-                new Rectangle(LevelState.PLAYER_RESPAWN_POSITION.x,
-                        LevelState.PLAYER_RESPAWN_POSITION.y, Game.TILE_SIZE,
-                        Game.TILE_SIZE);
-        return playerRespawnArea.contains(pos);
     }
 
     private void saveMapToFile() {
@@ -353,22 +325,11 @@ public class ConstructionState extends GameState {
 
     private void highlightForbiddenTiles(Graphics2D g) {
         g.setColor(Color.white);
-        this.tileMap.getEagleProtectionPositions().forEach((p) -> {
+        this.forbiddenPositions.forEach((p) -> {
             g.fillRect((int) (p.x * Game.SCALE), (int) (p.y * Game.SCALE),
-                    (int) (Game.HALF_TILE_SIZE * Game.SCALE),
-                    (int) (Game.HALF_TILE_SIZE * Game.SCALE));
+                    (int) (2 * Game.HALF_TILE_SIZE * Game.SCALE),
+                    (int) (2 * Game.HALF_TILE_SIZE * Game.SCALE));
         });
-
-        this.tileMap.getEnemyTankAppearencePositions().forEach(p -> {
-            g.fillRect((int) (p.x * Game.SCALE), (int) (p.y * Game.SCALE),
-                    (int) (Game.TILE_SIZE * Game.SCALE),
-                    (int) (Game.TILE_SIZE * Game.SCALE));
-        });
-
-        Point p = LevelState.PLAYER_RESPAWN_POSITION;
-        g.fillRect((int) (p.x * Game.SCALE), (int) (p.y * Game.SCALE),
-                (int) (Game.TILE_SIZE * Game.SCALE),
-                (int) (Game.TILE_SIZE * Game.SCALE));
     }
 
     private void drawGrid(Graphics2D g) {

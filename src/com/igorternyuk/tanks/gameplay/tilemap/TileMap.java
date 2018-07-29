@@ -27,8 +27,9 @@ public class TileMap {
     private static final double EAGLE_PROTECTION_LIFE_TIME = 20;
     private static final double EAGLE_PROTECTION_BLINKING_TIME = 5;
     private static final double EAGLE_PROTECTION_BLINK_PERIOD = 0.25;
-    
-    public static class FiringSpot{
+
+    public static class FiringSpot {
+
         private Spot spot;
         private Direction fireDirection;
 
@@ -53,14 +54,16 @@ public class TileMap {
             this.fireDirection = fireDirection;
         }
     }
-    
+
     private double scale;
     private Tile[][] tiles = new Tile[Game.TILES_IN_HEIGHT][Game.TILES_IN_WIDTH];
     private List<Tile> bushTiles = new ArrayList<>();
     private List<WaterTile> waterTiles = new ArrayList<>();
     private Tile lastCollided;
+    private Point castlePosition = new Point(12 * Game.HALF_TILE_SIZE, 24 * Game.HALF_TILE_SIZE);
     private List<Point> enemyTankAppearancePositions = new ArrayList<>();
     private List<Point> eagleProtectionTilePositions = new ArrayList<>();
+    private List<Point> playerRespawnPositions = new ArrayList<>();
     private List<FiringSpot> firePoints = new ArrayList<>();
     private BufferedImage spriteSheet;
     private Map<TileType, BufferedImage> tileTypeImageMap = new HashMap<>();
@@ -75,14 +78,15 @@ public class TileMap {
 
     public TileMap(double scale) {
         this.scale = scale;
-        specifyEnemyTankAppearancePositions();
-        specifyEagleProtectionPositions();
+        setEnemyTankAppearancePositions();
+        setEagleProtectionPositions();
+        setPlayersRespawnPositions();
         specifyFireSpots();
         loadSpriteSheet();
         this.lastCollided = Tile.createTile(TileType.EMPTY, new Point(),
                 this.tileTypeImageMap.get(TileType.EMPTY), this.scale);
     }
-    
+
     public List<Point> getEnemyTankAppearencePositions() {
         return Collections.unmodifiableList(this.enemyTankAppearancePositions);
     }
@@ -93,6 +97,21 @@ public class TileMap {
 
     public List<FiringSpot> getFiringSpots() {
         return Collections.unmodifiableList(this.firePoints);
+    }
+    
+    public Point getCastlePosition(){
+        return this.castlePosition;
+    }
+
+    private void setPlayersRespawnPositions() {
+        this.playerRespawnPositions.add(new Point(9 * Game.HALF_TILE_SIZE, 24
+                * Game.HALF_TILE_SIZE));
+        this.playerRespawnPositions.add(new Point(15 * Game.HALF_TILE_SIZE, 24
+                * Game.HALF_TILE_SIZE));
+    }
+
+    public List<Point> getPlayerRespawnPositions() {
+        return Collections.unmodifiableList(playerRespawnPositions);
     }
 
     public Tile getLastCollided() {
@@ -201,6 +220,8 @@ public class TileMap {
         this.waterTiles.clear();
         createTilesFromMap(map);
         pathToTheCurrentMapFile = pathToMapFile;
+        this.castlePosition = new Point(12 * Game.HALF_TILE_SIZE, 24
+                * Game.HALF_TILE_SIZE);
         this.mapLoaded = true;
     }
 
@@ -253,8 +274,6 @@ public class TileMap {
         }
         this.tiles[row][col] = tile;
     }
-    
-    
 
     public void activateEagleProtection() {
         buildMetalWallsAroundEagle();
@@ -275,8 +294,8 @@ public class TileMap {
         restoreRegularEagleProtection();
         this.eagleProtectionActive = false;
     }
-    
-    public void destroyAllProtections(){
+
+    public void destroyAllProtections() {
         this.eagleProtectionTilePositions.forEach(point -> {
             int row = point.y / Game.HALF_TILE_SIZE;
             int col = point.x / Game.HALF_TILE_SIZE;
@@ -303,7 +322,7 @@ public class TileMap {
     }
 
     public void update(KeyboardState keyboardState, double frameTime) {
-        if(!this.mapLoaded){
+        if (!this.mapLoaded) {
             return;
         }
         for (int row = 0; row < this.tiles.length; ++row) {
@@ -329,7 +348,7 @@ public class TileMap {
                 }
             }
         }
-        for(int i = this.waterTiles.size() - 1; i >= 0; --i){
+        for (int i = this.waterTiles.size() - 1; i >= 0; --i) {
             this.waterTiles.get(i).update(keyboardState, frameTime);
         }
         updateProtection(keyboardState, frameTime);
@@ -387,8 +406,6 @@ public class TileMap {
             this.bushTiles.get(i).draw(g);
         }
     }
-
-    
 
     private void loadSpriteSheet() {
         SpriteSheetManager spriteSheetManager = SpriteSheetManager.getInstance();
@@ -467,8 +484,8 @@ public class TileMap {
         }
         return clearanceMap;
     }
-    
-    private void specifyEnemyTankAppearancePositions() {
+
+    private void setEnemyTankAppearancePositions() {
         for (int i = 0; i < 3; ++i) {
             this.enemyTankAppearancePositions.add(new Point(6 * i
                     * Game.TILE_SIZE, 0));
@@ -476,20 +493,31 @@ public class TileMap {
     }
 
     private void specifyFireSpots() {
-        this.firePoints.add(new FiringSpot(new Spot(24, 6, true), Direction.EAST));
-        this.firePoints.add(new FiringSpot(new Spot(23, 6, true), Direction.EAST));
-        this.firePoints.add(new FiringSpot(new Spot(24, 7, true), Direction.EAST));
-        this.firePoints.add(new FiringSpot(new Spot(23, 7, true), Direction.EAST));
-        this.firePoints.add(new FiringSpot(new Spot(24, 17, true), Direction.WEST));
-        this.firePoints.add(new FiringSpot(new Spot(23, 17, true), Direction.WEST));
-        this.firePoints.add(new FiringSpot(new Spot(24, 18, true), Direction.WEST));
-        this.firePoints.add(new FiringSpot(new Spot(23, 18, true), Direction.WEST));
-        this.firePoints.add(new FiringSpot(new Spot(20, 11, true), Direction.SOUTH));
-        this.firePoints.add(new FiringSpot(new Spot(20, 12, true), Direction.SOUTH));
-        this.firePoints.add(new FiringSpot(new Spot(20, 13, true), Direction.SOUTH));
+        this.firePoints.add(
+                new FiringSpot(new Spot(24, 6, true), Direction.EAST));
+        this.firePoints.add(
+                new FiringSpot(new Spot(23, 6, true), Direction.EAST));
+        this.firePoints.add(
+                new FiringSpot(new Spot(24, 7, true), Direction.EAST));
+        this.firePoints.add(
+                new FiringSpot(new Spot(23, 7, true), Direction.EAST));
+        this.firePoints.add(new FiringSpot(new Spot(24, 17, true),
+                Direction.WEST));
+        this.firePoints.add(new FiringSpot(new Spot(23, 17, true),
+                Direction.WEST));
+        this.firePoints.add(new FiringSpot(new Spot(24, 18, true),
+                Direction.WEST));
+        this.firePoints.add(new FiringSpot(new Spot(23, 18, true),
+                Direction.WEST));
+        this.firePoints.add(new FiringSpot(new Spot(20, 11, true),
+                Direction.SOUTH));
+        this.firePoints.add(new FiringSpot(new Spot(20, 12, true),
+                Direction.SOUTH));
+        this.firePoints.add(new FiringSpot(new Spot(20, 13, true),
+                Direction.SOUTH));
     }
 
-    private void specifyEagleProtectionPositions() {
+    private void setEagleProtectionPositions() {
         for (int row = 23; row < 26; ++row) {
             for (int col = 11; col < 15; ++col) {
                 if (row > 23 && (col == 12 || col == 13)) {

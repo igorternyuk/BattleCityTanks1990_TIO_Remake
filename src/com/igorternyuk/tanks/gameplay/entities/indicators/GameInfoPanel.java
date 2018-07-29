@@ -10,10 +10,15 @@ import com.igorternyuk.tanks.graphics.images.Sprite;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
 import com.igorternyuk.tanks.input.KeyboardState;
+import com.igorternyuk.tanks.resourcemanager.FontIdentifier;
+import com.igorternyuk.tanks.resourcemanager.ResourceManager;
 import com.igorternyuk.tanks.utils.Painter;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -21,13 +26,14 @@ import java.awt.image.BufferedImage;
  */
 public class GameInfoPanel extends Entity {
 
-    private Player player;
+    private List<Player> players = new ArrayList<>();
     private EnemyTankCountIndicator enemyIndicator;
     private Sprite sprite;
+    private Font font;
 
     public GameInfoPanel(LevelState level, double x, double y) {
         super(level, EntityType.RIGHT_PANEL, x, y, 0, Direction.NORTH);
-        this.player = this.level.getPlayer();
+        this.players = this.level.getPlayers();
         BufferedImage image = SpriteSheetManager.getInstance().get(
                 SpriteSheetIdentifier.RIGHT_PANEL);
         this.sprite = new Sprite(image, x, y, Game.SCALE);
@@ -37,6 +43,8 @@ public class GameInfoPanel extends Entity {
         this.attachChild(this.enemyIndicator);
         this.enemyIndicator.setPosition(Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE
                 * 3);
+        this.font = ResourceManager.getInstance().getFont(
+                FontIdentifier.BATTLE_CITY).deriveFont(Font.BOLD, 24);
     }
 
     @Override
@@ -59,28 +67,41 @@ public class GameInfoPanel extends Entity {
     public void draw(Graphics2D g) {
         this.sprite.draw(g);
         super.draw(g);
-        int playerLives = this.player.getLives();
-        if(playerLives < 0){
-            playerLives = 0;
+        drawPlayerLives(g);
+        drawStageNumber(g);
+    }
+    
+    private void drawPlayerLives(Graphics2D g){
+        for (int i = 0; i < this.players.size(); ++i) {
+            int playerLives = this.players.get(i).getLives();
+            if (playerLives < 0) {
+                playerLives = 0;
+            }
+            Painter.drawNumber(g, playerLives,
+                    Painter.DIGIT_DEFAULT_COLOR,
+                    (int) (28 * Game.HALF_TILE_SIZE * Game.SCALE),
+                    (int) ((18 + 3 * i) * Game.HALF_TILE_SIZE * Game.SCALE),
+                    Game.SCALE);
         }
-        Painter.drawNumber(g, playerLives,
-                Painter.DIGIT_DEFAULT_COLOR,
-                (int) (28 * Game.HALF_TILE_SIZE * Game.SCALE),
-                (int) (18 * Game.HALF_TILE_SIZE * Game.SCALE), Game.SCALE);
-        g.drawImage(SpriteSheetManager.getInstance().get(
+        
+        if (this.players.size() == 1) {
+            g.drawImage(SpriteSheetManager.getInstance().get(
                 SpriteSheetIdentifier.GRAY_TILE), (int) (28
                 * Game.HALF_TILE_SIZE * Game.SCALE), (int) (21
                 * Game.HALF_TILE_SIZE * Game.SCALE), null);
+        }
+    }
+
+    private void drawStageNumber(Graphics2D g) {
         Painter.drawNumber(g, this.level.getStageNumber(),
                 Painter.DIGIT_DEFAULT_COLOR,
                 (int) (27 * Game.HALF_TILE_SIZE * Game.SCALE),
                 (int) (25 * Game.HALF_TILE_SIZE * Game.SCALE), Game.SCALE);
-        if(this.level.getStageNumber() < 10){
-          g.drawImage(SpriteSheetManager.getInstance().get(
-                SpriteSheetIdentifier.GRAY_TILE), (int) (28
-                * Game.HALF_TILE_SIZE * Game.SCALE), (int) (25
-                * Game.HALF_TILE_SIZE * Game.SCALE), null);  
+        if (this.level.getStageNumber() < 10) {
+            g.drawImage(SpriteSheetManager.getInstance().get(
+                    SpriteSheetIdentifier.GRAY_TILE), (int) (28
+                    * Game.HALF_TILE_SIZE * Game.SCALE), (int) (25
+                    * Game.HALF_TILE_SIZE * Game.SCALE), null);
         }
     }
-
 }

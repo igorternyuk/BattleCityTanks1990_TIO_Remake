@@ -31,6 +31,7 @@ public class Projectile extends Entity {
     private boolean antiarmour = false;
     private Sprite sprite;
     private boolean canClearBushes = false;
+    private int ownerId = 0;
 
     public Projectile(LevelState level, ProjectileType projectileType, double x,
             double y, double speed, Direction direction) {
@@ -40,6 +41,14 @@ public class Projectile extends Entity {
                 SpriteSheetIdentifier.PROJECTILE);
         this.sprite = new Sprite(image, this.x, this.y, Game.SCALE);
         updateSprite();
+    }
+
+    public int getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(int ownerId) {
+        this.ownerId = ownerId;
     }
 
     public boolean isCanClearBushes() {

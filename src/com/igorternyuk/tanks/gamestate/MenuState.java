@@ -92,7 +92,7 @@ public class MenuState extends GameState {
 
     @Override
     public void draw(Graphics2D g) {
-        if(!this.loaded){
+        if (!this.loaded) {
             return;
         }
         BrickFont.drawWithBricksCentralized(g, "TANK", Game.HEIGHT / 6);
@@ -159,8 +159,14 @@ public class MenuState extends GameState {
     }
 
     private void createMenuItems() {
-        addMenuItem("PLAY", () -> {
-            this.gameStateManager.setGameState(GameStateManager.LEVEL_STATE);
+        addMenuItem("1 PLAYER", () -> {
+            this.gameStateManager.setGameState(
+                    GameStateManager.LEVEL_STATE_FOR_ONE_PLAYER);
+        });
+
+        addMenuItem("2 PLAYERS", () -> {
+            this.gameStateManager.setGameState(
+                    GameStateManager.LEVEL_STATE_FOR_TWO_PLAYERS);
         });
 
         addMenuItem("CONSTRUCTION", () -> {

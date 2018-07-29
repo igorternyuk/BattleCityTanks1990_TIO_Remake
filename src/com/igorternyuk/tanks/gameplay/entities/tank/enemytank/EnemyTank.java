@@ -190,14 +190,14 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         if (checkMapCollision()) {
             selectRandomDirrection();
             move(frameTime);
-            System.out.println("Map collision");
+            //System.out.println("Map collision");
             return true;
         }
 
         if (handleCollisionsWithSplashes()) {
             selectRandomDirrection();
             move(frameTime);
-            System.out.println("Collision with splash");
+            //System.out.println("Collision with splash");
             return true;
         }
 

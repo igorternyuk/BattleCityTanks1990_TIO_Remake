@@ -140,7 +140,7 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
         for (int i = 0; i < otherTanks.size(); ++i) {
             Tank currTank = otherTanks.get(i);
             if (checkCollisionWithOtherTank(currTank, frameTime)) {
-                System.out.println("Collision with other tank");
+                //System.out.println("Collision with other tank");
                 return true;
             }
         }

@@ -589,7 +589,7 @@ public class LevelState extends GameState {
                 continue;
             }
             
-            for (int j = 0; j < this.players.size(); ++j) {
+            for (int j = this.players.size() - 1; j >= 0; --j) {
                 Player currPlayer = this.players.get(j);
                 if (projectile.getType() == ProjectileType.ENEMY) {
                     if (projectile.collides(currPlayer)) {
@@ -628,6 +628,16 @@ public class LevelState extends GameState {
                         projectile.explode();
                     }
                 }
+            }
+            
+            for(int j = i - 1; j >= 0; --j){
+                Projectile otherProjectile = (Projectile)projectiles.get(j);
+                if(projectile.collides(otherProjectile)){
+                    projectile.explode();
+                    otherProjectile.explode();
+                    continue outer;
+                }
+                
             }
         }
     }

@@ -246,7 +246,7 @@ public class Player extends Tank {
             projectile.setAntiarmour(true);
         }
 
-        projectile.setCanClearBushes(this.canClearBushes);
+        projectile.setBushCrearing(this.canClearBushes);
         this.level.getEntityManager().addEntity(projectile);
         this.canFire = false;
         ResourceManager.getInstance().getAudio(AudioIdentifier.SHOT).play();

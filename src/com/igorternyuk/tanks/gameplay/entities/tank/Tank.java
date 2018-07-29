@@ -12,7 +12,6 @@ import com.igorternyuk.tanks.gameplay.tilemap.Tile;
 import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
 import com.igorternyuk.tanks.gamestate.LevelState;
 import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -49,6 +48,10 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
     public void freeze(double duration) {
         this.frozenTime = duration;
         this.frozen = true;
+    }
+
+    public boolean isFrozen() {
+        return frozen;
     }
 
     protected void handleIfFrozen(double frameTime) {

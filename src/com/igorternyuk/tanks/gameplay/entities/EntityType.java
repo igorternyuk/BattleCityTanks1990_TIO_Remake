@@ -5,7 +5,7 @@ package com.igorternyuk.tanks.gameplay.entities;
  * @author igor
  */
 public enum EntityType {
-    EAGLE,
+    CASTLE,
     PLAYER_TANK,
     ENEMY_TANK,
     PROJECTILE,

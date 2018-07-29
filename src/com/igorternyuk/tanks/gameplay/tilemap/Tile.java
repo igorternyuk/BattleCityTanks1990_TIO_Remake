@@ -3,6 +3,8 @@ package com.igorternyuk.tanks.gameplay.tilemap;
 import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
+import com.igorternyuk.tanks.gameplay.entities.EntityType;
+import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
 import com.igorternyuk.tanks.gameplay.entities.tank.Tank;
 import com.igorternyuk.tanks.input.KeyboardState;
 import com.igorternyuk.tanks.utils.Images;
@@ -91,7 +93,13 @@ public class Tile {
     }
     
     public boolean checkIfCollision(Entity entity){
-        if (this.type.isTraversable(entity) && this.type != TileType.BUSH) {
+        if (this.type.isTraversable(entity)) {
+            if(this.type == TileType.BUSH){
+                if(entity.getEntityType() == EntityType.PROJECTILE){
+                    Projectile projectile = (Projectile)entity;
+                    return projectile.isBushCrearing();
+                }
+            }            
             return false;
         }
         Rectangle tankBoundingRect = entity.getBoundingRect();

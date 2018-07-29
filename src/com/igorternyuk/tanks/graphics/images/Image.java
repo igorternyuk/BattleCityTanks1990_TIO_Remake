@@ -24,6 +24,18 @@ public abstract class Image {
         this(image, 0, 0);
     }
 
+    public BufferedImage getImage() {
+        return this.image;
+    }
+
+    public double getX() {
+        return this.x;
+    }
+
+    public double getY() {
+        return this.y;
+    }
+
     public void setPosition(double x, double y) {
         this.x = x;
         this.y = y;

@@ -147,7 +147,6 @@ public class Game implements Runnable {
         long auxillaryTimer = 0;
         long timeSinceLastUpdate = 0;
         long lastTime = Time.get();
-        System.out.println("FrameTime = " + FRAME_TIME);
         while (this.running) {
             long currentTime = Time.get();
             long elapsedTime = currentTime - lastTime;

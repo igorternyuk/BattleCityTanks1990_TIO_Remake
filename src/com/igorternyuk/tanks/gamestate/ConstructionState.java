@@ -147,8 +147,10 @@ public class ConstructionState extends GameState {
                         "State number",
                         "Select the stage you would like to edit",
                         JOptionPane.INFORMATION_MESSAGE));
-                this.currLevel = (lvl - 1) % LevelState.STAGE_MAX + 1;
-                this.tileMap.loadMap("/tilemap/level" + lvl + ".map");
+                if(lvl >= 1 && lvl < LevelState.STAGE_MAX){
+                      this.currLevel = lvl;
+                      this.tileMap.loadMap("/tilemap/level" + lvl + ".map");
+                }
             },
             () -> {
                 saveMapToFile();
@@ -180,8 +182,7 @@ public class ConstructionState extends GameState {
         this.forbiddenPositions.add(this.tileMap.getCastlePosition());
         this.forbiddenPositions.addAll(this.tileMap.
                 getEnemyTankAppearencePositions());
-        this.forbiddenPositions.addAll(this.tileMap.
-                getEagleProtectionPositions());
+        this.forbiddenPositions.addAll(this.tileMap.getCastleProtectionPositions());
         this.forbiddenPositions.addAll(this.tileMap.getPlayerRespawnPositions());
         fillTileButtonArray();
         fillButtonArray();
@@ -326,9 +327,15 @@ public class ConstructionState extends GameState {
     private void highlightForbiddenTiles(Graphics2D g) {
         g.setColor(Color.white);
         this.forbiddenPositions.forEach((p) -> {
+            int size;
+            if(this.tileMap.getCastleProtectionPositions().contains(p)){
+                size = Game.HALF_TILE_SIZE;
+            } else {
+                size = 2 * Game.HALF_TILE_SIZE;
+            }
             g.fillRect((int) (p.x * Game.SCALE), (int) (p.y * Game.SCALE),
-                    (int) (2 * Game.HALF_TILE_SIZE * Game.SCALE),
-                    (int) (2 * Game.HALF_TILE_SIZE * Game.SCALE));
+                    (int) (size * Game.SCALE),
+                    (int) (size * Game.SCALE));
         });
     }
 

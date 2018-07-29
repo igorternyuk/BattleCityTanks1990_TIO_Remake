@@ -23,7 +23,7 @@ public class Castle extends Entity{
     private Sprite sprite;
 
     public Castle(LevelState level, double x, double y) {
-        super(level, EntityType.EAGLE, x, y, 0, Direction.NORTH);
+        super(level, EntityType.CASTLE, x, y, 0, Direction.NORTH);
         SpriteSheetManager spriteSheetManager = SpriteSheetManager.getInstance();
         BufferedImage spriteSheet = spriteSheetManager.get(
                 SpriteSheetIdentifier.EAGLE);

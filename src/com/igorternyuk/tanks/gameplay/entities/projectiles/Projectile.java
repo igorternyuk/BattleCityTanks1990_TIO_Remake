@@ -30,7 +30,7 @@ public class Projectile extends Entity {
     private int damage = 25;
     private boolean antiarmour = false;
     private Sprite sprite;
-    private boolean canClearBushes = false;
+    private boolean bushCrearing = false;
     private int ownerId = 0;
 
     public Projectile(LevelState level, ProjectileType projectileType, double x,
@@ -51,12 +51,12 @@ public class Projectile extends Entity {
         this.ownerId = ownerId;
     }
 
-    public boolean isCanClearBushes() {
-        return this.canClearBushes;
+    public boolean isBushCrearing() {
+        return this.bushCrearing;
     }
 
-    public void setCanClearBushes(boolean canClearBushes) {
-        this.canClearBushes = canClearBushes;
+    public void setBushCrearing(boolean bushCrearing) {
+        this.bushCrearing = bushCrearing;
     }
 
     public ProjectileType getType() {
@@ -157,7 +157,7 @@ public class Projectile extends Entity {
                 }
             } else if (collidedTile.getType() == TileType.BUSH) {
                 if (collidedTile.checkIfCollision(this)) {
-                    if (this.canClearBushes) {
+                    if (this.bushCrearing) {
                         tileMap.destroyTile(collidedTile.getRow(), collidedTile.
                                 getColumn());
                         collisionOccured = true;

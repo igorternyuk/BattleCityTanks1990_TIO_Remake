@@ -91,7 +91,7 @@ public class TileMap {
         return Collections.unmodifiableList(this.enemyTankAppearancePositions);
     }
 
-    public List<Point> getEagleProtectionPositions() {
+    public List<Point> getCastleProtectionPositions() {
         return Collections.unmodifiableList(this.eagleProtectionTilePositions);
     }
 

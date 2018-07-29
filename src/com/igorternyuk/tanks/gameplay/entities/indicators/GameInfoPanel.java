@@ -13,6 +13,7 @@ import com.igorternyuk.tanks.input.KeyboardState;
 import com.igorternyuk.tanks.resourcemanager.FontIdentifier;
 import com.igorternyuk.tanks.resourcemanager.ResourceManager;
 import com.igorternyuk.tanks.utils.Painter;
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -66,6 +67,9 @@ public class GameInfoPanel extends Entity {
     @Override
     public void draw(Graphics2D g) {
         this.sprite.draw(g);
+        int gameFieldBottom = Game.HEIGHT - Game.STATISTICS_PANEL_HEIGHT;
+        g.setColor(Color.black);
+        g.fillRect(0, gameFieldBottom, Game.WIDTH, Game.STATISTICS_PANEL_HEIGHT);
         super.draw(g);
         drawPlayerLives(g);
         drawStageNumber(g);

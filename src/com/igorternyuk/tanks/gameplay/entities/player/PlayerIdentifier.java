@@ -22,7 +22,7 @@ public enum PlayerIdentifier {
         return this.id;
     }
 
-    public TankColor getColor() {
+    public TankColor getTankColor() {
         return this.color;
     }
     

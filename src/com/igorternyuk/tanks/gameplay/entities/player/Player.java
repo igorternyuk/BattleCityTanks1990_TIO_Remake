@@ -28,9 +28,7 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -121,32 +119,33 @@ public class Player extends Tank {
     @Override
     public void draw(Graphics2D g) {
         super.draw(g);
-        drawHealthBar(g);
+        drawPlayerData(g);
     }
 
-    private void drawHealthBar(Graphics2D g) {
+    private void drawPlayerData(Graphics2D g) {
         int gameFieldBottom = Game.HEIGHT - Game.STATISTICS_PANEL_HEIGHT;
-        g.setColor(Color.black);
-        g.fillRect(0, gameFieldBottom, Game.WIDTH, Game.STATISTICS_PANEL_HEIGHT);
         g.setColor(Color.white);
         g.fillRect(0, gameFieldBottom, Game.WIDTH, 3);
-
-        g.setColor(Color.white);
+        
+        Color currTankColor = this.id.getTankColor().getColor();
+        g.setColor(currTankColor);
         g.setFont(this.font);
-        g.drawString("SCORE: " + this.statistics.getTotalScore(), 5,
-                gameFieldBottom
-                + 2 * Game.TILE_SIZE);
-        g.drawString("HEALTH: ", Game.WIDTH / 2, gameFieldBottom
-                + 2 * Game.TILE_SIZE);
-        g.fillRect(380, gameFieldBottom + Game.TILE_SIZE,
+        int dy = (this.id.getId() - 1) * Game.TILE_SIZE * 2;
+        g.drawString("SCORE" + this.id.getId() + ": " + this.statistics.
+                getTotalScore(), 5, gameFieldBottom + 3 * Game.HALF_TILE_SIZE
+                + dy);
+
+        g.drawString("HEALTH" + this.id.getId(), Game.WIDTH / 2, gameFieldBottom
+                + 3 * Game.HALF_TILE_SIZE + dy);
+        g.fillRect(380, gameFieldBottom + Game.HALF_TILE_SIZE + dy,
                 (int) (this.health * 5 * Game.TILE_SIZE / this.maxHealth),
                 Game.TILE_SIZE
         );
-        g.setColor(Color.white.darker());
+        g.setColor(currTankColor.darker());
         g.setStroke(new BasicStroke(3));
         for (int i = 0; i < 5; ++i) {
             g.drawRect(380 + i * Game.TILE_SIZE, gameFieldBottom
-                    + Game.TILE_SIZE, Game.TILE_SIZE, Game.TILE_SIZE);
+                    + Game.HALF_TILE_SIZE + dy, Game.TILE_SIZE, Game.TILE_SIZE);
         }
         g.setStroke(new BasicStroke(1));
     }
@@ -302,17 +301,17 @@ public class Player extends Tank {
                 && keyboardState.isKeyPressed(KeyEvent.VK_LEFT))
                 || (this.id == PlayerIdentifier.SECOND
                 && keyboardState.isKeyPressed(KeyEvent.VK_A));
-        
+
         boolean turnEast = (this.id == PlayerIdentifier.FIRST
                 && keyboardState.isKeyPressed(KeyEvent.VK_RIGHT))
                 || (this.id == PlayerIdentifier.SECOND
                 && keyboardState.isKeyPressed(KeyEvent.VK_D));
-        
+
         boolean turnNorth = (this.id == PlayerIdentifier.FIRST
                 && keyboardState.isKeyPressed(KeyEvent.VK_UP))
                 || (this.id == PlayerIdentifier.SECOND
                 && keyboardState.isKeyPressed(KeyEvent.VK_W));
-        
+
         boolean turnSouth = (this.id == PlayerIdentifier.FIRST
                 && keyboardState.isKeyPressed(KeyEvent.VK_DOWN))
                 || (this.id == PlayerIdentifier.SECOND
@@ -347,7 +346,7 @@ public class Player extends Tank {
 
         if ((this.id == PlayerIdentifier.FIRST
                 && keyboardState.isKeyPressed(KeyEvent.VK_F))
-             || (this.id == PlayerIdentifier.SECOND
+                || (this.id == PlayerIdentifier.SECOND
                 && keyboardState.isKeyPressed(KeyEvent.VK_E))) {
             fire();
         }

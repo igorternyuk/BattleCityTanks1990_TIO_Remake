@@ -3,6 +3,7 @@ package com.igorternyuk.tanks.gamestate;
 import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.GameStatus;
 import com.igorternyuk.tanks.gameplay.entities.player.Player;
+import com.igorternyuk.tanks.gameplay.entities.player.PlayerIdentifier;
 import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTankType;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
 import com.igorternyuk.tanks.input.KeyboardState;
@@ -118,7 +119,12 @@ public class ScoreScreen {
 
     public void draw(Graphics2D g) {
         drawHighestScore(g);
-        
+        drawStatistics(g);
+        drawKilledEnemiesTotals(g);
+    }
+
+    private void drawStatistics(Graphics2D g) {
+
         g.setColor(Color.white);
         g.setFont(this.fontSmaller);
 
@@ -131,6 +137,7 @@ public class ScoreScreen {
                     * currEnemyTankType.getScore();
             int currY = 200 + 48 * i;
             int textY = currY + 25;
+            g.setColor(this.players.get(0).getId().getTankColor().getColor());
             g.drawString(String.valueOf(pointsForCurrTankType), 10, textY);
             g.drawString(" PTS ", 80, textY);
             g.drawString(String.valueOf(killedTanksWithCurrType), 175, textY);
@@ -142,44 +149,47 @@ public class ScoreScreen {
                     currY, null);
 
             if (this.players.size() > 1) {
-                g.drawString(">", 255, textY);
+                g.
+                        setColor(this.players.get(1).getId().getTankColor().
+                                getColor());
+                g.drawString(">", 265, textY);
                 int killedTanksWithCurrType2 = this.currMaps.get(0).get(
-                    currEnemyTankType);
+                        currEnemyTankType);
                 int pointsForCurrTankType2 = killedTanksWithCurrType
-                    * currEnemyTankType.getScore();
-                g.drawString(String.valueOf(killedTanksWithCurrType2), 225, textY);
-                g.drawString(" PTS ", 240, textY);
-                g.drawString(String.valueOf(pointsForCurrTankType2), 300, textY);
+                        * currEnemyTankType.getScore();
+                g.drawString(String.valueOf(killedTanksWithCurrType2), 287,
+                        textY);
+                g.drawString(" PTS ", 305, textY);
+                g.drawString(String.valueOf(pointsForCurrTankType2), 392, textY);
             }
         }
-        
-        drawKilledEnemiesTotals(g);      
     }
 
     private void drawHighestScore(Graphics2D g) {
         g.setFont(this.fontLarger);
         g.setColor(Color.red);
-        g.drawString("HI-SCORE", 10, 50);
+        g.drawString("HI-SCORE", 10, 30);
         g.setColor(COLOR_TOTAL_SCORE);
-        g.drawString("" + this.level.getHighestScore(), 250, 50);
+        g.drawString("" + this.level.getHighestScore(), 250, 30);
         Painter.drawCenteredString(g, "STAGE " + this.level.getStageNumber(),
-                fontLarger, Color.white, 120);
-        g.setColor(Color.red);
-        g.drawString("I-PLAYER", 5, 180);
-        g.drawString("II-PLAYER", 175, 180);
+                fontLarger, Color.white, 70);
+        g.setColor(PlayerIdentifier.FIRST.getTankColor().getColor());
+        g.drawString("I-PLAYER", 5, 110);
+        g.setColor(PlayerIdentifier.SECOND.getTankColor().getColor());
+        g.drawString("II-PLAYER", 240, 110);
         g.setColor(COLOR_TOTAL_SCORE);
-
         for (int i = 0; i < this.players.size(); ++i) {
+            g.setColor(this.players.get(i).getId().getTankColor().getColor());
             g.drawString("" + this.players.get(i).getStatistics().
-                    getTotalScore(), 250 + i * 100, 180);
+                    getTotalScore(), 50 + i * 190, 150);
         }
     }
-    
-    private void drawKilledEnemiesTotals(Graphics2D g){
-        int lineWidth = 6 * Game.TILE_SIZE;
+
+    private void drawKilledEnemiesTotals(Graphics2D g) {
+        int lineWidth = 12 * Game.TILE_SIZE;
+        g.setColor(Color.white);
         g.fillRect((Game.WIDTH - lineWidth) / 2, 400, lineWidth, 4);
-        
-        g.drawString("TOTAL ", 80, 430);
+        g.drawString("TOTAL ", 5, 430);
         for (int i = 0; i < this.players.size(); ++i) {
             int totalTanks = 0;
             Collection<Integer> tankCounts = this.currMaps.get(i).values();
@@ -187,7 +197,8 @@ public class ScoreScreen {
             while (it.hasNext()) {
                 totalTanks += it.next();
             }
-            g.drawString(" " + totalTanks, 80 + i * 64, 430);
+            g.setColor(this.players.get(i).getId().getTankColor().getColor());
+            g.drawString(" " + totalTanks, 140 + i * 140, 430);
         }
     }
 }

@@ -91,7 +91,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     }
     
     private double calcRedBlinkingProbability(){
-        return 2 * this.level.getStageNumber() + 8;
+        return (2 * this.level.getStageNumber() + 8) / 100;
     }
 
     public final void turnRed() {

@@ -1,6 +1,8 @@
 package com.igorternyuk.tanks.audio;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.sound.sampled.AudioInputStream;
@@ -14,31 +16,28 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  * @author igor
  */
 public class Audio {
-    
+
     private String path;
     private Clip clip;
-    
+
     public Audio(String path) {
         this.path = path;
         try {
-            AudioInputStream ais = AudioSystem.getAudioInputStream(getClass().
+            InputStream bufferedIn = new BufferedInputStream(getClass().
                     getResourceAsStream(path));
+            AudioInputStream ais = AudioSystem.getAudioInputStream(bufferedIn);
             this.clip = AudioSystem.getClip();
             this.clip.open(ais);
-            
-        } catch (UnsupportedAudioFileException ex) {
+
+        } catch (UnsupportedAudioFileException | IOException
+                | LineUnavailableException ex) {
             Logger.getLogger(Audio.class.getName()).
                     log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(Audio.class.getName()).
-                    log(Level.SEVERE, null, ex);
-        } catch (LineUnavailableException ex) {
-            Logger.getLogger(Audio.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
-    public boolean isPlaying(){
-        if(this.clip == null){
+
+    public boolean isPlaying() {
+        if (this.clip == null) {
             return false;
         }
         return this.clip.isRunning();
@@ -47,18 +46,18 @@ public class Audio {
     public String getPath() {
         return this.path;
     }
-    
-    public void play(){
-        if(this.clip == null){
+
+    public void play() {
+        if (this.clip == null) {
             return;
         }
         stop();
         this.clip.setFramePosition(0);
         clip.start();
     }
-    
-    public void loop(){
-        if(this.clip == null || this.clip.isRunning()){
+
+    public void loop() {
+        if (this.clip == null || this.clip.isRunning()) {
             return;
         }
         stop();
@@ -66,17 +65,16 @@ public class Audio {
         this.clip.loop(Clip.LOOP_CONTINUOUSLY);
         clip.start();
     }
-    
-    public void stop(){
-        if(this.clip.isRunning()){
+
+    public void stop() {
+        if (this.clip.isRunning()) {
             this.clip.stop();
         }
     }
-    
-    public void disposeSound(){
+
+    public void disposeSound() {
         stop();
         this.clip.close();
     }
-    
-}
 
+}

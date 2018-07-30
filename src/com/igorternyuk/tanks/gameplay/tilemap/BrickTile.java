@@ -5,6 +5,8 @@ import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
 import com.igorternyuk.tanks.gameplay.entities.tank.Tank;
+import com.igorternyuk.tanks.resourcemanager.AudioIdentifier;
+import com.igorternyuk.tanks.resourcemanager.ResourceManager;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -43,7 +45,7 @@ public class BrickTile extends Tile {
     }
 
     private WallQuarter[][] wall = new WallQuarter[DIMENSION][DIMENSION];
-    private Rectangle boundingRect = new Rectangle();
+    private Rectangle bigBoundingRect = new Rectangle();
 
     protected BrickTile(Point position, BufferedImage image, double scale) {
         super(TileType.BRICK, position, image, scale);
@@ -56,10 +58,10 @@ public class BrickTile extends Tile {
                         Game.QUARTER_TILE_SIZE));
             }
         }
-        this.boundingRect.x = wall[0][0].boundingRect.x;
-        this.boundingRect.y = wall[0][0].boundingRect.y;
-        this.boundingRect.width = Game.HALF_TILE_SIZE;
-        this.boundingRect.height = Game.HALF_TILE_SIZE;
+        this.bigBoundingRect.x = wall[0][0].boundingRect.x;
+        this.bigBoundingRect.y = wall[0][0].boundingRect.y;
+        this.bigBoundingRect.width = Game.HALF_TILE_SIZE;
+        this.bigBoundingRect.height = Game.HALF_TILE_SIZE;
     }
 
     public boolean isAlive() {
@@ -80,7 +82,7 @@ public class BrickTile extends Tile {
             Projectile collidingProjectile = (Projectile) entity;
             if (collidingProjectile.isAntiarmour()) {
                 return collidingProjectile.getBoundingRect().intersects(
-                        this.boundingRect);
+                        this.bigBoundingRect);
             }
         }
 
@@ -109,6 +111,7 @@ public class BrickTile extends Tile {
                 }
             }
         }
+        ResourceManager.getInstance().getAudio(AudioIdentifier.BRICK).play();
     }
 
     private void destroyAllTheWall() {

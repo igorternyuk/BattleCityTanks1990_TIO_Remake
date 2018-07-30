@@ -694,6 +694,7 @@ public class LevelState extends GameState {
             this.highestScore = calcHighestScore();
             saveHighestScore();
             stopPlayerSounds();
+            resourceManager.getAudio(AudioIdentifier.GAME_OVER).play();
         }
     }
     
@@ -1044,6 +1045,12 @@ public class LevelState extends GameState {
                 "/sounds/bonusCollected.wav");
         this.resourceManager.loadAudio(AudioIdentifier.SCORE_SCREEN,
                 "/sounds/scoreScreen.wav");
+        this.resourceManager.loadAudio(AudioIdentifier.BRICK,
+                "/sounds/brick.wav");
+        this.resourceManager.loadAudio(AudioIdentifier.STEEL,
+                "/sounds/steel.wav");
+        this.resourceManager.loadAudio(AudioIdentifier.GAME_OVER,
+                "/sounds/gameOver.wav");
     }
     
     private void loadFonts() {

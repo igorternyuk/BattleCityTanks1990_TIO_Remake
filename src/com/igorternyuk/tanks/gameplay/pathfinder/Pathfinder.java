@@ -1,6 +1,5 @@
 package com.igorternyuk.tanks.gameplay.pathfinder;
 
-import com.google.common.base.Objects;
 import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
@@ -13,6 +12,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
@@ -239,9 +239,9 @@ public class Pathfinder {
             }
 
             final Spot other = (Spot) obj;
-
-            return Objects.equal(this.row, other.row)
-                    && Objects.equal(this.col, other.col);
+            
+            return Objects.equals(this.row, other.row)
+                    && Objects.equals(this.col, other.col);
         }
 
         @Override

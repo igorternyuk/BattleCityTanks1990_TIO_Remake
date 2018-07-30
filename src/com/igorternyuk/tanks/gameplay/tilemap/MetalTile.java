@@ -1,6 +1,8 @@
 package com.igorternyuk.tanks.gameplay.tilemap;
 
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
+import com.igorternyuk.tanks.resourcemanager.AudioIdentifier;
+import com.igorternyuk.tanks.resourcemanager.ResourceManager;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 
@@ -18,6 +20,7 @@ public class MetalTile extends Tile{
     }
     
     public void hit(Projectile projectile){
+        ResourceManager.getInstance().getAudio(AudioIdentifier.STEEL).play();
         if(!projectile.isAntiarmour()){
             return;
         }

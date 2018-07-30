@@ -9,8 +9,11 @@ public enum AudioIdentifier {
     PLAYER_MOVES,
     PLAYER_IDLE,
     SHOT,
+    BRICK,
+    STEEL,
     EXPLOSION,
     BONUS_APPEARES,
     BONUS_COLLECTED,
-    SCORE_SCREEN;
+    SCORE_SCREEN,
+    GAME_OVER;
 }

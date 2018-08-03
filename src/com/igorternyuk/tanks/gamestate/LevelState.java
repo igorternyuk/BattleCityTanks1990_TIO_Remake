@@ -73,12 +73,13 @@ import java.util.logging.Logger;
  * @author igor
  */
 public class LevelState extends GameState {
-    
+
     public static final int TANKS_TOTAL = 20;
     public static final int STAGE_MAX = 72;
     private static final double PLAYER_PROTECTION_DURATION = 10;
     private static final double PLAYER_TANK_FROZEN_DURATION = 5;
     private static final double ENEMY_TANK_FROZEN_DURATION = 13;
+    private static final int TANKS_AFTER_FOURTY_STAGE_MAX = 26;
     private static final double POWERUP_TIMER_DELAY = 15;
     private static final double POWERUP_PROBABILITY = 0.5;
     private static final double NEXT_STAGE_SPLASH_DELAY = 6;
@@ -87,7 +88,7 @@ public class LevelState extends GameState {
     private static final double POWERUP_BLINKING_PERIOD = 0.4;
     private static final Point RIGHT_PANEL_POSITION = new Point(26
             * Game.HALF_TILE_SIZE, 0 * Game.HALF_TILE_SIZE);
-    
+
     private int playerCount;
     private int tankOnFieldMax;
     private TextureAtlas atlas;
@@ -101,6 +102,7 @@ public class LevelState extends GameState {
     private GameInfoPanel rightPanel;
     private int highestScore = 0;
     private int stageNumber = 1;
+    private int stageCount = 1;
     private Stack<EnemyTankType> hangar = new Stack<>();
     private Map<PowerUpType, Consumer<Player>> onPowerUpCollectedByPlayerHandlers =
             new HashMap<>();
@@ -125,18 +127,20 @@ public class LevelState extends GameState {
         {6, 4, 2, 8}, {4, 4, 4, 8}, {0, 10, 4, 6}, {0, 6, 4, 10},
         {0, 4, 0, 16}, {0, 2, 1, 17}, {0, 1, 1, 18}, {0, 2, 2, 16}
     };
-    
+
     private double respawnTimer = 0;
     private double respawnDelay = 0;
     private double powerUpTimer = 0;
+    private boolean frozenModeAcive = false;
+    private double freezeTimer = 0;
     private GameMode gameMode;
     private Font fontNextStageSplash = new Font("Verdana", Font.BOLD
             | Font.ITALIC, 48);
-    
+
     private boolean gameOverMessageSliding = false;
     private double gameOverMessageTimer = 0;
     private GameOverMessage gameOverMessage;
-    
+
     public LevelState(GameStateManager gameStateManager, GameMode mode) {
         super(gameStateManager);
         this.gameMode = mode;
@@ -147,23 +151,27 @@ public class LevelState extends GameState {
         createOnPowerUpCollectedByPlayerHandlers();
         createOnPowerUpCollectedByEnemyHandlers();
     }
-    
+
     public GameMode getGameMode() {
         return this.gameMode;
     }
-    
+
     public List<Player> getPlayers() {
         return Collections.unmodifiableList(this.players);
     }
-    
+
     public int getPlayerCount() {
         return this.playerCount;
     }
-    
+
     public int getHighestScore() {
         return this.highestScore;
     }
-    
+
+    public int getStageCount() {
+        return this.stageCount;
+    }
+
     @Override
     public void load() {
         System.out.println("Level state loading...");
@@ -177,7 +185,7 @@ public class LevelState extends GameState {
         this.scoreScreen = new ScoreScreen(this);
         this.loaded = true;
     }
-    
+
     @Override
     public void unload() {
         saveHighestScore();
@@ -189,21 +197,21 @@ public class LevelState extends GameState {
         unloadSounds();
         this.loaded = false;
     }
-    
+
     private void unloadSounds() {
         AudioIdentifier[] identifiers = AudioIdentifier.values();
         for (AudioIdentifier identifier : identifiers) {
             this.resourceManager.unloadAudio(identifier);
         }
     }
-    
+
     @Override
     public void update(KeyboardState keyboardState, double frameTime) {
-        
+
         if (!this.loaded || this.gameStatus == GameStatus.PAUSED) {
             return;
         }
-        
+
         if (this.gameOverMessageSliding) {
             this.gameOverMessageTimer += frameTime;
             this.gameOverMessage.update(frameTime);
@@ -213,15 +221,15 @@ public class LevelState extends GameState {
             }
             return;
         }
-        
+
         checkIfNextStage();
         updateGameOverScreenTimer(frameTime);
-        
+
         if (this.scoreScreenActive) {
             this.scoreScreen.update(keyboardState, frameTime);
             return;
         }
-        
+
         if (this.gameStatus == GameStatus.GAME_OVER) {
             if (this.scoreScreen.isReadyToNextStage()) {
                 this.scoreScreenActive = false;
@@ -229,10 +237,11 @@ public class LevelState extends GameState {
             }
             return;
         }
-        
+
         updateSounds();
-        checkFrozenMode();
+        updateFreezeTimer(frameTime);
         this.tileMap.update(keyboardState, frameTime);
+        checkPlayers();
         this.entityManager.update(keyboardState, frameTime);
         this.respawnTimer += frameTime;
         updatePowerUpTimer(frameTime);
@@ -243,13 +252,22 @@ public class LevelState extends GameState {
         checkPowerUps();
         checkGameStatus();
     }
-    
+
+    private void checkPlayers() {
+        this.players.removeIf(player -> !player.isAlive());
+    }
+
+    public boolean isPowerUpOnField() {
+        return !this.entityManager.getEntitiesByType(EntityType.POWER_UP).
+                isEmpty();
+    }
+
     @Override
     public void draw(Graphics2D g) {
         if (!this.loaded) {
             return;
         }
-        
+
         if (this.scoreScreenActive) {
             this.scoreScreen.draw(g);
         } else {
@@ -269,15 +287,19 @@ public class LevelState extends GameState {
             }
         }
     }
-    
-    private void checkFrozenMode(){
-        if (isFrozenModeActive()) {
-            this.entityManager.getEntitiesByType(EntityType.ENEMY_TANK).stream().
-                    map(entity -> (Tank) entity).forEach(tank -> tank.
-                    freeze(ENEMY_TANK_FROZEN_DURATION));
+
+    private void updateFreezeTimer(double frameTime) {
+        if (this.frozenModeAcive) {
+            freezeAllEnenmyTanks();
+            this.freezeTimer += frameTime;
+            if (this.freezeTimer > ENEMY_TANK_FROZEN_DURATION) {
+                this.freezeTimer = 0;
+                
+                unfreezeAllEnemyTanks();
+            }
         }
     }
-    
+
     private void updateGameOverScreenTimer(double frameTime) {
         if (this.gameOverScreenActive) {
             this.gameOverScreenTimer += frameTime;
@@ -288,7 +310,7 @@ public class LevelState extends GameState {
             }
         }
     }
-    
+
     private void updatePowerUpTimer(double frameTime) {
         this.powerUpTimer += frameTime;
         if (this.powerUpTimer > POWERUP_TIMER_DELAY) {
@@ -298,17 +320,17 @@ public class LevelState extends GameState {
             }
         }
     }
-    
+
     private void updateSounds() {
         if (!this.loaded) {
             return;
         }
-        
+
         if (this.gameStatus != GameStatus.PLAY) {
             stopPlayerSounds();
             return;
         }
-        
+
         if (!this.resourceManager.getAudio(AudioIdentifier.NEXT_STAGE).
                 isPlaying()) {
             if (this.players.stream().anyMatch(player -> player.isMoving())) {
@@ -326,39 +348,36 @@ public class LevelState extends GameState {
             stopPlayerSounds();
         }
     }
-    
+
     private void stopPlayerSounds() {
         this.resourceManager.getAudio(AudioIdentifier.PLAYER_IDLE).stop();
         this.resourceManager.getAudio(AudioIdentifier.PLAYER_MOVES).stop();
     }
-    
+
     private void stopAllSounds() {
         for (AudioIdentifier identifier : AudioIdentifier.values()) {
             this.resourceManager.getAudio(identifier).stop();
         }
     }
-    
+
     public Stack<EnemyTankType> getHangar() {
         return this.hangar;
     }
-    
+
     private boolean isFrozenModeActive() {
-        List<Entity> tanksOnTheField = this.entityManager
-                .getEntitiesByType(EntityType.ENEMY_TANK);
-        return tanksOnTheField.stream().map(e ->
-                (Tank) e).anyMatch(tank -> tank.isFrozen());
+        return this.frozenModeAcive;
     }
-    
+
     private boolean checkIfNeedThrowIntoBattleMoreTanks() {
         List<Entity> tanksOnTheField = this.entityManager
                 .getEntitiesByType(EntityType.ENEMY_TANK);
         long splashCount = this.entityManager.getEntitiesByType(
                 EntityType.SPLASH).size();
-        return !isFrozenModeActive() && !this.hangar.isEmpty()
+        return !this.hangar.isEmpty()
                 && this.respawnTimer >= this.respawnDelay
-                && (splashCount + tanksOnTheField.size() < tankOnFieldMax);
+                && (splashCount + tanksOnTheField.size() < this.tankOnFieldMax);
     }
-    
+
     private void tryToAddMoreTanksIntoBattle() {
         List<Point> freeEnemyTankAppearancePoints =
                 getFreeAppearancePoints();
@@ -373,7 +392,7 @@ public class LevelState extends GameState {
             this.respawnTimer = 0;
         }
     }
-    
+
     private double caclRespawnDelay() {
         /*Respawn time formula was taken from original game*/
         double respawnTime = (190 - 4 * this.stageNumber
@@ -383,20 +402,20 @@ public class LevelState extends GameState {
         }
         return respawnTime;
     }
-    
+
     private void onBonusCollectedByPlayer(Player player, PowerUp powerUp) {
         this.onPowerUpCollectedByPlayerHandlers.get(powerUp.getType()).accept(
                 player);
         player.collectPowerUp(powerUp);
         powerUp.collect();
     }
-    
+
     private void onBonusCollectedByEnemy(PowerUp powerUp, EnemyTank enemyTank) {
         this.onPowerUpCollectedByEnemyHandlers.get(powerUp.getType()).accept(
                 enemyTank);
         powerUp.collect();
     }
-    
+
     public void addRandomPowerUp() {
         int randX = this.random.nextInt(Game.TILES_IN_WIDTH - 1)
                 * Game.HALF_TILE_SIZE;
@@ -409,58 +428,59 @@ public class LevelState extends GameState {
         this.entityManager.addEntity(powerUp);
         this.resourceManager.getAudio(AudioIdentifier.BONUS_APPEARES).play();
     }
-    
+
     public int getStageNumber() {
         return this.stageNumber;
     }
-    
+
     public EntityManager getEntityManager() {
         return this.entityManager;
     }
-    
+
     public Map<EnemyTankIdentifier, BufferedImage> getEnemyTankSpriteSheetMap() {
         return this.enemyTankSpriteSheetMap;
     }
-    
+
     public Map<PlayerTankIdentifier, BufferedImage> getPlayerSpriteSheetMap() {
         return this.playerSpriteSheetMap;
     }
-    
+
     public SpriteSheetManager getSpriteSheetManager() {
         return this.spriteSheetManager;
     }
-    
+
     public GameStatus getGameStatus() {
         return this.gameStatus;
     }
-    
+
     public boolean isLoaded() {
         return this.loaded;
     }
-    
+
     public TileMap getTileMap() {
         return this.tileMap;
     }
-    
+
     public int getMapWidth() {
         return Game.TILES_IN_WIDTH * Game.HALF_TILE_SIZE;
     }
-    
+
     public int getMapHeight() {
         return Game.TILES_IN_HEIGHT * Game.HALF_TILE_SIZE;
     }
-    
+
     public List<Entity> getEntities() {
         return this.entityManager.getAllEntities();
     }
-    
+
     private void nextStage() {
         this.scoreScreen.reset();
         ++this.stageNumber;
+        ++this.stageCount;
         if (this.stageNumber > STAGE_MAX) {
             this.stageNumber = 1;
         }
-        
+
         this.respawnDelay = caclRespawnDelay();
         this.respawnTimer = 0;
         loadMap();
@@ -473,7 +493,7 @@ public class LevelState extends GameState {
         this.loaded = true;
         this.resourceManager.getAudio(AudioIdentifier.NEXT_STAGE).play();
     }
-    
+
     private int calcHighestScore() {
         int score = 0;
         for (int i = 0; i < this.players.size(); ++i) {
@@ -485,17 +505,18 @@ public class LevelState extends GameState {
         }
         return score;
     }
-    
+
     private void addNewStageSplashText() {
-        String nextStageMessage = "-STAGE-" + this.stageNumber;
+        String nextStageMessage = "-STAGE-" + this.stageCount;
         this.entityManager.addEntity(new SplashText(
                 this, nextStageMessage, fontNextStageSplash, Color.white,
                 NEXT_STAGE_SPLASH_DELAY));
     }
-    
+
     private void startNewGame() {
         this.entityManager.removeAllEntities();
         this.stageNumber = 1;
+        this.stageCount = 1;
         loadMap();
         fillHangar();
         createEntities();
@@ -507,21 +528,29 @@ public class LevelState extends GameState {
         this.gameOverMessage = new GameOverMessage();
         this.gameStatus = GameStatus.PLAY;
     }
-    
+
     private void fillHangar() {
         this.hangar.clear();
         int index = (this.stageNumber - 1) % STAGE_MAX;
-        int[] enemyTypes = this.enemyGroups[index];
         EnemyTankType[] allEnemyTankTypes = EnemyTankType.values();
-        for (int i = 0; i < enemyTypes.length; ++i) {
-            int tanksWithCurrentType = enemyTypes[i];
-            for (int j = 0; j < tanksWithCurrentType; ++j) {
-                this.hangar.push(allEnemyTankTypes[i]);
+        if (index < this.enemyGroups.length) {
+            int[] enemyTypes = this.enemyGroups[index];
+
+            for (int i = 0; i < enemyTypes.length; ++i) {
+                int tanksWithCurrentType = enemyTypes[i];
+                for (int j = 0; j < tanksWithCurrentType; ++j) {
+                    this.hangar.push(allEnemyTankTypes[i]);
+                }
+            }
+            Collections.shuffle(hangar);
+        } else {
+            for (int i = 0; i < TANKS_AFTER_FOURTY_STAGE_MAX; ++i) {
+                int randIndex = this.random.nextInt(allEnemyTankTypes.length);
+                this.hangar.push(allEnemyTankTypes[randIndex]);
             }
         }
-        Collections.shuffle(hangar);
     }
-    
+
     private List<Point> getFreeAppearancePoints() {
         List<Point> freeAppearancePoints = new ArrayList<>(3);
         List<Entity> enemyTanks = this.entityManager.getEntitiesByType(
@@ -537,26 +566,26 @@ public class LevelState extends GameState {
                     .map(entity -> (EnemyTank) entity)
                     .anyMatch(enemyTank -> enemyTank.getBoundingRect()
                             .intersects(currPointBoundingRect));
-            
+
             boolean collisionWithSplashes = splashes.stream()
                     .map(entity -> (Splash) entity)
                     .anyMatch(splash -> splash.getBoundingRect()
                             .intersects(currPointBoundingRect));
-            
+
             boolean collisionWithPlayers = this.players.stream().anyMatch(
                     player -> player.getBoundingRect().
                             intersects(currPointBoundingRect));
-            
+
             boolean collisionWithMap = false;
             int row = point.y / Game.HALF_TILE_SIZE;
             int col = point.x / Game.HALF_TILE_SIZE;
-            
+
             outer:
-            for(int i = 0; i < 2; ++i){
-                for(int j = 0; j < 2; ++j){
+            for (int i = 0; i < 2; ++i) {
+                for (int j = 0; j < 2; ++j) {
                     Tile tile = this.tileMap.getTile(row + i, col + j);
-                    if(tile.getType().isDestroyable()
-                            || tile.getType() == TileType.WATER){
+                    if (tile.getType().isDestroyable()
+                            || tile.getType() == TileType.WATER) {
                         collisionWithMap = true;
                         break outer;
                     }
@@ -564,14 +593,14 @@ public class LevelState extends GameState {
             }
             if (!collisionWithPlayers
                     && !collisionWithEnemies
-                        && !collisionWithSplashes
-                                && !collisionWithMap) {
+                    && !collisionWithSplashes
+                    && !collisionWithMap) {
                 freeAppearancePoints.add(point);
             }
         });
         return freeAppearancePoints;
     }
-    
+
     private void createEntities() {
         List<Point> playerPositions = this.tileMap.getPlayerRespawnPositions();
         for (int i = 1; i <= this.playerCount; ++i) {
@@ -583,7 +612,7 @@ public class LevelState extends GameState {
             this.players.add(player);
             this.entityManager.addEntity(player);
         }
-        
+
         Point castlePosition = this.tileMap.getCastlePosition();
         this.castle = new Castle(this, castlePosition.x, castlePosition.y);
         this.entityManager.addEntity(castle);
@@ -592,7 +621,7 @@ public class LevelState extends GameState {
         this.entityManager.addEntity(this.rightPanel);
         addNewStageSplashText();
     }
-    
+
     private void checkCollisions() {
         List<Entity> projectiles = this.entityManager.getEntitiesByType(
                 EntityType.PROJECTILE);
@@ -601,13 +630,13 @@ public class LevelState extends GameState {
         outer:
         for (int i = projectiles.size() - 1; i >= 0; --i) {
             Projectile projectile = (Projectile) projectiles.get(i);
-            
+
             if (this.castle.getState() == CastleState.ALIVE
                     && projectile.collides(this.castle)) {
                 this.castle.kill();
                 continue;
             }
-            
+
             for (int j = this.players.size() - 1; j >= 0; --j) {
                 Player currPlayer = this.players.get(j);
                 if (projectile.getType() == ProjectileType.ENEMY) {
@@ -626,9 +655,9 @@ public class LevelState extends GameState {
                         continue outer;
                     }
                 }
-                
+
             }
-            
+
             for (int j = enemyTanks.size() - 1; j >= 0; --j) {
                 EnemyTank enemyTank = (EnemyTank) enemyTanks.get(j);
                 if (projectile.collides(enemyTank)) {
@@ -648,19 +677,19 @@ public class LevelState extends GameState {
                     }
                 }
             }
-            
-            for(int j = i - 1; j >= 0; --j){
-                Projectile otherProjectile = (Projectile)projectiles.get(j);
-                if(projectile.collides(otherProjectile)){
+
+            for (int j = i - 1; j >= 0; --j) {
+                Projectile otherProjectile = (Projectile) projectiles.get(j);
+                if (projectile.collides(otherProjectile)) {
                     projectile.explode();
                     otherProjectile.explode();
                     continue outer;
                 }
-                
+
             }
         }
     }
-    
+
     private void checkPowerUps() {
         List<Entity> powerUps = this.entityManager.getEntitiesByType(
                 EntityType.POWER_UP);
@@ -685,7 +714,7 @@ public class LevelState extends GameState {
             }
         }
     }
-    
+
     private void checkGameStatus() {
         if (this.castle.getState() == CastleState.DEAD
                 || this.players.stream().allMatch(player -> !player.isAlive())) {
@@ -697,11 +726,11 @@ public class LevelState extends GameState {
             resourceManager.getAudio(AudioIdentifier.GAME_OVER).play();
         }
     }
-    
+
     @Override
     public void onKeyPressed(int keyCode) {
     }
-    
+
     @Override
     public void onKeyReleased(int keyCode) {
         switch (keyCode) {
@@ -741,17 +770,17 @@ public class LevelState extends GameState {
                 break;
         }
     }
-    
+
     @Override
     public void onMouseReleased(MouseEvent e) {
-        
+
     }
-    
+
     @Override
     public void onMouseMoved(MouseEvent e) {
-        
+
     }
-    
+
     private void togglePause() {
         if (this.gameStatus == GameStatus.PLAY) {
             this.gameStatus = GameStatus.PAUSED;
@@ -760,16 +789,16 @@ public class LevelState extends GameState {
             this.gameStatus = GameStatus.PLAY;
         }
     }
-    
+
     private void loadSprites() {
         this.spriteSheetManager = SpriteSheetManager.getInstance();
         for (SpriteSheetIdentifier identifier : SpriteSheetIdentifier.values()) {
             this.spriteSheetManager.put(identifier, this.atlas);
         }
     }
-    
+
     private void loadTankSpriteSheetMaps() {
-        
+
         this.enemyTankSpriteSheetMap = new HashMap<>();
         this.playerSpriteSheetMap = new HashMap<>();
         for (TankColor color : TankColor.values()) {
@@ -781,7 +810,7 @@ public class LevelState extends GameState {
                         getOffsetFromSameColorTankSpriteSheetTopLeftCorner().x;
                 topLeft.y += alliance.
                         getOffsetFromSameColorTankSpriteSheetTopLeftCorner().y;
-                
+
                 for (Heading heading : Heading.values()) {
                     for (EnemyTankType type : EnemyTankType.values()) {
                         int dx = heading.getSpriteSheetPositionX();
@@ -795,7 +824,7 @@ public class LevelState extends GameState {
                                 2 * Game.TILE_SIZE, Game.TILE_SIZE);
                         enemyTankSpriteSheetMap.put(key, sprite);
                     }
-                    
+
                     for (PlayerTankType type : PlayerTankType.values()) {
                         int dx = heading.getSpriteSheetPositionX();
                         int dy = type.getSpriteSheetPositionY();
@@ -815,7 +844,7 @@ public class LevelState extends GameState {
             }
         }
     }
-    
+
     private void drawGameStatus(Graphics2D g) {
         if (this.gameStatus == GameStatus.PAUSED) {
             BrickFont.drawWithBricksCentralized(g, "GAME", Game.HEIGHT / 3);
@@ -824,37 +853,37 @@ public class LevelState extends GameState {
             BrickFont.drawWithBricksCentralized(g, "GAME", Game.HEIGHT / 3);
             BrickFont.drawWithBricksCentralized(g, "OVER", Game.HEIGHT / 2);
         }
-        
+
     }
-    
+
     private void createOnPowerUpCollectedByPlayerHandlers() {
         this.onPowerUpCollectedByPlayerHandlers.put(PowerUpType.TANK,
                 (player) -> {
             player.gainExtraLife();
         });
-        
+
         this.onPowerUpCollectedByPlayerHandlers.put(PowerUpType.STAR,
                 (player) -> {
             player.promote();
         });
-        
+
         this.onPowerUpCollectedByPlayerHandlers.put(PowerUpType.GUN,
                 (player) -> {
             player.promoteToHeavy();
         });
-        
+
         this.onPowerUpCollectedByPlayerHandlers.put(PowerUpType.HELMET,
                 (player) ->
         {
             player.addProtection(PLAYER_PROTECTION_DURATION);
         });
-        
+
         this.onPowerUpCollectedByPlayerHandlers.put(PowerUpType.SHOVEL,
                 (player) ->
         {
             tileMap.activateEagleProtection();
         });
-        
+
         this.onPowerUpCollectedByPlayerHandlers.put(PowerUpType.GRENADE,
                 (player) ->
         {
@@ -863,21 +892,35 @@ public class LevelState extends GameState {
             enemyTanks.stream().map(entity -> (EnemyTank) entity).forEach(
                     enemyTank -> enemyTank.explodeWithGrenade());
         });
-        
+
         this.onPowerUpCollectedByPlayerHandlers.put(PowerUpType.TIMER,
                 (player) -> {
-            List<Entity> enemyTanks = this.entityManager.getEntitiesByType(
-                    EntityType.ENEMY_TANK);
-            enemyTanks.stream().map(entity -> (EnemyTank) entity).forEach(
-                    enemyTank -> enemyTank.freeze(ENEMY_TANK_FROZEN_DURATION));
+            freezeAllEnenmyTanks();
         });
-        
+
         this.onPowerUpCollectedByPlayerHandlers.put(PowerUpType.SHIP,
                 (player) -> {
             player.setCanTraverseWater(true);
         });
     }
+
+    private void freezeAllEnenmyTanks() {
+        this.frozenModeAcive = true;
+        List<Entity> enemyTanks = this.entityManager.getEntitiesByType(
+                EntityType.ENEMY_TANK);
+        enemyTanks.stream().map(entity -> (EnemyTank) entity).forEach(
+                enemyTank -> enemyTank.freeze(ENEMY_TANK_FROZEN_DURATION));
+    }
     
+    private void unfreezeAllEnemyTanks(){
+        this.frozenModeAcive = false;
+        List<Entity> enemyTanks = this.entityManager.getEntitiesByType(
+                EntityType.ENEMY_TANK);
+        enemyTanks.stream().map(entity -> (EnemyTank) entity)
+                .filter(enemyTank -> enemyTank.isFrozen())
+                .forEach(enemyTank -> enemyTank.unfreeze());
+    }
+
     private void createOnPowerUpCollectedByEnemyHandlers() {
         this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.TANK, (tank) ->
         {
@@ -890,7 +933,7 @@ public class LevelState extends GameState {
                 }
             });
         });
-        
+
         this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.STAR, (tank) ->
         {
             List<Entity> enemies = this.entityManager.getEntitiesByType(
@@ -898,13 +941,13 @@ public class LevelState extends GameState {
             enemies.stream().map(entity -> (EnemyTank) entity).forEach(
                     enemyTank -> enemyTank.promoteToHeavy());
         });
-        
+
         this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.GUN, (tank) ->
         {
             this.onPowerUpCollectedByEnemyHandlers.get(PowerUpType.STAR).accept(
                     tank);
         });
-        
+
         this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.HELMET,
                 (tank) -> {
             List<Entity> enemies = this.entityManager.getEntitiesByType(
@@ -920,7 +963,7 @@ public class LevelState extends GameState {
                 }
             });
         });
-        
+
         this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.SHOVEL,
                 (tank) -> {
             if (this.tileMap.isEagleProtectionActive()) {
@@ -929,24 +972,24 @@ public class LevelState extends GameState {
                 this.tileMap.destroyAllProtections();
             }
         });
-        
+
         this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.GRENADE,
                 (tank) -> {
             this.players.forEach(player -> player.explode());
         });
-        
+
         this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.TIMER,
                 (tank) -> {
             this.players.forEach(player -> player.freeze(
                     PLAYER_TANK_FROZEN_DURATION));
         });
-        
+
         this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.SHIP, (tank) ->
         {
             tank.setCanTraverseWater(true);
         });
     }
-    
+
     private void checkIfNextStage() {
         if (this.gameStatus == GameStatus.GAME_OVER
                 || (this.hangar.isEmpty()
@@ -956,9 +999,9 @@ public class LevelState extends GameState {
             checkIfScoreScreen();
         }
     }
-    
+
     private void checkIfScoreScreen() {
-        
+
         if (this.scoreScreenActive) {
             if (this.scoreScreen.isReadyToNextStage()) {
                 this.scoreScreenActive = false;
@@ -976,7 +1019,7 @@ public class LevelState extends GameState {
             }
         }
     }
-    
+
     private void addRenderingLayers() {
         this.entityManager.addRenderingLayer(RenderingLayerIdentifier.EAGLE,
                 EntityType.CASTLE);
@@ -1001,9 +1044,9 @@ public class LevelState extends GameState {
         this.entityManager.addRenderingLayer(RenderingLayerIdentifier.GAME_INFO,
                 EntityType.INDICATOR, EntityType.RIGHT_PANEL);
     }
-    
+
     private void loadHighestScore() {
-        
+
         try (InputStream in = getClass().getResourceAsStream(
                 "/statistics/highestScore");
                 BufferedReader br =
@@ -1011,13 +1054,13 @@ public class LevelState extends GameState {
             String line = br.readLine();
             this.highestScore = Integer.parseInt(line);
             System.out.println("Highest score loaded = " + this.highestScore);
-            
+
         } catch (IOException ex) {
             Logger.getLogger(LevelState.class.getName()).log(Level.SEVERE, null,
                     ex);
         }
     }
-    
+
     private void saveHighestScore() {
         try (PrintWriter writer = new PrintWriter(
                 new File(Files.class.getResource("/statistics/highestScore").
@@ -1028,7 +1071,7 @@ public class LevelState extends GameState {
                     ex);
         }
     }
-    
+
     private void loadSounds() {
         this.resourceManager.loadAudio(AudioIdentifier.NEXT_STAGE,
                 "/sounds/nextStage.wav");
@@ -1052,14 +1095,14 @@ public class LevelState extends GameState {
         this.resourceManager.loadAudio(AudioIdentifier.GAME_OVER,
                 "/sounds/gameOver.wav");
     }
-    
+
     private void loadFonts() {
         this.resourceManager.loadFont(FontIdentifier.BATTLE_CITY,
                 "/fonts/prstart.ttf");
         Font font = this.resourceManager.getFont(FontIdentifier.BATTLE_CITY);
         fontNextStageSplash = font.deriveFont(Font.BOLD | Font.ITALIC, 34);
     }
-    
+
     private void loadImages() {
         this.resourceManager.loadImage(ImageIdentifier.TEXTURE_ATLAS,
                 "/images/texture_atlas.png");
@@ -1067,11 +1110,11 @@ public class LevelState extends GameState {
                 ImageIdentifier.TEXTURE_ATLAS));
         loadSprites();
     }
-    
+
     private void loadMap() {
         this.tileMap = new TileMap(Game.SCALE);
         int mapIndex = this.stageNumber % (STAGE_MAX + 1);
         this.tileMap.loadMap("/tilemap/level" + mapIndex + ".map");
     }
-    
+
 }

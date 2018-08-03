@@ -79,18 +79,18 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     public boolean isBonus() {
         return this.bonus;
     }
-    
-    private void checkIfSpecialTank(){
+
+    private void checkIfSpecialTank() {
         if (!checkIfBonus()) {
             if (this.random.nextDouble() < calcRedBlinkingProbability()) {
-                if(this.tankId.getType() != EnemyTankType.ARMORED){
+                if (this.tankId.getType() != EnemyTankType.ARMORED) {
                     turnRed();
                 }
             }
         }
     }
-    
-    private double calcRedBlinkingProbability(){
+
+    private double calcRedBlinkingProbability() {
         return (1.25 * this.level.getStageNumber() + 8.75) / 100;
     }
 
@@ -219,7 +219,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     protected List<Tank> getOtherTanks() {
         List<Tank> otherTanks = super.getOtherTanks();
         List<Player> players = this.level.getPlayers();
-        players.forEach(player -> otherTanks.add((Tank)player));
+        players.forEach(player -> otherTanks.add((Tank) player));
         return otherTanks;
     }
 
@@ -238,7 +238,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
 
     private Spot getPlayerSpot(int playerId) {
         int index = playerId - 1;
-        if(index > this.level.getPlayerCount() - 1){
+        if (index > this.level.getPlayerCount() - 1) {
             index = 0;
         }
         Player player = this.level.getPlayers().get(index);
@@ -282,11 +282,11 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             this.gotStuck = true;
             checkMapCollision();
             this.moving = false;
-            this.shootingPeriod /= 4;
+            //this.shootingPeriod /= 4;
             return;
         } else {
             this.gotStuck = false;
-            this.shootingPeriod *= 4;
+            //this.shootingPeriod *= 4;
         }
         int rand = this.random.nextInt(allPossibleDirections.size());
         setDirection(allPossibleDirections.get(rand));
@@ -392,7 +392,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             this.shootingTimer = 0;
             if (this.gotStuck
                     || (!this.frozen && (this.firingSpotReached
-                        || isFireLineFreeOfPartnerTanks()))) {
+                    || isFireLineFreeOfPartnerTanks()))) {
                 fire();
             }
         }

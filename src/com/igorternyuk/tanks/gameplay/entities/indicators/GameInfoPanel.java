@@ -30,7 +30,6 @@ public class GameInfoPanel extends Entity {
     private List<Player> players = new ArrayList<>();
     private EnemyTankCountIndicator enemyIndicator;
     private Sprite sprite;
-    private Font font;
 
     public GameInfoPanel(LevelState level, double x, double y) {
         super(level, EntityType.RIGHT_PANEL, x, y, 0, Direction.NORTH);
@@ -44,8 +43,6 @@ public class GameInfoPanel extends Entity {
         this.attachChild(this.enemyIndicator);
         this.enemyIndicator.setPosition(Game.HALF_TILE_SIZE, Game.HALF_TILE_SIZE
                 * 3);
-        this.font = ResourceManager.getInstance().getFont(
-                FontIdentifier.BATTLE_CITY).deriveFont(Font.BOLD, 24);
     }
 
     @Override
@@ -97,7 +94,7 @@ public class GameInfoPanel extends Entity {
     }
 
     private void drawStageNumber(Graphics2D g) {
-        Painter.drawNumber(g, this.level.getStageNumber(),
+        Painter.drawNumber(g, this.level.getStageCount(),
                 Painter.DIGIT_DEFAULT_COLOR,
                 (int) (27 * Game.HALF_TILE_SIZE * Game.SCALE),
                 (int) (25 * Game.HALF_TILE_SIZE * Game.SCALE), Game.SCALE);

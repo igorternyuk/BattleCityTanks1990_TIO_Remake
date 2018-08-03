@@ -49,16 +49,20 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
         this.frozenTime = duration;
         this.frozen = true;
     }
+    
+    public void unfreeze(){
+        this.freezeTimer = 0;
+        this.frozen = false;
+    }
 
     public boolean isFrozen() {
-        return frozen;
+        return this.frozen;
     }
 
     protected void handleIfFrozen(double frameTime) {
         this.freezeTimer += frameTime;
         if (this.freezeTimer >= this.frozenTime) {
-            this.freezeTimer = 0;
-            this.frozen = false;
+            unfreeze();
         }
     }
 
@@ -140,7 +144,6 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
         for (int i = 0; i < otherTanks.size(); ++i) {
             Tank currTank = otherTanks.get(i);
             if (checkCollisionWithOtherTank(currTank, frameTime)) {
-                //System.out.println("Collision with other tank");
                 return true;
             }
         }

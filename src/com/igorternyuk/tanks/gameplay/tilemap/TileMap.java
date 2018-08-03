@@ -60,7 +60,8 @@ public class TileMap {
     private List<Tile> bushTiles = new ArrayList<>();
     private List<WaterTile> waterTiles = new ArrayList<>();
     private Tile lastCollided;
-    private Point castlePosition = new Point(12 * Game.HALF_TILE_SIZE, 24 * Game.HALF_TILE_SIZE);
+    private Point castlePosition = new Point(12 * Game.HALF_TILE_SIZE, 24
+            * Game.HALF_TILE_SIZE);
     private List<Point> enemyTankAppearancePositions = new ArrayList<>();
     private List<Point> eagleProtectionTilePositions = new ArrayList<>();
     private List<Point> playerRespawnPositions = new ArrayList<>();
@@ -98,8 +99,8 @@ public class TileMap {
     public List<FiringSpot> getFiringSpots() {
         return Collections.unmodifiableList(this.firePoints);
     }
-    
-    public Point getCastlePosition(){
+
+    public Point getCastlePosition() {
         return this.castlePosition;
     }
 
@@ -261,16 +262,16 @@ public class TileMap {
         Tile tile = Tile.createTile(tileType, selectedPoint,
                 this.tileTypeImageMap.get(tileType), this.scale);
 
+        if (this.tiles[row][col].getType() == TileType.BUSH) {
+            this.bushTiles.remove(this.tiles[row][col]);
+        } else if (this.tiles[row][col].getType() == TileType.WATER) {
+            this.waterTiles.remove((WaterTile) this.tiles[row][col]);
+        }
+
         if (tileType == TileType.BUSH) {
             this.bushTiles.add(tile);
         } else if (tileType == TileType.WATER) {
             this.waterTiles.add((WaterTile) tile);
-        } else {
-            if (this.tiles[row][col].getType() == TileType.BUSH) {
-                this.bushTiles.remove(this.tiles[row][col]);
-            } else if (this.tiles[row][col].getType() == TileType.WATER) {
-                this.waterTiles.remove((WaterTile) this.tiles[row][col]);
-            }
         }
         this.tiles[row][col] = tile;
     }

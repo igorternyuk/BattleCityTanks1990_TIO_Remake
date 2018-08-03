@@ -143,13 +143,19 @@ public class ConstructionState extends GameState {
         Runnable[] actions = {
             () -> {
                 System.out.println("Selecting level");
-                int lvl = Integer.parseInt(JOptionPane.showInputDialog(null,
-                        "State number",
-                        "Select the stage you would like to edit",
-                        JOptionPane.INFORMATION_MESSAGE));
-                if(lvl >= 1 && lvl < LevelState.STAGE_MAX){
-                      this.currLevel = lvl;
-                      this.tileMap.loadMap("/tilemap/level" + lvl + ".map");
+                try {
+                    int lvl = Integer.parseInt(JOptionPane.showInputDialog(null,
+                            "State number",
+                            "Select the stage you would like to edit",
+                            JOptionPane.INFORMATION_MESSAGE));
+                    if (lvl >= 1 && lvl <= LevelState.STAGE_MAX) {
+                        this.currLevel = lvl;
+                        this.tileMap.loadMap("/tilemap/level" + lvl + ".map");
+                    }
+                } catch (NumberFormatException ex) {
+                    JOptionPane.
+                            showMessageDialog(null, "Incorrect stage number",
+                                    "Error", JOptionPane.ERROR_MESSAGE);
                 }
             },
             () -> {
@@ -182,7 +188,8 @@ public class ConstructionState extends GameState {
         this.forbiddenPositions.add(this.tileMap.getCastlePosition());
         this.forbiddenPositions.addAll(this.tileMap.
                 getEnemyTankAppearencePositions());
-        this.forbiddenPositions.addAll(this.tileMap.getCastleProtectionPositions());
+        this.forbiddenPositions.addAll(this.tileMap.
+                getCastleProtectionPositions());
         this.forbiddenPositions.addAll(this.tileMap.getPlayerRespawnPositions());
         fillTileButtonArray();
         fillButtonArray();
@@ -301,10 +308,16 @@ public class ConstructionState extends GameState {
     }
 
     private void drawCurrentLevel(Graphics2D g) {
+        
         g.setColor(Color.WHITE);
-        g.drawImage(this.flagImage, Game.WIDTH - 48, Game.HEIGHT - 64, null);
-        Painter.drawNumber(g, currLevel, Color.white, Game.WIDTH - 48,
-                Game.HEIGHT - 32, 2);
+        g.drawImage(this.flagImage, Game.WIDTH - 3 * Game.TILE_SIZE, Game.HEIGHT
+                - 4 * Game.TILE_SIZE, null);
+        g.setColor(Color.YELLOW);
+        g.fillRect(Game.WIDTH - 3 * Game.TILE_SIZE,
+                Game.HEIGHT - 64, Game.QUARTER_TILE_SIZE, 3 * Game.HALF_TILE_SIZE);
+        Painter.drawNumber(g, currLevel, Color.white, Game.WIDTH - 3
+                * Game.TILE_SIZE,
+                Game.HEIGHT - 2 * Game.TILE_SIZE, 2);
     }
 
     private void drawTileMap(Graphics2D g) {
@@ -328,7 +341,7 @@ public class ConstructionState extends GameState {
         g.setColor(Color.white);
         this.forbiddenPositions.forEach((p) -> {
             int size;
-            if(this.tileMap.getCastleProtectionPositions().contains(p)){
+            if (this.tileMap.getCastleProtectionPositions().contains(p)) {
                 size = Game.HALF_TILE_SIZE;
             } else {
                 size = 2 * Game.HALF_TILE_SIZE;
@@ -343,7 +356,7 @@ public class ConstructionState extends GameState {
         g.setColor(GRID_COLOR);
         for (int i = 0; i <= Game.TILES_IN_WIDTH; ++i) {
             int x = (int) (i * Game.HALF_TILE_SIZE * Game.SCALE);
-            if(x % (int)(Game.TILE_SIZE * Game.SCALE) == 0){
+            if (x % (int) (Game.TILE_SIZE * Game.SCALE) == 0) {
                 g.setColor(Color.green.darker());
             } else {
                 g.setColor(GRID_COLOR);
@@ -353,7 +366,7 @@ public class ConstructionState extends GameState {
         }
         for (int i = 0; i <= Game.TILES_IN_HEIGHT; ++i) {
             int y = (int) (i * Game.HALF_TILE_SIZE * Game.SCALE);
-            if(y % (int)(Game.TILE_SIZE * Game.SCALE) == 0){
+            if (y % (int) (Game.TILE_SIZE * Game.SCALE) == 0) {
                 g.setColor(Color.green.darker());
             } else {
                 g.setColor(GRID_COLOR);

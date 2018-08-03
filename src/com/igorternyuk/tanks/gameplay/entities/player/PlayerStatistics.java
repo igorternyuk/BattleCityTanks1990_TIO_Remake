@@ -1,18 +1,12 @@
 package com.igorternyuk.tanks.gameplay.entities.player;
 
-import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUp;
 import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTank;
 import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTankType;
-import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
-import com.igorternyuk.tanks.input.KeyboardState;
 import com.igorternyuk.tanks.resourcemanager.FontIdentifier;
 import com.igorternyuk.tanks.resourcemanager.ResourceManager;
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,23 +17,15 @@ import java.util.Map;
  */
 public class PlayerStatistics {
 
-    private static final Color COLOR_KILLED_TANKS_POINTS =
-            new Color(0, 148, 255);
-    private Player player;
     private int totalScore = 0;
     private int stageScore = 0;
     private int killedTankCount = 0;
     private Map<EnemyTankType, Integer> killedEnemyTanks = new HashMap<>();
-    private final Font fontSmaller;
-    private final Font fontLarger;
 
-    public PlayerStatistics(Player player) {
-        this.player = player;
+    public PlayerStatistics() {
         resetKilledTanksMap();
         Font font = ResourceManager.getInstance().getFont(
                 FontIdentifier.BATTLE_CITY);
-        this.fontSmaller = font.deriveFont(Font.BOLD, 12);
-        this.fontLarger = font.deriveFont(Font.BOLD, 18);
     }
 
     public void resetToNextStage() {

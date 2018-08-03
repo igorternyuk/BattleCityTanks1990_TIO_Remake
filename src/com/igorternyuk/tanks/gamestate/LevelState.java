@@ -75,7 +75,7 @@ import java.util.logging.Logger;
 public class LevelState extends GameState {
     
     public static final int TANKS_TOTAL = 20;
-    public static final int STAGE_MAX = 40;
+    public static final int STAGE_MAX = 72;
     private static final double PLAYER_PROTECTION_DURATION = 10;
     private static final double PLAYER_TANK_FROZEN_DURATION = 5;
     private static final double ENEMY_TANK_FROZEN_DURATION = 13;

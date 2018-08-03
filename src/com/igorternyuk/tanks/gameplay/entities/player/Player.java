@@ -55,7 +55,7 @@ public class Player extends Tank {
     private int maxHealth = 100;
     private int collecredGunCount = 0;
     private Font font;
-    private PlayerStatistics statistics = new PlayerStatistics(this);
+    private PlayerStatistics statistics = new PlayerStatistics();
 
     public Player(LevelState level, int id, PlayerTankType type, double x,
             double y,

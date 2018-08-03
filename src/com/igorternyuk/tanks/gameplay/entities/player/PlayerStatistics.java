@@ -5,7 +5,6 @@ import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTank;
 import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTankType;
 import com.igorternyuk.tanks.resourcemanager.FontIdentifier;
 import com.igorternyuk.tanks.resourcemanager.ResourceManager;
-import java.awt.Color;
 import java.awt.Font;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,8 +23,6 @@ public class PlayerStatistics {
 
     public PlayerStatistics() {
         resetKilledTanksMap();
-        Font font = ResourceManager.getInstance().getFont(
-                FontIdentifier.BATTLE_CITY);
     }
 
     public void resetToNextStage() {

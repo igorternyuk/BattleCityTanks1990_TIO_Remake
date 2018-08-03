@@ -176,6 +176,7 @@ public class Player extends Tank {
 
     @Override
     public void promote() {
+        this.health = this.maxHealth;
         PlayerTankType currType = this.tankId.getType();
         if (currType == PlayerTankType.ARMORED) {
             return;

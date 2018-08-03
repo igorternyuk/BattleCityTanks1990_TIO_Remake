@@ -8,10 +8,10 @@ import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
  * @author igor
  */
 public enum EnemyTankType {
-    BASIC(16, 96, 20, 25, 100, 0 * Game.TILE_SIZE),
-    FAST(32, 144, 20, 25, 200, 1 * Game.TILE_SIZE),
-    POWER(16, 144, 20, 25, 300, 2 * Game.TILE_SIZE),
-    ARMORED(16, 200, 50, 100, 400, 3 * Game.TILE_SIZE);
+    BASIC(24, 96, 20, 25, 100, 0 * Game.TILE_SIZE),
+    FAST(48, 144, 20, 25, 200, 1 * Game.TILE_SIZE),
+    POWER(32, 144, 20, 25, 300, 2 * Game.TILE_SIZE),
+    ARMORED(32, 200, 50, 100, 400, 3 * Game.TILE_SIZE);
 
     private double speed;
     private double projectileSpeed;

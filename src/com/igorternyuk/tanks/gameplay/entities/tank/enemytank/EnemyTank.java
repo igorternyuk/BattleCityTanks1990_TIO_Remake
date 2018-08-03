@@ -38,7 +38,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     private static final int TANK_DIMENSION = 2;
     private static final double COLOR_CHANGING_PERIOD = 0.15;
     private static final double TARGET_CHANGING_PERIOD = 20;
-    private static final double SHOOTING_PERIOD = 2;
+    private double shootingPeriod = 2;
 
     private int number;
     private EnemyTankIdentifier tankId;
@@ -91,7 +91,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     }
     
     private double calcRedBlinkingProbability(){
-        return (2 * this.level.getStageNumber() + 8) / 100;
+        return (1.25 * this.level.getStageNumber() + 8.75) / 100;
     }
 
     public final void turnRed() {
@@ -282,9 +282,11 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             this.gotStuck = true;
             checkMapCollision();
             this.moving = false;
+            this.shootingPeriod /= 4;
             return;
         } else {
             this.gotStuck = false;
+            this.shootingPeriod *= 4;
         }
         int rand = this.random.nextInt(allPossibleDirections.size());
         setDirection(allPossibleDirections.get(rand));
@@ -386,10 +388,11 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
 
     private void updateShootingTimer(double frameTime) {
         this.shootingTimer += frameTime;
-        if (this.shootingTimer >= SHOOTING_PERIOD) {
+        if (this.shootingTimer >= shootingPeriod) {
             this.shootingTimer = 0;
-            if (!this.frozen && (this.firingSpotReached
-                    || isFireLineFreeOfPartnerTanks())) {
+            if (this.gotStuck
+                    || (!this.frozen && (this.firingSpotReached
+                        || isFireLineFreeOfPartnerTanks()))) {
                 fire();
             }
         }

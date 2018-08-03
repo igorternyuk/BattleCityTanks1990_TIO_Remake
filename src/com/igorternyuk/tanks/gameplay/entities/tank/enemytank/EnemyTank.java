@@ -4,6 +4,7 @@ import com.igorternyuk.tanks.gameplay.Game;
 import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
+import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUp;
 import com.igorternyuk.tanks.gameplay.entities.player.Player;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerIdentifier;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankType;
@@ -27,6 +28,7 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -37,7 +39,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     private static final int[] BONUS_TANKS_NUMBERS = {4, 11, 18};
     private static final int TANK_DIMENSION = 2;
     private static final double COLOR_CHANGING_PERIOD = 0.15;
-    private static final double TARGET_CHANGING_PERIOD = 20;
+    private static final double TARGET_CHANGING_PERIOD = 10;
     private double shootingPeriod = 2;
 
     private int number;
@@ -238,12 +240,16 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
 
     private Spot getPlayerSpot(int playerId) {
         int index = playerId - 1;
-        if (index > this.level.getPlayerCount() - 1) {
+        if (index > this.level.getPlayers().size() - 1) {
             index = 0;
         }
         Player player = this.level.getPlayers().get(index);
-        int targetCol = (int) player.getX() / Game.HALF_TILE_SIZE;
-        int targetRow = (int) player.getY() / Game.HALF_TILE_SIZE;
+        return getEntitySpot(player);
+    }
+    
+    private Spot getEntitySpot(Entity entity){
+        int targetCol = (int) entity.getX() / Game.HALF_TILE_SIZE;
+        int targetRow = (int) entity.getY() / Game.HALF_TILE_SIZE;
         return new Spot(targetRow, targetCol, true);
     }
 
@@ -363,8 +369,28 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             } else {
                 targetEagle();
             }
+        } else if (this.targetTimer < 3 * TARGET_CHANGING_PERIOD){
+           if (this.number % 2 == 0) {
+                targetPowerUp();
+            } else {
+                targetEagle();
+            } 
         } else {
             this.targetTimer = 0;
+        }
+    }
+
+    private void targetPowerUp() {
+        if (this.level.isPowerUpOnField()) {
+            List<PowerUp> powerups = this.level.getEntityManager().
+                    getEntitiesByType(EntityType.POWER_UP)
+                    .stream().map(entity -> (PowerUp) entity).collect(
+                    Collectors.toList());
+            if(!powerups.isEmpty()){
+                this.currTarget = getEntitySpot(powerups.get(0));
+                this.movingAlongShortestPath = false;
+            }
+            
         }
     }
 
@@ -473,13 +499,13 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     private boolean isFireLineFreeOfPartnerTanks() {
         List<Entity> partners = this.level.getEntityManager().getEntitiesByType(
                 EntityType.ENEMY_TANK);
-        Rectangle damageArea = calcDamageArea();
+        Rectangle damageArea = calcDamageArea(this.direction);
         return partners.stream().noneMatch(entity -> entity.getBoundingRect().
                 intersects(damageArea));
     }
 
-    private Rectangle calcDamageArea() {
-        switch (this.direction) {
+    private Rectangle calcDamageArea(Direction direction) {
+        switch (direction) {
             case NORTH:
                 return new Rectangle((int) left() - getWidth(),
                         0,

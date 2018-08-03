@@ -285,6 +285,7 @@ public class Player extends Tank {
 
     public void reset() {
         this.health = 100;
+        this.direction = Direction.NORTH;
         setPosition(this.respawnX, this.respawnY);
         addProtection(RESPAWN_ROTECTION_DURATION);
         this.statistics.resetToNextStage();

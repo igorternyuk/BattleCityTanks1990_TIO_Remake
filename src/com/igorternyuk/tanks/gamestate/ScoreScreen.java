@@ -57,8 +57,6 @@ public class ScoreScreen {
                 this.currentlyDisplayingStatisticalMaps.get(i).put(type, 0);
             }
         }
-        System.out.println("this.currentlyDisplayingStatisticalMaps.size() = " +
-                this.currentlyDisplayingStatisticalMaps.size());
         for (int i = 0; i < this.players.size(); ++i) {
             this.animationFinished.add(false);
         }
@@ -70,6 +68,7 @@ public class ScoreScreen {
 
     public void reset() {
         this.animationTimer = 0;
+        this.players = this.level.getPlayers();
         this.animationFinished.clear();
         for (int i = 0; i < this.players.size(); ++i) {
             this.animationFinished.add(false);
@@ -101,6 +100,13 @@ public class ScoreScreen {
     }
 
     private void updateStatisticalTable(double frameTime) {
+        
+        if(this.animationFinished.size() != this.players.size()){
+            int toRemoveCount = this.animationFinished.size() - this.players.size();
+            for(int i = 0; i < toRemoveCount; ++i){
+                this.animationFinished.remove(this.animationFinished.size() - 1);
+            }
+        }
         
         if(this.currentPlayerIndex >= this.players.size()){
             return;

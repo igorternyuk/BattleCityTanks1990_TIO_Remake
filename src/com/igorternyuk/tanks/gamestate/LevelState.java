@@ -24,7 +24,6 @@ import com.igorternyuk.tanks.gameplay.entities.splash.SplashType;
 import com.igorternyuk.tanks.gameplay.entities.splashing.SplashText;
 import com.igorternyuk.tanks.gameplay.entities.tank.Alliance;
 import com.igorternyuk.tanks.gameplay.entities.tank.Heading;
-import com.igorternyuk.tanks.gameplay.entities.tank.Tank;
 import com.igorternyuk.tanks.gameplay.entities.tank.TankColor;
 import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTank;
 import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTankIdentifier;
@@ -81,7 +80,7 @@ public class LevelState extends GameState {
     private static final double ENEMY_TANK_FROZEN_DURATION = 13;
     private static final int TANKS_AFTER_FOURTY_STAGE_MAX = 26;
     private static final double POWERUP_TIMER_DELAY = 15;
-    private static final double POWERUP_PROBABILITY = 0.5;
+    private static final double POWERUP_PROBABILITY = 0.6;
     private static final double NEXT_STAGE_SPLASH_DELAY = 6;
     private static final double GAME_OVER_SCREEN_DELAY = 3;
     private static final double GAME_OVER_MESSAGE_DURATION = 9;
@@ -211,7 +210,9 @@ public class LevelState extends GameState {
         if (!this.loaded || this.gameStatus == GameStatus.PAUSED) {
             return;
         }
-
+        
+        checkPlayers();
+        
         if (this.gameOverMessageSliding) {
             this.gameOverMessageTimer += frameTime;
             this.gameOverMessage.update(frameTime);
@@ -241,7 +242,7 @@ public class LevelState extends GameState {
         updateSounds();
         updateFreezeTimer(frameTime);
         this.tileMap.update(keyboardState, frameTime);
-        checkPlayers();
+        
         this.entityManager.update(keyboardState, frameTime);
         this.respawnTimer += frameTime;
         updatePowerUpTimer(frameTime);
@@ -750,9 +751,6 @@ public class LevelState extends GameState {
                 break;
             case KeyEvent.VK_SPACE:
                 togglePause();
-                break;
-            case KeyEvent.VK_N:
-                startNewGame();
                 break;
             case KeyEvent.VK_F:
                 this.players.get(0).setCanFire(true);

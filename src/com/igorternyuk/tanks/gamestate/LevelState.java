@@ -140,7 +140,6 @@ public class LevelState extends GameState {
     private boolean gameOverMessageSliding = false;
     private double gameOverMessageTimer = 0;
     private GameOverMessage gameOverMessage;
-    private List<PlayerStatistics> statistics = new ArrayList<>();
 
     public LevelState(GameStateManager gameStateManager, GameMode mode) {
         super(gameStateManager);
@@ -365,10 +364,6 @@ public class LevelState extends GameState {
 
     public Stack<EnemyTankType> getHangar() {
         return this.hangar;
-    }
-
-    private boolean isFrozenModeActive() {
-        return this.frozenModeAcive;
     }
 
     private boolean checkIfNeedThrowIntoBattleMoreTanks() {
@@ -683,7 +678,8 @@ public class LevelState extends GameState {
 
             for (int j = i - 1; j >= 0; --j) {
                 Projectile otherProjectile = (Projectile) projectiles.get(j);
-                if (projectile.collides(otherProjectile)) {
+                if (projectile.getOwnerId() != otherProjectile.getOwnerId()
+                        && projectile.collides(otherProjectile)) {
                     projectile.explode();
                     otherProjectile.explode();
                     continue outer;
@@ -755,9 +751,15 @@ public class LevelState extends GameState {
                 togglePause();
                 break;
             case KeyEvent.VK_F:
+            case KeyEvent.VK_H:
+            case KeyEvent.VK_G:
+            case KeyEvent.VK_J:
                 this.players.get(0).setCanFire(true);
                 break;
             case KeyEvent.VK_E:
+            case KeyEvent.VK_R:
+            case KeyEvent.VK_T:
+            case KeyEvent.VK_Z:
                 if (this.playerCount > 1) {
                     this.players.get(1).setCanFire(true);
                 }
@@ -902,6 +904,26 @@ public class LevelState extends GameState {
                 (player) -> {
             player.setCanTraverseWater(true);
         });
+        
+        this.onPowerUpCollectedByPlayerHandlers.put(PowerUpType.TWIN_SHOT,
+                (player) -> {
+        });
+        
+        this.onPowerUpCollectedByPlayerHandlers.put(PowerUpType.FOUR_WAY_SHOT,
+                (player) -> {
+        });
+        
+        this.onPowerUpCollectedByPlayerHandlers.put(PowerUpType.MACHINE_GUN,
+                (player) -> {
+        });
+        
+        this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.ROCKET,
+                (player) -> {
+        });
+        
+        this.onPowerUpCollectedByPlayerHandlers.put(PowerUpType.DYNAMITE,
+                (player) -> {
+        });
     }
 
     private void freezeAllEnenmyTanks() {
@@ -987,6 +1009,26 @@ public class LevelState extends GameState {
         this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.SHIP, (tank) ->
         {
             tank.setCanTraverseWater(true);
+        });
+        
+        this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.TWIN_SHOT,
+                (tank) -> {
+        });
+        
+        this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.FOUR_WAY_SHOT,
+                (tank) -> {
+        });
+        
+        this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.MACHINE_GUN,
+                (tank) -> {
+        });
+        
+        this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.ROCKET,
+                (tank) -> {
+        });
+        
+        this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.DYNAMITE,
+                (tank) -> {
         });
     }
 

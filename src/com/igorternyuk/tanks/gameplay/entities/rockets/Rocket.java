@@ -1,6 +1,9 @@
-package com.igorternyuk.tanks.gameplay.entities;
+package com.igorternyuk.tanks.gameplay.entities.rockets;
 
 import com.igorternyuk.tanks.gameplay.Game;
+import com.igorternyuk.tanks.gameplay.entities.Direction;
+import com.igorternyuk.tanks.gameplay.entities.Entity;
+import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
 import com.igorternyuk.tanks.gamestate.LevelState;
 import com.igorternyuk.tanks.graphics.images.Sprite;
@@ -31,11 +34,11 @@ public class Rocket extends Entity{
     }
 
     public RocketType getType() {
-        return type;
+        return this.type;
     }
     
     public int getOwnerId() {
-        return ownerId;
+        return this.ownerId;
     }
 
     public void setOwnerId(int ownerId) {

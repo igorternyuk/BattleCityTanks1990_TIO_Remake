@@ -30,7 +30,7 @@ public enum SpriteSheetIdentifier {
     GRAY_TILE(new Rectangle(368, 208, 16, 16), new Color(0xFFFFFFFF)),
     LEVEL_FLAG(new Rectangle(376, 184, 16, 16), new Color(0x636363)),
     BRICK(new Rectangle(256, 64, 8, 8), new Color(0xFFFFFFFF)),
-    ROCKET(new Rectangle(256, 224, 64, 16), new Color(0xFFFFFFFF)),
+    ROCKET(new Rectangle(256, 224, 64, 16), new Color(0xFF000001)),
     DYNAMITE(new Rectangle(288, 144, 16, 16), new Color(0xFFFFFFFF));
 
     private Rectangle boundingRect;

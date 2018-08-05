@@ -9,7 +9,11 @@ import com.igorternyuk.tanks.gameplay.entities.player.Player;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerIdentifier;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
+import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
+import com.igorternyuk.tanks.gameplay.entities.rockets.Rocket;
+import com.igorternyuk.tanks.gameplay.entities.rockets.RocketType;
 import com.igorternyuk.tanks.gameplay.entities.tank.Heading;
+import com.igorternyuk.tanks.gameplay.entities.tank.ShootingMode;
 import com.igorternyuk.tanks.gameplay.entities.tank.Tank;
 import com.igorternyuk.tanks.gameplay.entities.tank.TankColor;
 import com.igorternyuk.tanks.gameplay.entities.text.ScoreIcrementText;
@@ -23,7 +27,6 @@ import com.igorternyuk.tanks.input.KeyboardState;
 import com.igorternyuk.tanks.resourcemanager.AudioIdentifier;
 import com.igorternyuk.tanks.resourcemanager.ResourceManager;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
@@ -246,8 +249,8 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         Player player = this.level.getPlayers().get(index);
         return getEntitySpot(player);
     }
-    
-    private Spot getEntitySpot(Entity entity){
+
+    private Spot getEntitySpot(Entity entity) {
         int targetCol = (int) entity.getX() / Game.HALF_TILE_SIZE;
         int targetRow = (int) entity.getY() / Game.HALF_TILE_SIZE;
         return new Spot(targetRow, targetCol, true);
@@ -369,12 +372,12 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             } else {
                 targetEagle();
             }
-        } else if (this.targetTimer < 3 * TARGET_CHANGING_PERIOD){
-           if (this.number % 2 == 0) {
+        } else if (this.targetTimer < 3 * TARGET_CHANGING_PERIOD) {
+            if (this.number % 2 == 0) {
                 targetPowerUp();
             } else {
                 targetEagle();
-            } 
+            }
         } else {
             this.targetTimer = 0;
         }
@@ -386,11 +389,11 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
                     getEntitiesByType(EntityType.POWER_UP)
                     .stream().map(entity -> (PowerUp) entity).collect(
                     Collectors.toList());
-            if(!powerups.isEmpty()){
+            if (!powerups.isEmpty()) {
                 this.currTarget = getEntitySpot(powerups.get(0));
                 this.movingAlongShortestPath = false;
             }
-            
+
         }
     }
 
@@ -416,43 +419,64 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         this.shootingTimer += frameTime;
         if (this.shootingTimer >= shootingPeriod) {
             this.shootingTimer = 0;
-            if (this.gotStuck
-                    || (!this.frozen && (this.firingSpotReached
-                    || isFireLineFreeOfPartnerTanks()))) {
-                fire();
+            this.canFire = true;
+            if (!this.frozen) {
+                if (this.firingSpotReached || this.gotStuck
+                        || isFireLineFreeOfPartnerTanks()) {
+                    fire();
+                }
             }
         }
     }
 
     @Override
     public void fire() {
-        Point departure = calcProjectileDeparturePositions(this.direction);
-        int px = departure.x;
-        int py = departure.y;
-        if(this.canTwinShot){
-            
+        if (!this.canFire) {
+            return;
+        }
+        List<Departure> departures = calcDeparturePoints(this.shootingMode);
+
+        if (this.shootingMode == ShootingMode.ROCKET) {
+            departures.forEach(departure -> {
+                Rocket rocket = new Rocket(level,
+                        RocketType.ENEMY,
+                        departure.getPoint().x, departure.getPoint().y,
+                        RocketType.ENEMY.getSpeed(),
+                        departure.getDirection());
+                this.level.getEntityManager().addEntity(rocket);
+                ++this.rocketsLaunched;
+                this.canFire = false;
+            });
         } else {
-            
+            departures.forEach(departure -> {
+                Projectile projectile = new Projectile(level,
+                        ProjectileType.ENEMY,
+                        departure.getPoint().x, departure.getPoint().y,
+                        this.tankId.getType().getProjectileSpeed(),
+                        this.direction);
+                projectile.
+                        setDamage(this.tankId.getType().getProjectileDamage());
+                if (this.tankId.getType() == EnemyTankType.ARMORED) {
+                    projectile.setAntiarmour(true);
+                }
+                projectile.setBushCrearing(this.canClearBushes);
+                this.level.getEntityManager().addEntity(projectile);
+            });
         }
-        Projectile projectile = new Projectile(level, this.getType().
-                getProjectileType(), px, py,
-                this.tankId.getType().getProjectileSpeed(),
-                this.direction);
-        projectile.setDamage(this.tankId.getType().getProjectileDamage());
-        if (this.tankId.getType() == EnemyTankType.ARMORED) {
-            projectile.setAntiarmour(true);
-        }
-        this.level.getEntityManager().addEntity(projectile);
+
         this.canFire = false;
         ResourceManager.getInstance().getAudio(AudioIdentifier.SHOT).play();
     }
 
     private void checkIfFiringSpotToAttackEagleReached() {
         for (int i = 0; i < this.firingSpots.size(); ++i) {
-            if (firingSpots.get(i).getSpot().equals(getCurrentSpot())) {
+            if (firingSpots.get(i).getSpot().distanceEuclidian(getCurrentSpot())
+                    <= 4) {
                 this.firingSpotReached = true;
+                System.out.println("Firing spot was reached");
                 setDirection(firingSpots.get(i).getFireDirection());
                 this.moving = false;
+                return;
             }
         }
     }
@@ -504,9 +528,22 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     private boolean isFireLineFreeOfPartnerTanks() {
         List<Entity> partners = this.level.getEntityManager().getEntitiesByType(
                 EntityType.ENEMY_TANK);
-        Rectangle damageArea = calcDamageArea(this.direction);
-        return partners.stream().noneMatch(entity -> entity.getBoundingRect().
-                intersects(damageArea));
+
+        List<Rectangle> damageAreas = new ArrayList<>(4);
+        if (this.shootingMode == ShootingMode.FOUR_WAY_SHOT) {
+            Direction[] allDirections = Direction.values();
+            for (Direction dir : allDirections) {
+                Rectangle currDamageArea = calcDamageArea(dir);
+                damageAreas.add(currDamageArea);
+            }
+        } else {
+            Rectangle damageArea = calcDamageArea(this.direction);
+            damageAreas.add(damageArea);
+        }
+        return partners.stream().noneMatch(entity -> {
+            return damageAreas.stream().anyMatch(area -> entity.
+                    getBoundingRect().intersects(area));
+        });
     }
 
     private Rectangle calcDamageArea(Direction direction) {

@@ -1,6 +1,7 @@
-package com.igorternyuk.tanks.gameplay.entities;
+package com.igorternyuk.tanks.gameplay.entities.rockets;
 
 import com.igorternyuk.tanks.gameplay.Game;
+import com.igorternyuk.tanks.gameplay.entities.Direction;
 import java.awt.Rectangle;
 
 /**
@@ -8,8 +9,18 @@ import java.awt.Rectangle;
  * @author igor
  */
 public enum RocketType {
-    PLAYER,
-    ENEMY;
+    PLAYER {
+        @Override
+        public int getSpeed() {
+            return 160;
+        }
+    },
+    ENEMY {
+        @Override
+        public int getSpeed() {
+            return 160;
+        }
+    };
 
     public static Rectangle getSourceRect(Direction direction) {
         Rectangle rect = new Rectangle();
@@ -19,4 +30,7 @@ public enum RocketType {
         }
         return rect;
     }
+    
+    public abstract int getSpeed();
+        
 }

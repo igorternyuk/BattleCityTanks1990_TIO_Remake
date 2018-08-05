@@ -35,8 +35,8 @@ public enum PowerUpType {
     private int score;
 
     private PowerUpType() {
-        this.sourceRect = new Rectangle((this.ordinal() % 8) * Game.TILE_SIZE,
-                (this.ordinal() / 8) * Game.TILE_SIZE, Game.TILE_SIZE,
+        this.sourceRect = new Rectangle((this.ordinal() % 7) * Game.TILE_SIZE,
+                (this.ordinal() / 7) * Game.TILE_SIZE, Game.TILE_SIZE,
                 Game.TILE_SIZE);
 
         this.score = 500;

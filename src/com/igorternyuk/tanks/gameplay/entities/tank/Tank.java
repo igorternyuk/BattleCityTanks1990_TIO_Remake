@@ -7,10 +7,12 @@ import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
+import com.igorternyuk.tanks.gameplay.entities.rockets.RocketType;
 import com.igorternyuk.tanks.gameplay.entities.splash.Splash;
 import com.igorternyuk.tanks.gameplay.tilemap.Tile;
 import com.igorternyuk.tanks.gameplay.tilemap.TileMap;
 import com.igorternyuk.tanks.gamestate.LevelState;
+import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.BasicStroke;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -35,15 +37,19 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
     protected boolean canTwinShot = false;
     protected boolean canFourWayShot = false;
     protected boolean canLaunchRockets = false;
-    protected ShootingMode shootingMode = ShootingMode.FOUR_WAY_SHOT;
+    protected boolean canRepeateFire = false;
+    protected boolean canDynamite = false;
+    protected ShootingMode shootingMode = ShootingMode.SINGLE_SHOT;
+    protected int rocketsLaunched = 0;
+    protected final int rocketsMax = 10;
 
     public Tank(LevelState level, EntityType type, double x, double y,
             double speed, Direction direction) {
         super(level, type, x, y, speed, direction);
     }
-    
+
     public abstract TankColor getTankColor();
-    
+
     public abstract void promote();
 
     public abstract void promoteToHeavy();
@@ -59,19 +65,43 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
     }
 
     public boolean isCanFourWayShot() {
-        return this.canFourWayShot;
+        return canFourWayShot;
     }
 
     public void setCanFourWayShot(boolean canFourWayShot) {
         this.canFourWayShot = canFourWayShot;
     }
 
+    public boolean isCanLaunchRockets() {
+        return canLaunchRockets;
+    }
+
+    public void setCanLaunchRockets(boolean canLaunchRockets) {
+        this.canLaunchRockets = canLaunchRockets;
+    }
+
+    public boolean isCanRepeateFire() {
+        return canRepeateFire;
+    }
+
+    public void setCanRepeateFire(boolean canRepeateFire) {
+        this.canRepeateFire = canRepeateFire;
+    }
+
+    public boolean isCanDynamite() {
+        return canDynamite;
+    }
+
+    public void setCanDynamite(boolean canDynamite) {
+        this.canDynamite = canDynamite;
+    }
+
     public void freeze(double duration) {
         this.frozenTime = duration;
         this.frozen = true;
     }
-    
-    public void unfreeze(){
+
+    public void unfreeze() {
         this.freezeTimer = 0;
         this.frozen = false;
     }
@@ -198,8 +228,9 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
                     getOpposite().getDx(), this.y);
         }
     }
-    
-    protected class Departure{
+
+    protected class Departure {
+
         private Point point;
         private Direction direction;
 
@@ -207,11 +238,48 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
             this.point = point;
             this.direction = direction;
         }
+
+        public Point getPoint() {
+            return point;
+        }
+
+        public Direction getDirection() {
+            return direction;
+        }
     }
-    
-    protected List<Departure> calcDeparturePoints(ShootingMode shootingMode){
+
+    protected List<Departure> calcDeparturePoints(ShootingMode shootingMode) {
         List<Departure> departures = new ArrayList<>(4);
-        
+        if (this.shootingMode == ShootingMode.SINGLE_SHOT
+                || this.shootingMode == ShootingMode.ROCKET) {
+            Point p = calcProjectileDeparturePosition(this.direction);
+            departures.add(new Departure(p, this.direction));
+        } else if (this.shootingMode == ShootingMode.TWIN_SHOT) {
+            Point basePoint = calcProjectileDeparturePosition(this.direction);
+            if (this.direction.isVertical()) {
+                Point pointLeft = new Point(basePoint.x - Game.QUARTER_TILE_SIZE
+                        / 2,
+                        basePoint.y);
+                Point pointRight = new Point(basePoint.x
+                        + Game.QUARTER_TILE_SIZE / 2,
+                        basePoint.y);
+                departures.add(new Departure(pointLeft, this.direction));
+                departures.add(new Departure(pointRight, this.direction));
+            } else if (this.direction.isHorizontal()) {
+                Point pointUp = new Point(basePoint.x, basePoint.y
+                        - Game.QUARTER_TILE_SIZE / 2);
+                Point pointDown = new Point(basePoint.x, basePoint.y
+                        + Game.QUARTER_TILE_SIZE / 2);
+                departures.add(new Departure(pointUp, this.direction));
+                departures.add(new Departure(pointDown, this.direction));
+            }
+        } else if (this.shootingMode == ShootingMode.FOUR_WAY_SHOT) {
+            Direction[] allDirections = Direction.values();
+            for (Direction dir : allDirections) {
+                departures.add(new Departure(calcProjectileDeparturePosition(
+                        dir), dir));
+            }
+        }
         return departures;
     }
 
@@ -220,27 +288,50 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
         int projectileWidth = ProjectileType.getSourceRect(direction).width;
         int projectileHeight =
                 ProjectileType.getSourceRect(direction).height;
+        int rocketWidth = RocketType.getSourceRect(direction).width;
+        int rocketHeight = RocketType.getSourceRect(direction).height;
+        int weaponWidth =
+                this.shootingMode == ShootingMode.ROCKET ? rocketWidth :
+                        projectileWidth;
+        int weaponHeight =
+                this.shootingMode == ShootingMode.ROCKET ? rocketHeight :
+                        projectileHeight;
         switch (direction) {
             case NORTH:
-                departure.x = (int) ((left() + right() - projectileWidth) / 2);
+                departure.x = (int) ((left() + right() - weaponWidth) / 2);
                 departure.y = (int) top();
                 break;
             case SOUTH:
-                departure.x = (int) ((left() + right() - projectileWidth) / 2);
+                departure.x = (int) ((left() + right() - weaponWidth) / 2);
                 departure.y = (int) bottom() - projectileHeight;
                 break;
             case EAST:
-                departure.y = (int) ((top() + bottom() - projectileHeight) / 2);
+                departure.y = (int) ((top() + bottom() - weaponHeight) / 2);
                 departure.x = (int) right() - projectileWidth;
                 break;
             case WEST:
-                departure.y = (int) ((top() + bottom() - projectileHeight) / 2);
+                departure.y = (int) ((top() + bottom() - weaponHeight) / 2);
                 departure.x = (int) left();
                 break;
             default:
                 break;
         }
         return departure;
+    }
+    
+    @Override
+    public void update(KeyboardState keyboardState, double frameTime){
+        super.update(keyboardState, frameTime);
+        if(this.shootingMode == ShootingMode.ROCKET
+                && this.rocketsLaunched >= this.rocketsMax){
+            if(this.canFourWayShot){
+                this.shootingMode = ShootingMode.FOUR_WAY_SHOT;
+            } else if(this.canTwinShot){
+                this.shootingMode = ShootingMode.TWIN_SHOT;
+            } else {
+                this.shootingMode = ShootingMode.SINGLE_SHOT;
+            }
+        }            
     }
 
     @Override
@@ -256,10 +347,10 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
         g.setStroke(new BasicStroke(3));
         Rectangle boundingRect = getBoundingRect();
         Rectangle ouline = new Rectangle(
-                (int)(Game.SCALE * boundingRect.x - 1),
-                (int)(Game.SCALE * boundingRect.y - 1),
-                (int)(Game.SCALE * boundingRect.width + 1),
-                (int)(Game.SCALE * boundingRect.height + 1));
+                (int) (Game.SCALE * boundingRect.x - 1),
+                (int) (Game.SCALE * boundingRect.y - 1),
+                (int) (Game.SCALE * boundingRect.width + 1),
+                (int) (Game.SCALE * boundingRect.height + 1));
         g.drawRoundRect(ouline.x, ouline.y, ouline.width,
                 ouline.height, 5, 5);
         g.setStroke(new BasicStroke(1));

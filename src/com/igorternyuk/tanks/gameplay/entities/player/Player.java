@@ -8,7 +8,10 @@ import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUp;
 import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
+import com.igorternyuk.tanks.gameplay.entities.rockets.Rocket;
+import com.igorternyuk.tanks.gameplay.entities.rockets.RocketType;
 import com.igorternyuk.tanks.gameplay.entities.tank.Heading;
+import com.igorternyuk.tanks.gameplay.entities.tank.ShootingMode;
 import com.igorternyuk.tanks.gameplay.entities.tank.Tank;
 import com.igorternyuk.tanks.gameplay.entities.tank.TankColor;
 import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTank;
@@ -26,7 +29,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -236,20 +238,37 @@ public class Player extends Tank {
         if (!this.canFire) {
             return;
         }
-        Point departure = calcProjectileDeparturePosition();
-        Projectile projectile = new Projectile(level, ProjectileType.PLAYER,
-                departure.x, departure.y,
-                this.tankId.getType().getProjectileSpeed(),
-                this.direction);
-        projectile.setDamage(this.tankId.getType().getProjectileDamage());
-        projectile.setOwnerId(this.id.getId());
-        if (this.tankId.getType() == PlayerTankType.ARMORED) {
-            projectile.setAntiarmour(true);
+        List<Departure> departures = calcDeparturePoints(this.shootingMode);
+        if(this.shootingMode == ShootingMode.ROCKET){
+            departures.forEach(departure -> {
+                Rocket rocket = new Rocket(level,
+                        RocketType.PLAYER,
+                        departure.getPoint().x, departure.getPoint().y,
+                        RocketType.PLAYER.getSpeed(),
+                        departure.getDirection());
+                rocket.setOwnerId(this.id.getId());
+                this.level.getEntityManager().addEntity(rocket);
+                ++this.rocketsLaunched;
+                this.canFire = false;
+            });
+        } else {
+            departures.forEach(departure -> {
+                Projectile projectile = new Projectile(level,
+                        ProjectileType.PLAYER,
+                        departure.getPoint().x, departure.getPoint().y,
+                        this.tankId.getType().getProjectileSpeed(),
+                        departure.getDirection());
+                projectile.
+                        setDamage(this.tankId.getType().getProjectileDamage());
+                projectile.setOwnerId(this.id.getId());
+                if (this.tankId.getType() == PlayerTankType.ARMORED) {
+                    projectile.setAntiarmour(true);
+                }
+                projectile.setBushCrearing(this.canClearBushes);
+                this.level.getEntityManager().addEntity(projectile);
+                this.canFire = false;
+            });
         }
-
-        projectile.setBushCrearing(this.canClearBushes);
-        this.level.getEntityManager().addEntity(projectile);
-        this.canFire = false;
         ResourceManager.getInstance().getAudio(AudioIdentifier.SHOT).play();
     }
 
@@ -278,6 +297,13 @@ public class Player extends Tank {
         this.canTraverseWater = false;
         this.canClearBushes = false;
         this.collecredGunCount = 0;
+        this.canClearBushes = false;
+        this.canTwinShot = false;
+        this.canFourWayShot = false;
+        this.canLaunchRockets = false;
+        this.canRepeateFire = false;
+        this.rocketsLaunched = 0;
+        this.canDynamite = false;
         setPosition(this.respawnX, this.respawnY);
         addProtection(RESPAWN_ROTECTION_DURATION);
         this.tankId.setType(PlayerTankType.BASIC);
@@ -346,11 +372,25 @@ public class Player extends Tank {
 
     private void handleUserInput(KeyboardState keyboardState) {
 
-        if ((this.id == PlayerIdentifier.FIRST
-                && keyboardState.isKeyPressed(KeyEvent.VK_F))
-                || (this.id == PlayerIdentifier.SECOND
-                && keyboardState.isKeyPressed(KeyEvent.VK_E))) {
-            fire();
+        if (this.id == PlayerIdentifier.FIRST){
+            if(keyboardState.isKeyPressed(KeyEvent.VK_F)){
+                this.shootingMode = ShootingMode.SINGLE_SHOT;
+                fire();
+            } else if(keyboardState.isKeyPressed(KeyEvent.VK_G)){
+                this.shootingMode = ShootingMode.TWIN_SHOT;
+                fire();
+            } else if(keyboardState.isKeyPressed(KeyEvent.VK_H)){
+                this.shootingMode = ShootingMode.FOUR_WAY_SHOT;
+                fire();
+            } else if(keyboardState.isKeyPressed(KeyEvent.VK_J)){
+                this.shootingMode = ShootingMode.ROCKET;
+                fire();
+            }
+            
+        } else if(this.id == PlayerIdentifier.SECOND){
+            if(keyboardState.isKeyPressed(KeyEvent.VK_E)){
+                fire();
+            }
         }
 
         boolean canSteer = false;
@@ -383,8 +423,11 @@ public class Player extends Tank {
     }
 
     private void updateShootingTimer(double frameTime) {
-        if (this.tankId.getType() == PlayerTankType.MIDDLE && !this.canFire) {
+        if ((this.canRepeateFire
+                || this.tankId.getType() == PlayerTankType.MIDDLE)
+                && !this.canFire) {
             this.lastShootTimer += frameTime;
+            System.out.println("this.lastShootTimer = " + this.lastShootTimer);
             if (this.lastShootTimer >= SHOT_DELAY) {
                 this.lastShootTimer = 0;
                 this.canFire = true;

@@ -83,7 +83,7 @@ public class Projectile extends Entity {
     public boolean isAlive() {
         return super.isAlive() && !isOutOfBounds();
     }
-
+    
     public void explode() {
         super.explode(ExplosionType.SMALL);
         destroy();

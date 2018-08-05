@@ -54,7 +54,7 @@ public abstract class Entity {
         return this.entityType;
     }
     
-     public double getX() {
+    public double getX() {
         return (this.parent != null) ? (this.parent.getX() + this.x) : this.x;
     }
 

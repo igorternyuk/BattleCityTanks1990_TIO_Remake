@@ -22,6 +22,16 @@ public enum Direction {
         public boolean isHorizontal() {
             return false;
         }
+        
+        @Override
+        public Direction next() {
+            return Direction.EAST;
+        }
+        
+        @Override
+        public Direction prev() {
+            return Direction.WEST;
+        }
     },
     WEST(new Point(-1, 0)) {
         @Override
@@ -37,6 +47,16 @@ public enum Direction {
         @Override
         public boolean isHorizontal() {
             return true;
+        }
+        
+        @Override
+        public Direction next() {
+            return Direction.NORTH;
+        }
+        
+        @Override
+        public Direction prev() {
+            return Direction.SOUTH;
         }
     },
     SOUTH(new Point(0, +1)) {
@@ -54,6 +74,16 @@ public enum Direction {
         public boolean isHorizontal() {
             return false;
         }
+        
+        @Override
+        public Direction next() {
+            return Direction.WEST;
+        }
+        
+        @Override
+        public Direction prev() {
+            return Direction.EAST;
+        }
     },
     EAST(new Point(+1, 0)) {
         @Override
@@ -69,6 +99,16 @@ public enum Direction {
         @Override
         public boolean isHorizontal() {
             return true;
+        }
+        
+        @Override
+        public Direction next() {
+            return Direction.SOUTH;
+        }
+        
+        @Override
+        public Direction prev() {
+            return Direction.NORTH;
         }
     };
     
@@ -90,6 +130,8 @@ public enum Direction {
         return this.vector.y;
     }
     
+    public abstract Direction next();
+    public abstract Direction prev();
     public abstract boolean isVertical();
     public abstract boolean isHorizontal();
     public abstract Direction getOpposite();

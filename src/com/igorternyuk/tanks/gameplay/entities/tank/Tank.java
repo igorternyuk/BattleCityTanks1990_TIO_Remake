@@ -15,6 +15,7 @@ import java.awt.BasicStroke;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,10 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
     protected double freezeTimer = 0;
     protected double frozenTime = 0;
     protected boolean canClearBushes = false;
+    protected boolean canTwinShot = false;
+    protected boolean canFourWayShot = false;
+    protected boolean canLaunchRockets = false;
+    protected ShootingMode shootingMode = ShootingMode.FOUR_WAY_SHOT;
 
     public Tank(LevelState level, EntityType type, double x, double y,
             double speed, Direction direction) {
@@ -44,6 +49,22 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
     public abstract void promoteToHeavy();
 
     public abstract void fire();
+
+    public boolean isCanTwinShot() {
+        return canTwinShot;
+    }
+
+    public void setCanTwinShot(boolean canTwinShot) {
+        this.canTwinShot = canTwinShot;
+    }
+
+    public boolean isCanFourWayShot() {
+        return this.canFourWayShot;
+    }
+
+    public void setCanFourWayShot(boolean canFourWayShot) {
+        this.canFourWayShot = canFourWayShot;
+    }
 
     public void freeze(double duration) {
         this.frozenTime = duration;
@@ -177,13 +198,29 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
                     getOpposite().getDx(), this.y);
         }
     }
+    
+    protected class Departure{
+        private Point point;
+        private Direction direction;
 
-    protected Point calcProjectileDeparturePosition() {
+        public Departure(Point point, Direction direction) {
+            this.point = point;
+            this.direction = direction;
+        }
+    }
+    
+    protected List<Departure> calcDeparturePoints(ShootingMode shootingMode){
+        List<Departure> departures = new ArrayList<>(4);
+        
+        return departures;
+    }
+
+    protected Point calcProjectileDeparturePosition(Direction direction) {
         Point departure = new Point();
-        int projectileWidth = ProjectileType.getSourceRect(this.direction).width;
+        int projectileWidth = ProjectileType.getSourceRect(direction).width;
         int projectileHeight =
-                ProjectileType.getSourceRect(this.direction).height;
-        switch (this.direction) {
+                ProjectileType.getSourceRect(direction).height;
+        switch (direction) {
             case NORTH:
                 departure.x = (int) ((left() + right() - projectileWidth) / 2);
                 departure.y = (int) top();

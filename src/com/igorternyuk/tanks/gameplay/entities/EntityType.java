@@ -6,9 +6,11 @@ package com.igorternyuk.tanks.gameplay.entities;
  */
 public enum EntityType {
     CASTLE,
+    DYNAMITE,
     PLAYER_TANK,
     ENEMY_TANK,
     PROJECTILE,
+    ROCKET,
     SPLASH,
     EXPLOSION,
     POWER_UP,

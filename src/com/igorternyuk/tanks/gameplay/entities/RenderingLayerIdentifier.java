@@ -6,6 +6,7 @@ package com.igorternyuk.tanks.gameplay.entities;
  */
 public enum RenderingLayerIdentifier {
     GAME_INFO,
+    STATIC_ELEMENTS,
     EAGLE,
     PROJECTILES,
     SPLASHES,

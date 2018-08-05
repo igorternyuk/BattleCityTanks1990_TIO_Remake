@@ -15,6 +15,7 @@ import com.igorternyuk.tanks.gameplay.entities.castle.Castle;
 import com.igorternyuk.tanks.gameplay.entities.castle.CastleState;
 import com.igorternyuk.tanks.gameplay.entities.indicators.GameInfoPanel;
 import com.igorternyuk.tanks.gameplay.entities.player.Player;
+import com.igorternyuk.tanks.gameplay.entities.player.PlayerStatistics;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankIdentifier;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
@@ -139,6 +140,7 @@ public class LevelState extends GameState {
     private boolean gameOverMessageSliding = false;
     private double gameOverMessageTimer = 0;
     private GameOverMessage gameOverMessage;
+    private List<PlayerStatistics> statistics = new ArrayList<>();
 
     public LevelState(GameStateManager gameStateManager, GameMode mode) {
         super(gameStateManager);
@@ -1021,9 +1023,11 @@ public class LevelState extends GameState {
     private void addRenderingLayers() {
         this.entityManager.addRenderingLayer(RenderingLayerIdentifier.EAGLE,
                 EntityType.CASTLE);
+        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.STATIC_ELEMENTS,
+                EntityType.DYNAMITE);
         this.entityManager.addRenderingLayer(
                 RenderingLayerIdentifier.PROJECTILES,
-                EntityType.PROJECTILE);
+                EntityType.PROJECTILE, EntityType.ROCKET);
         this.entityManager.addRenderingLayer(RenderingLayerIdentifier.SPLASHES,
                 EntityType.SPLASH);
         this.entityManager.addRenderingLayer(RenderingLayerIdentifier.TANKS,

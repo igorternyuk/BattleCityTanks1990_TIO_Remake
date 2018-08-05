@@ -426,9 +426,14 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
 
     @Override
     public void fire() {
-        Point departure = calcProjectileDeparturePosition();
+        Point departure = calcProjectileDeparturePositions(this.direction);
         int px = departure.x;
         int py = departure.y;
+        if(this.canTwinShot){
+            
+        } else {
+            
+        }
         Projectile projectile = new Projectile(level, this.getType().
                 getProjectileType(), px, py,
                 this.tankId.getType().getProjectileSpeed(),

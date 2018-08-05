@@ -16,7 +16,12 @@ public enum PowerUpType {
     GRENADE,
     TANK,
     GUN,
-    SHIP;
+    SHIP,
+    TWIN_SHOT,
+    FOUR_WAY_SHOT,
+    MACHINE_GUN,
+    ROCKET,
+    DYNAMITE;
 
     private static final Random random = new Random();
 
@@ -30,13 +35,9 @@ public enum PowerUpType {
     private int score;
 
     private PowerUpType() {
-        if (this.ordinal() == 7) {
-            this.sourceRect = new Rectangle((this.ordinal() - 1) * Game.TILE_SIZE,
-                    0, Game.TILE_SIZE, Game.TILE_SIZE);
-        } else {
-            this.sourceRect = new Rectangle(this.ordinal() * Game.TILE_SIZE,
-                    Game.TILE_SIZE, Game.TILE_SIZE, Game.TILE_SIZE);
-        }
+        this.sourceRect = new Rectangle((this.ordinal() % 8) * Game.TILE_SIZE,
+                (this.ordinal() / 8) * Game.TILE_SIZE, Game.TILE_SIZE,
+                Game.TILE_SIZE);
 
         this.score = 500;
     }

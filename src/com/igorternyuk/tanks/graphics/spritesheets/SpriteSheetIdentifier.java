@@ -18,7 +18,7 @@ public enum SpriteSheetIdentifier {
     TANK_EXPLOSION(new Rectangle(304, 128, 64, 32), new Color(0xFF000001)),
     TANK_PROTECTION(new Rectangle(256, 144, 32, 16), new Color(0xFF000001)),
     BONUS(new Rectangle(256, 96, 112, 32), new Color(0xFF000001)),
-    SPLASH(new Rectangle(256, 96, 96, 16), new Color(0xFF000001)),
+    SPLASH(new Rectangle(256, 208, 96, 16), new Color(0xFF000001)),
     SCORES(new Rectangle(288, 160, 80, 16), new Color(0xFF000001)),
     DIGITS(new Rectangle(328, 184, 40, 16), new Color(0xFFFFFFFF)),
     PAUSE(new Rectangle(288,176,40,8), new Color(0xFF000001)),
@@ -29,7 +29,9 @@ public enum SpriteSheetIdentifier {
     EMPTY(new Rectangle(288, 48, 16, 16), new Color(0xFFFFFFFF)),
     GRAY_TILE(new Rectangle(368, 208, 16, 16), new Color(0xFFFFFFFF)),
     LEVEL_FLAG(new Rectangle(376, 184, 16, 16), new Color(0x636363)),
-    BRICK(new Rectangle(256, 64, 8, 8), new Color(0xFFFFFFFF));
+    BRICK(new Rectangle(256, 64, 8, 8), new Color(0xFFFFFFFF)),
+    ROCKET(new Rectangle(256, 224, 64, 16), new Color(0xFFFFFFFF)),
+    DYNAMITE(new Rectangle(288, 144, 16, 16), new Color(0xFFFFFFFF));
 
     private Rectangle boundingRect;
     private Color colorToFilter;

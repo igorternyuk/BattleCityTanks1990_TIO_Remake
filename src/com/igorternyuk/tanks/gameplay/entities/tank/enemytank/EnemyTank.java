@@ -80,6 +80,10 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         selectRandomFiringPointToAttackEagle();
         this.moving = true;
     }
+    
+    public void setShootingMode(ShootingMode shootingMode){
+        this.shootingMode = shootingMode;
+    }
 
     public boolean isBonus() {
         return this.bonus;
@@ -402,7 +406,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         this.currTarget = playerSpot;
         this.movingAlongShortestPath = false;
     }
-
+    
     private void targetEagle() {
         boolean isCurrTargetEagle = this.firingSpots.stream().anyMatch(
                 firingSpot -> {
@@ -453,7 +457,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
                         ProjectileType.ENEMY,
                         departure.getPoint().x, departure.getPoint().y,
                         this.tankId.getType().getProjectileSpeed(),
-                        this.direction);
+                        departure.getDirection());
                 projectile.
                         setDamage(this.tankId.getType().getProjectileDamage());
                 if (this.tankId.getType() == EnemyTankType.ARMORED) {
@@ -473,7 +477,6 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
             if (firingSpots.get(i).getSpot().distanceEuclidian(getCurrentSpot())
                     <= 4) {
                 this.firingSpotReached = true;
-                System.out.println("Firing spot was reached");
                 setDirection(firingSpots.get(i).getFireDirection());
                 this.moving = false;
                 return;

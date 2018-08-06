@@ -5,6 +5,7 @@ import com.igorternyuk.tanks.gameplay.entities.Direction;
 import com.igorternyuk.tanks.gameplay.entities.Entity;
 import com.igorternyuk.tanks.gameplay.entities.EntityType;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUp;
+import com.igorternyuk.tanks.gameplay.entities.dynamite.Dynamite;
 import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
@@ -56,6 +57,8 @@ public class Player extends Tank {
     private double slidingTimer = 0;
     private int maxHealth = 100;
     private int collecredGunCount = 0;
+    private int dynamitesCount = 0;
+    private int maxDynamites = 10;
     private Font font;
     private PlayerStatistics statistics = new PlayerStatistics();
 
@@ -128,7 +131,7 @@ public class Player extends Tank {
         int gameFieldBottom = Game.HEIGHT - Game.STATISTICS_PANEL_HEIGHT;
         g.setColor(Color.white);
         g.fillRect(0, gameFieldBottom, Game.WIDTH, 3);
-        
+
         Color currTankColor = this.id.getTankColor().getColor();
         g.setColor(currTankColor);
         g.setFont(this.font);
@@ -151,6 +154,8 @@ public class Player extends Tank {
         }
         g.setStroke(new BasicStroke(1));
     }
+
+    
 
     public void setSliding(boolean sliding) {
         this.sliding = this.onIce && sliding;
@@ -209,6 +214,11 @@ public class Player extends Tank {
         attachChild(protection);
         this.hasProtection = true;
     }
+    
+    public void gainDynamiteAbility(){
+        this.dynamitesCount = 0;
+        this.canDynamite = true;
+    }
 
     public void gainExtraLife() {
         ++this.lives;
@@ -239,7 +249,7 @@ public class Player extends Tank {
             return;
         }
         List<Departure> departures = calcDeparturePoints(this.shootingMode);
-        if(this.shootingMode == ShootingMode.ROCKET){
+        if (this.shootingMode == ShootingMode.ROCKET) {
             departures.forEach(departure -> {
                 Rocket rocket = new Rocket(level,
                         RocketType.PLAYER,
@@ -290,6 +300,21 @@ public class Player extends Tank {
             respawn();
         }
     }
+    
+    public void dynamite() {
+        if (this.canDynamite && this.dynamitesCount < this.maxDynamites) {
+            System.out.println("Trying to dynamite");
+            Dynamite newDynamite = new Dynamite(this.level, getX(), getY());
+            boolean overlapOtherDynamites = this.level.getEntityManager()
+                    .getEntitiesByType(EntityType.DYNAMITE).stream()
+                    .anyMatch(dynamite -> dynamite.getBoundingRect().
+                            intersects(newDynamite.getBoundingRect()));
+            if(!overlapOtherDynamites){
+                this.level.getEntityManager().addEntity(newDynamite);
+                ++this.dynamitesCount;
+            }
+        }
+    }
 
     protected void respawn() {
         this.health = 100;
@@ -304,6 +329,7 @@ public class Player extends Tank {
         this.canRepeateFire = false;
         this.rocketsLaunched = 0;
         this.canDynamite = false;
+        this.dynamitesCount = 0;
         setPosition(this.respawnX, this.respawnY);
         addProtection(RESPAWN_ROTECTION_DURATION);
         this.tankId.setType(PlayerTankType.BASIC);
@@ -372,23 +398,29 @@ public class Player extends Tank {
 
     private void handleUserInput(KeyboardState keyboardState) {
 
-        if (this.id == PlayerIdentifier.FIRST){
-            if(keyboardState.isKeyPressed(KeyEvent.VK_F)){
+        if (this.id == PlayerIdentifier.FIRST) {
+            if (keyboardState.isKeyPressed(KeyEvent.VK_F)) {
                 this.shootingMode = ShootingMode.SINGLE_SHOT;
                 fire();
-            } else if(keyboardState.isKeyPressed(KeyEvent.VK_G)){
-                this.shootingMode = ShootingMode.TWIN_SHOT;
-                fire();
-            } else if(keyboardState.isKeyPressed(KeyEvent.VK_H)){
-                this.shootingMode = ShootingMode.FOUR_WAY_SHOT;
-                fire();
-            } else if(keyboardState.isKeyPressed(KeyEvent.VK_J)){
-                this.shootingMode = ShootingMode.ROCKET;
-                fire();
+            } else if (keyboardState.isKeyPressed(KeyEvent.VK_G)) {
+                if (this.canTwinShot) {
+                    this.shootingMode = ShootingMode.TWIN_SHOT;
+                    fire();
+                }
+            } else if (keyboardState.isKeyPressed(KeyEvent.VK_H)) {
+                if (this.canFourWayShot) {
+                    this.shootingMode = ShootingMode.FOUR_WAY_SHOT;
+                    fire();
+                }
+            } else if (keyboardState.isKeyPressed(KeyEvent.VK_J)) {
+                if (this.canLaunchRockets) {
+                    this.shootingMode = ShootingMode.ROCKET;
+                    fire();
+                }
             }
-            
-        } else if(this.id == PlayerIdentifier.SECOND){
-            if(keyboardState.isKeyPressed(KeyEvent.VK_E)){
+
+        } else if (this.id == PlayerIdentifier.SECOND) {
+            if (keyboardState.isKeyPressed(KeyEvent.VK_E)) {
                 fire();
             }
         }
@@ -427,7 +459,6 @@ public class Player extends Tank {
                 || this.tankId.getType() == PlayerTankType.MIDDLE)
                 && !this.canFire) {
             this.lastShootTimer += frameTime;
-            System.out.println("this.lastShootTimer = " + this.lastShootTimer);
             if (this.lastShootTimer >= SHOT_DELAY) {
                 this.lastShootTimer = 0;
                 this.canFire = true;

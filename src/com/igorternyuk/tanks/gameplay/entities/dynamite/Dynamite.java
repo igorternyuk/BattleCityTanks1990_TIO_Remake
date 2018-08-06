@@ -11,6 +11,7 @@ import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetIdentifier;
 import com.igorternyuk.tanks.graphics.spritesheets.SpriteSheetManager;
 import com.igorternyuk.tanks.input.KeyboardState;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
 /**
@@ -24,8 +25,9 @@ public class Dynamite extends Entity{
     public Dynamite(LevelState level, double x, double y) {
         super(level, EntityType.DYNAMITE, x, y, 0, Direction.NORTH);
         BufferedImage image = SpriteSheetManager.getInstance().get(
-                SpriteSheetIdentifier.ROCKET);
+                SpriteSheetIdentifier.DYNAMITE);
         this.sprite = new Sprite(image, this.x, this.y, Game.SCALE);
+        this.sprite.setSourceRect(new Rectangle(0,0,Game.TILE_SIZE,Game.TILE_SIZE));
         updateSprite();
     }
 

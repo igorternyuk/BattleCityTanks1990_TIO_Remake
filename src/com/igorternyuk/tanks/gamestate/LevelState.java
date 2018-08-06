@@ -13,18 +13,21 @@ import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUp;
 import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUpType;
 import com.igorternyuk.tanks.gameplay.entities.castle.Castle;
 import com.igorternyuk.tanks.gameplay.entities.castle.CastleState;
+import com.igorternyuk.tanks.gameplay.entities.dynamite.Dynamite;
+import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
 import com.igorternyuk.tanks.gameplay.entities.indicators.GameInfoPanel;
 import com.igorternyuk.tanks.gameplay.entities.player.Player;
-import com.igorternyuk.tanks.gameplay.entities.player.PlayerStatistics;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankIdentifier;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankType;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.Projectile;
 import com.igorternyuk.tanks.gameplay.entities.projectiles.ProjectileType;
+import com.igorternyuk.tanks.gameplay.entities.rockets.Rocket;
 import com.igorternyuk.tanks.gameplay.entities.splash.Splash;
 import com.igorternyuk.tanks.gameplay.entities.splash.SplashType;
 import com.igorternyuk.tanks.gameplay.entities.splashing.SplashText;
 import com.igorternyuk.tanks.gameplay.entities.tank.Alliance;
 import com.igorternyuk.tanks.gameplay.entities.tank.Heading;
+import com.igorternyuk.tanks.gameplay.entities.tank.ShootingMode;
 import com.igorternyuk.tanks.gameplay.entities.tank.TankColor;
 import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTank;
 import com.igorternyuk.tanks.gameplay.entities.tank.enemytank.EnemyTankIdentifier;
@@ -211,9 +214,9 @@ public class LevelState extends GameState {
         if (!this.loaded || this.gameStatus == GameStatus.PAUSED) {
             return;
         }
-        
+
         checkPlayers();
-        
+
         if (this.gameOverMessageSliding) {
             this.gameOverMessageTimer += frameTime;
             this.gameOverMessage.update(frameTime);
@@ -243,7 +246,7 @@ public class LevelState extends GameState {
         updateSounds();
         updateFreezeTimer(frameTime);
         this.tileMap.update(keyboardState, frameTime);
-        
+
         this.entityManager.update(keyboardState, frameTime);
         this.respawnTimer += frameTime;
         updatePowerUpTimer(frameTime);
@@ -296,7 +299,7 @@ public class LevelState extends GameState {
             this.freezeTimer += frameTime;
             if (this.freezeTimer > ENEMY_TANK_FROZEN_DURATION) {
                 this.freezeTimer = 0;
-                
+
                 unfreezeAllEnemyTanks();
             }
         }
@@ -625,6 +628,43 @@ public class LevelState extends GameState {
                 EntityType.PROJECTILE);
         List<Entity> enemyTanks = this.entityManager.getEntitiesByType(
                 EntityType.ENEMY_TANK);
+
+        List<Entity> dynamits = this.entityManager.getEntitiesByType(
+                EntityType.DYNAMITE);
+
+        List<Entity> rockets = this.entityManager.getEntitiesByType(
+                EntityType.ROCKET);
+
+        for (int i = enemyTanks.size() - 1; i >= 0; --i) {
+            EnemyTank enemyTank = (EnemyTank) enemyTanks.get(i);
+            for (int j = dynamits.size() - 1; j >= 0; --j) {
+                Dynamite dynamite = (Dynamite) dynamits.get(j);
+                if (enemyTank.collides(dynamite)) {
+                    enemyTank.explode();
+                    dynamite.explode();
+                    break;
+                }
+            }
+            
+            rocketLoop:
+            for (int j = rockets.size() - 1; j >= 0; --j) {
+                Rocket rocket = (Rocket) rockets.get(j);
+                if (enemyTank.collides(rocket) && rocket.getOwnerId() != 0) {
+                    int killerId = rocket.getOwnerId();
+                    for (int k = 0; k < this.players.size(); ++k) {
+                        Player currPlayer = this.players.get(k);
+                        if (currPlayer.getId().getId() == killerId) {
+                            currPlayer.registerKilledTank(enemyTank);
+                            continue rocketLoop;
+                        }
+                    }
+                    enemyTank.explode();
+                    rocket.explode();
+                    break;
+                }
+            }
+        }
+
         outer:
         for (int i = projectiles.size() - 1; i >= 0; --i) {
             Projectile projectile = (Projectile) projectiles.get(i);
@@ -759,10 +799,13 @@ public class LevelState extends GameState {
             case KeyEvent.VK_E:
             case KeyEvent.VK_R:
             case KeyEvent.VK_T:
-            case KeyEvent.VK_Z:
+            case KeyEvent.VK_Y:
                 if (this.playerCount > 1) {
                     this.players.get(1).setCanFire(true);
                 }
+                break;
+            case KeyEvent.VK_Z:
+                this.players.get(0).dynamite();
                 break;
             case KeyEvent.VK_M:
                 stopAllSounds();
@@ -904,25 +947,30 @@ public class LevelState extends GameState {
                 (player) -> {
             player.setCanTraverseWater(true);
         });
-        
+
         this.onPowerUpCollectedByPlayerHandlers.put(PowerUpType.TWIN_SHOT,
                 (player) -> {
+            player.setCanTwinShot(true);
         });
-        
+
         this.onPowerUpCollectedByPlayerHandlers.put(PowerUpType.FOUR_WAY_SHOT,
                 (player) -> {
+            player.setCanFourWayShot(true);
         });
-        
+
         this.onPowerUpCollectedByPlayerHandlers.put(PowerUpType.MACHINE_GUN,
                 (player) -> {
+            player.setCanRepeateFire(true);
         });
-        
-        this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.ROCKET,
+
+        this.onPowerUpCollectedByPlayerHandlers.put(PowerUpType.ROCKET,
                 (player) -> {
+            player.gainAbilityToLaunchRockets();
         });
-        
+
         this.onPowerUpCollectedByPlayerHandlers.put(PowerUpType.DYNAMITE,
                 (player) -> {
+            player.gainDynamiteAbility();
         });
     }
 
@@ -933,8 +981,8 @@ public class LevelState extends GameState {
         enemyTanks.stream().map(entity -> (EnemyTank) entity).forEach(
                 enemyTank -> enemyTank.freeze(ENEMY_TANK_FROZEN_DURATION));
     }
-    
-    private void unfreezeAllEnemyTanks(){
+
+    private void unfreezeAllEnemyTanks() {
         this.frozenModeAcive = false;
         List<Entity> enemyTanks = this.entityManager.getEntitiesByType(
                 EntityType.ENEMY_TANK);
@@ -1010,25 +1058,32 @@ public class LevelState extends GameState {
         {
             tank.setCanTraverseWater(true);
         });
-        
+
         this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.TWIN_SHOT,
                 (tank) -> {
+            tank.setShootingMode(ShootingMode.TWIN_SHOT);
         });
-        
+
         this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.FOUR_WAY_SHOT,
                 (tank) -> {
+            tank.setShootingMode(ShootingMode.FOUR_WAY_SHOT);
         });
-        
+
         this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.MACHINE_GUN,
                 (tank) -> {
+            tank.setCanRepeateFire(true);
         });
-        
+
         this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.ROCKET,
                 (tank) -> {
+            tank.gainAbilityToLaunchRockets();
         });
-        
+
         this.onPowerUpCollectedByEnemyHandlers.put(PowerUpType.DYNAMITE,
                 (tank) -> {
+            this.entityManager.getEntitiesByType(EntityType.DYNAMITE)
+                    .stream().map(entity -> (Dynamite) entity)
+                    .forEach(dynamite -> dynamite.explode());
         });
     }
 
@@ -1065,7 +1120,8 @@ public class LevelState extends GameState {
     private void addRenderingLayers() {
         this.entityManager.addRenderingLayer(RenderingLayerIdentifier.EAGLE,
                 EntityType.CASTLE);
-        this.entityManager.addRenderingLayer(RenderingLayerIdentifier.STATIC_ELEMENTS,
+        this.entityManager.addRenderingLayer(
+                RenderingLayerIdentifier.STATIC_ELEMENTS,
                 EntityType.DYNAMITE);
         this.entityManager.addRenderingLayer(
                 RenderingLayerIdentifier.PROJECTILES,

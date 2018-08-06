@@ -55,7 +55,7 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
     public abstract void promoteToHeavy();
 
     public abstract void fire();
-
+    
     public boolean isCanTwinShot() {
         return canTwinShot;
     }
@@ -78,6 +78,11 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
 
     public void setCanLaunchRockets(boolean canLaunchRockets) {
         this.canLaunchRockets = canLaunchRockets;
+    }
+    
+    public void gainAbilityToLaunchRockets(){
+        this.rocketsLaunched = 0;
+        this.canLaunchRockets = true;
     }
 
     public boolean isCanRepeateFire() {
@@ -331,6 +336,7 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
             } else {
                 this.shootingMode = ShootingMode.SINGLE_SHOT;
             }
+            this.canLaunchRockets = false;
         }            
     }
 

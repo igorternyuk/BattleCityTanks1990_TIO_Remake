@@ -100,7 +100,7 @@ public class Player extends Tank {
                 fitToTiles();
             }
             handleCollisionsWithSplashes();
-            //handleCollisionsWithOtherTanks(frameTime);
+            handleCollisionsWithOtherTanks(frameTime);
             fixBounds();
         }
         super.update(keyboardState, frameTime);
@@ -155,8 +155,6 @@ public class Player extends Tank {
         g.setStroke(new BasicStroke(1));
     }
 
-    
-
     public void setSliding(boolean sliding) {
         this.sliding = this.onIce && sliding;
     }
@@ -171,6 +169,8 @@ public class Player extends Tank {
 
     public void registerKilledTank(EnemyTank enemyTank) {
         this.statistics.addKilledTank(enemyTank);
+        System.out.println("Registering killed tank count = " + this.statistics.
+                getKilledTankCount());
     }
 
     public void collectPowerUp(PowerUp powerup) {
@@ -214,8 +214,8 @@ public class Player extends Tank {
         attachChild(protection);
         this.hasProtection = true;
     }
-    
-    public void gainDynamiteAbility(){
+
+    public void gainDynamiteAbility() {
         this.dynamitesCount = 0;
         this.canDynamite = true;
     }
@@ -300,16 +300,16 @@ public class Player extends Tank {
             respawn();
         }
     }
-    
+
     public void dynamite() {
         if (this.canDynamite && this.dynamitesCount < this.maxDynamites) {
-            System.out.println("Trying to dynamite");
             Dynamite newDynamite = new Dynamite(this.level, getX(), getY());
+            newDynamite.setOwnerId(this.id.getId());
             boolean overlapOtherDynamites = this.level.getEntityManager()
                     .getEntitiesByType(EntityType.DYNAMITE).stream()
                     .anyMatch(dynamite -> dynamite.getBoundingRect().
                             intersects(newDynamite.getBoundingRect()));
-            if(!overlapOtherDynamites){
+            if (!overlapOtherDynamites) {
                 this.level.getEntityManager().addEntity(newDynamite);
                 ++this.dynamitesCount;
             }
@@ -422,6 +422,21 @@ public class Player extends Tank {
         } else if (this.id == PlayerIdentifier.SECOND) {
             if (keyboardState.isKeyPressed(KeyEvent.VK_E)) {
                 fire();
+            } else if (keyboardState.isKeyPressed(KeyEvent.VK_R)) {
+                if (this.canTwinShot) {
+                    this.shootingMode = ShootingMode.TWIN_SHOT;
+                    fire();
+                }
+            } else if (keyboardState.isKeyPressed(KeyEvent.VK_T)) {
+                if (this.canFourWayShot) {
+                    this.shootingMode = ShootingMode.FOUR_WAY_SHOT;
+                    fire();
+                }
+            } else if (keyboardState.isKeyPressed(KeyEvent.VK_Y)) {
+                if (this.canLaunchRockets) {
+                    this.shootingMode = ShootingMode.ROCKET;
+                    fire();
+                }
             }
         }
 

@@ -14,7 +14,6 @@ import com.igorternyuk.tanks.gameplay.entities.bonuses.PowerUpType;
 import com.igorternyuk.tanks.gameplay.entities.castle.Castle;
 import com.igorternyuk.tanks.gameplay.entities.castle.CastleState;
 import com.igorternyuk.tanks.gameplay.entities.dynamite.Dynamite;
-import com.igorternyuk.tanks.gameplay.entities.explosion.ExplosionType;
 import com.igorternyuk.tanks.gameplay.entities.indicators.GameInfoPanel;
 import com.igorternyuk.tanks.gameplay.entities.player.Player;
 import com.igorternyuk.tanks.gameplay.entities.player.PlayerTankIdentifier;
@@ -520,7 +519,7 @@ public class LevelState extends GameState {
         this.stageCount = 1;
         loadMap();
         fillHangar();
-        createEntities();
+        createMainEntities();
         this.resourceManager.getAudio(AudioIdentifier.PLAYER_MOVES).stop();
         this.resourceManager.getAudio(AudioIdentifier.PLAYER_IDLE).stop();
         this.resourceManager.getAudio(AudioIdentifier.NEXT_STAGE).play();
@@ -535,6 +534,7 @@ public class LevelState extends GameState {
         int index = (this.stageNumber - 1) % STAGE_MAX;
         EnemyTankType[] allEnemyTankTypes = EnemyTankType.values();
         if (index < this.enemyGroups.length) {
+            System.out.println("Filling hangar by pattern");
             int[] enemyTypes = this.enemyGroups[index];
 
             for (int i = 0; i < enemyTypes.length; ++i) {
@@ -545,11 +545,13 @@ public class LevelState extends GameState {
             }
             Collections.shuffle(hangar);
         } else {
+            System.out.println("Random hangar filling");
             for (int i = 0; i < TANKS_AFTER_FOURTY_STAGE_MAX; ++i) {
                 int randIndex = this.random.nextInt(allEnemyTankTypes.length);
                 this.hangar.push(allEnemyTankTypes[randIndex]);
             }
         }
+        System.out.println("Hangar size = " + this.hangar.size());
     }
 
     private List<Point> getFreeAppearancePoints() {
@@ -602,7 +604,7 @@ public class LevelState extends GameState {
         return freeAppearancePoints;
     }
 
-    private void createEntities() {
+    private void createMainEntities() {
         List<Point> playerPositions = this.tileMap.getPlayerRespawnPositions();
         for (int i = 1; i <= this.playerCount; ++i) {
             Player player = new Player(this, i, PlayerTankType.BASIC,
@@ -635,21 +637,27 @@ public class LevelState extends GameState {
         List<Entity> rockets = this.entityManager.getEntitiesByType(
                 EntityType.ROCKET);
 
-        for (int i = enemyTanks.size() - 1; i >= 0; --i) {
-            EnemyTank enemyTank = (EnemyTank) enemyTanks.get(i);
-            for (int j = dynamits.size() - 1; j >= 0; --j) {
-                Dynamite dynamite = (Dynamite) dynamits.get(j);
-                if (enemyTank.collides(dynamite)) {
-                    enemyTank.explode();
-                    dynamite.explode();
-                    break;
+        checkCollisionsBetweenProjectiles(projectiles);
+        checkProjectileCastleCollisions(projectiles);
+        checkProjectilePlayerCollision(projectiles);
+        checkProjectileEnemyTankCollision(projectiles, enemyTanks);
+        checkRocketPlayerCollision(rockets);
+        checkRocketEnemyTankCollisions(rockets, enemyTanks);
+        checkEnemyTankDynamiteCollisions(dynamits, enemyTanks);
+    }
+    
+    private void checkRocketEnemyTankCollisions(List<Entity> rockets,
+            List<Entity> enemyTanks) {
+        rocketLoop:
+        for (int j = rockets.size() - 1; j >= 0; --j) {
+            Rocket rocket = (Rocket) rockets.get(j);
+            for (int i = enemyTanks.size() - 1; i >= 0; --i) {
+                EnemyTank enemyTank = (EnemyTank) enemyTanks.get(i);
+                if (!enemyTank.isAlive()) {
+                    continue;
                 }
-            }
-            
-            rocketLoop:
-            for (int j = rockets.size() - 1; j >= 0; --j) {
-                Rocket rocket = (Rocket) rockets.get(j);
                 if (enemyTank.collides(rocket) && rocket.getOwnerId() != 0) {
+                    enemyTank.explode();
                     int killerId = rocket.getOwnerId();
                     for (int k = 0; k < this.players.size(); ++k) {
                         Player currPlayer = this.players.get(k);
@@ -658,30 +666,77 @@ public class LevelState extends GameState {
                             continue rocketLoop;
                         }
                     }
-                    enemyTank.explode();
                     rocket.explode();
                     break;
                 }
             }
         }
+    }
 
-        outer:
+    private void checkRocketPlayerCollision(List<Entity> rockets) {
+        rocketLoop:
+        for (int i = rockets.size() - 1; i >= 0; --i) {
+            Rocket rocket = (Rocket) rockets.get(i);
+            for (int j = 0; j < this.players.size(); ++j) {
+                Player currPlayer = this.players.get(j);
+                if (rocket.collides(currPlayer)) {
+                    currPlayer.explode();
+                    rocket.explode();
+                    continue rocketLoop;
+                }
+            }
+        }
+    }
+    
+    private void checkEnemyTankDynamiteCollisions(List<Entity> dynamits,
+            List<Entity> enemyTanks){
+        tanksLoop:
+        for (int i = enemyTanks.size() - 1; i >= 0; --i) {
+            EnemyTank enemyTank = (EnemyTank) enemyTanks.get(i);
+            if (!enemyTank.isAlive()) {
+                continue;
+            }
+            for (int j = dynamits.size() - 1; j >= 0; --j) {
+                Dynamite dynamite = (Dynamite) dynamits.get(j);
+                if (enemyTank.collides(dynamite)) {
+                    enemyTank.explode();
+                    int killerId = dynamite.getOwnerId();
+                    dynamite.explode();
+                    for (int k = 0; k < this.players.size(); ++k) {
+                        Player currPlayer = this.players.get(k);
+                        if (currPlayer.getId().getId() == killerId) {
+                            currPlayer.registerKilledTank(enemyTank);
+                            continue tanksLoop;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private void checkProjectileCastleCollisions(List<Entity> projectiles){
         for (int i = projectiles.size() - 1; i >= 0; --i) {
             Projectile projectile = (Projectile) projectiles.get(i);
 
             if (this.castle.getState() == CastleState.ALIVE
                     && projectile.collides(this.castle)) {
                 this.castle.kill();
-                continue;
+                return;
             }
-
+        }
+    }
+    
+    private void checkProjectilePlayerCollision(List<Entity> projectiles){
+        projectileLoop:
+        for (int i = projectiles.size() - 1; i >= 0; --i) {
+            Projectile projectile = (Projectile) projectiles.get(i);
             for (int j = this.players.size() - 1; j >= 0; --j) {
                 Player currPlayer = this.players.get(j);
                 if (projectile.getType() == ProjectileType.ENEMY) {
                     if (projectile.collides(currPlayer)) {
                         currPlayer.hit(projectile.getDamage());
                         projectile.explode();
-                        continue outer;
+                        continue projectileLoop;
                     }
                 } else if (projectile.getType() == ProjectileType.PLAYER) {
                     if (projectile.collides(currPlayer)
@@ -690,14 +745,25 @@ public class LevelState extends GameState {
                         this.players.forEach(player -> player.freeze(
                                 PLAYER_TANK_FROZEN_DURATION));
                         projectile.explode();
-                        continue outer;
+                        continue projectileLoop;
                     }
                 }
 
             }
-
+        }
+    }
+    
+    private void checkProjectileEnemyTankCollision(List<Entity> projectiles,
+            List<Entity> enemyTanks){
+        projectileLoop:
+        for (int i = projectiles.size() - 1; i >= 0; --i) {
+            Projectile projectile = (Projectile) projectiles.get(i);
+            
             for (int j = enemyTanks.size() - 1; j >= 0; --j) {
                 EnemyTank enemyTank = (EnemyTank) enemyTanks.get(j);
+                if (!enemyTank.isAlive()) {
+                    continue;
+                }
                 if (projectile.collides(enemyTank)) {
                     if (projectile.getType() == ProjectileType.PLAYER) {
                         enemyTank.hit(projectile.getDamage());
@@ -707,7 +773,7 @@ public class LevelState extends GameState {
                                 Player currPlayer = this.players.get(k);
                                 if (currPlayer.getId().getId() == killerId) {
                                     currPlayer.registerKilledTank(enemyTank);
-                                    continue outer;
+                                    continue projectileLoop;
                                 }
                             }
                         }
@@ -715,14 +781,20 @@ public class LevelState extends GameState {
                     }
                 }
             }
-
+        }
+    }
+    
+    private void checkCollisionsBetweenProjectiles(List<Entity> projectiles){
+        projectileLoop:
+        for (int i = projectiles.size() - 1; i >= 0; --i) {
+            Projectile projectile = (Projectile) projectiles.get(i);
             for (int j = i - 1; j >= 0; --j) {
                 Projectile otherProjectile = (Projectile) projectiles.get(j);
                 if (projectile.getOwnerId() != otherProjectile.getOwnerId()
                         && projectile.collides(otherProjectile)) {
                     projectile.explode();
                     otherProjectile.explode();
-                    continue outer;
+                    continue projectileLoop;
                 }
 
             }
@@ -806,6 +878,11 @@ public class LevelState extends GameState {
                 break;
             case KeyEvent.VK_Z:
                 this.players.get(0).dynamite();
+                break;
+            case KeyEvent.VK_X:
+                if (this.playerCount > 1) {
+                    this.players.get(1).dynamite();
+                }
                 break;
             case KeyEvent.VK_M:
                 stopAllSounds();

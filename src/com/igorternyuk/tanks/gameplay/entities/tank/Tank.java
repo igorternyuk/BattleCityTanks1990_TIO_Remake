@@ -83,6 +83,7 @@ public abstract class Tank<I> extends AnimatedEntity<I> {
     public void gainAbilityToLaunchRockets(){
         this.rocketsLaunched = 0;
         this.canLaunchRockets = true;
+        this.shootingMode = ShootingMode.ROCKET;
     }
 
     public boolean isCanRepeateFire() {

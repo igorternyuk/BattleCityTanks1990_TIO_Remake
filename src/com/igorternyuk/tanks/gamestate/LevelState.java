@@ -320,7 +320,7 @@ public class LevelState extends GameState {
         if (this.powerUpTimer > POWERUP_TIMER_DELAY) {
             this.powerUpTimer = 0;
             if (this.random.nextDouble() < POWERUP_PROBABILITY) {
-                addRandomPowerUp();
+                createRandomPowerUp();
             }
         }
     }
@@ -416,13 +416,12 @@ public class LevelState extends GameState {
         powerUp.collect();
     }
 
-    public void addRandomPowerUp() {
-        int randX = this.random.nextInt(Game.TILES_IN_WIDTH - 1)
-                * Game.HALF_TILE_SIZE;
-        int randY = this.random.nextInt(Game.TILES_IN_HEIGHT - 1)
-                * Game.HALF_TILE_SIZE;
+    public void createRandomPowerUp() {
+        List<Point> freePoints = this.tileMap.getFreeSpots();
+        int randIndex = this.random.nextInt(freePoints.size());
+        Point randPoint = new Point(freePoints.get(randIndex));
         PowerUp powerUp = new PowerUp(this, PowerUpType.randomType(),
-                randX, randY);
+                randPoint.x, randPoint.y);
         powerUp.startInfiniteBlinking(POWERUP_BLINKING_PERIOD);
         this.entityManager.removeEntitiesByType(EntityType.POWER_UP);
         this.entityManager.addEntity(powerUp);
@@ -534,7 +533,6 @@ public class LevelState extends GameState {
         int index = (this.stageNumber - 1) % STAGE_MAX;
         EnemyTankType[] allEnemyTankTypes = EnemyTankType.values();
         if (index < this.enemyGroups.length) {
-            System.out.println("Filling hangar by pattern");
             int[] enemyTypes = this.enemyGroups[index];
 
             for (int i = 0; i < enemyTypes.length; ++i) {
@@ -545,13 +543,11 @@ public class LevelState extends GameState {
             }
             Collections.shuffle(hangar);
         } else {
-            System.out.println("Random hangar filling");
             for (int i = 0; i < TANKS_AFTER_FOURTY_STAGE_MAX; ++i) {
                 int randIndex = this.random.nextInt(allEnemyTankTypes.length);
                 this.hangar.push(allEnemyTankTypes[randIndex]);
             }
         }
-        System.out.println("Hangar size = " + this.hangar.size());
     }
 
     private List<Point> getFreeAppearancePoints() {
@@ -855,7 +851,7 @@ public class LevelState extends GameState {
             case KeyEvent.VK_S:
             case KeyEvent.VK_D:
             case KeyEvent.VK_W:
-                if (this.playerCount > 1) {
+                if (this.players.size() > 1) {
                     this.players.get(1).setSliding(true);
                 }
                 break;
@@ -866,18 +862,22 @@ public class LevelState extends GameState {
             case KeyEvent.VK_H:
             case KeyEvent.VK_G:
             case KeyEvent.VK_J:
-                this.players.get(0).setCanFire(true);
+                if(!this.players.isEmpty()){
+                    this.players.get(0).setCanFire(true);
+                }
                 break;
             case KeyEvent.VK_E:
             case KeyEvent.VK_R:
             case KeyEvent.VK_T:
             case KeyEvent.VK_Y:
-                if (this.playerCount > 1) {
+                if (this.players.size() > 1) {
                     this.players.get(1).setCanFire(true);
                 }
                 break;
             case KeyEvent.VK_Z:
-                this.players.get(0).dynamite();
+                if(!this.players.isEmpty()){
+                    this.players.get(0).dynamite();
+                }
                 break;
             case KeyEvent.VK_X:
                 if (this.playerCount > 1) {

@@ -169,8 +169,6 @@ public class Player extends Tank {
 
     public void registerKilledTank(EnemyTank enemyTank) {
         this.statistics.addKilledTank(enemyTank);
-        System.out.println("Registering killed tank count = " + this.statistics.
-                getKilledTankCount());
     }
 
     public void collectPowerUp(PowerUp powerup) {

@@ -88,6 +88,20 @@ public class TileMap {
                 this.tileTypeImageMap.get(TileType.EMPTY), this.scale);
     }
 
+    public List<Point> getFreeSpots() {
+        List<Point> freePoints = new ArrayList<>();
+        for (int row = 0; row < this.tiles.length; ++row) {
+            for (int col = 0; col < this.tiles[row].length; ++col) {
+                if (!getTileType(row, col).isDestroyable()) {
+                    Point point = new Point(col * Game.HALF_TILE_SIZE, row
+                            * Game.HALF_TILE_SIZE);
+                    freePoints.add(point);
+                }
+            }
+        }
+        return freePoints;
+    }
+
     public List<Point> getEnemyTankAppearencePositions() {
         return Collections.unmodifiableList(this.enemyTankAppearancePositions);
     }

@@ -151,7 +151,9 @@ public class ScoreScreen {
     }
 
     private void drawStatistics(Graphics2D g) {
-        
+        if(this.players.isEmpty()){
+            return;
+        }
         g.setColor(Color.white);
         g.setFont(this.fontSmaller);
 

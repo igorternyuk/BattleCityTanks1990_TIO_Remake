@@ -80,6 +80,22 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         selectRandomFiringPointToAttackEagle();
         this.moving = true;
     }
+
+    @Override
+    public void update(KeyboardState keyboardState, double frameTime) {
+        super.update(keyboardState, frameTime);
+        updateGleamingColor(frameTime);
+        updateRedBlinking(frameTime);
+        executeMovementLogic(frameTime);
+        updateShootingTimer(frameTime);
+        updateAnimation();
+    }
+
+    @Override
+    public void draw(Graphics2D g) {
+        super.draw(g);
+        this.shortestPath.forEach(spot -> spot.draw(g));
+    }
     
     public void setShootingMode(ShootingMode shootingMode){
         this.shootingMode = shootingMode;
@@ -108,22 +124,6 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
         this.health = shotsToKillRequired * PlayerTankType.BASIC.
                 getProjectileDamage();
         this.redBlinking = true;
-    }
-
-    @Override
-    public void update(KeyboardState keyboardState, double frameTime) {
-        super.update(keyboardState, frameTime);
-        updateGleamingColor(frameTime);
-        updateRedBlinking(frameTime);
-        executeMovementLogic(frameTime);
-        updateShootingTimer(frameTime);
-        updateAnimation();
-    }
-
-    @Override
-    public void draw(Graphics2D g) {
-        super.draw(g);
-        this.shortestPath.forEach(spot -> spot.draw(g));
     }
 
     public void executeMovementLogic(double frameTime) {
@@ -221,7 +221,7 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     }
 
     private void createPowerUp() {
-        this.level.addRandomPowerUp();
+        this.level.createRandomPowerUp();
     }
 
     @Override
@@ -365,20 +365,26 @@ public class EnemyTank extends Tank<EnemyTankIdentifier> {
     private void updateTarget(double frameTime) {
         this.targetTimer += frameTime;
         if (this.targetTimer < TARGET_CHANGING_PERIOD) {
-            if (this.number % 2 == 0) {
-                targetEagle();
-            } else {
+            if (this.number % 4 == 0) {
+                targetPowerUp();
+            } else if(this.number % 2 == 0){
                 targetPlayer(PlayerIdentifier.FIRST);
+            } else {
+                targetEagle();
             }
         } else if (this.targetTimer < 2 * TARGET_CHANGING_PERIOD) {
-            if (this.number % 2 == 0) {
-                targetPlayer(PlayerIdentifier.SECOND);
-            } else {
+            if (this.number % 4 == 0) {
                 targetEagle();
-            }
-        } else if (this.targetTimer < 3 * TARGET_CHANGING_PERIOD) {
-            if (this.number % 2 == 0) {
+            } else if(this.number % 2 == 0){
                 targetPowerUp();
+            } else {
+                targetPlayer(PlayerIdentifier.SECOND);
+            }
+        } else if (this.targetTimer < 3 * TARGET_CHANGING_PERIOD){
+            if (this.number % 4 == 0) {
+                targetPlayer(PlayerIdentifier.FIRST);
+            } else if(this.number % 2 == 0){
+                targetPlayer(PlayerIdentifier.SECOND);
             } else {
                 targetEagle();
             }

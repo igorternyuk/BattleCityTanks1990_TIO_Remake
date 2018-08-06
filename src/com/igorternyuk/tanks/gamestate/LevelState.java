@@ -136,8 +136,7 @@ public class LevelState extends GameState {
     private boolean frozenModeAcive = false;
     private double freezeTimer = 0;
     private GameMode gameMode;
-    private Font fontNextStageSplash = new Font("Verdana", Font.BOLD
-            | Font.ITALIC, 48);
+    private Font fontNextStageSplash = new Font("Verdana", Font.BOLD, 48);
 
     private boolean gameOverMessageSliding = false;
     private double gameOverMessageTimer = 0;
@@ -633,8 +632,12 @@ public class LevelState extends GameState {
         List<Entity> rockets = this.entityManager.getEntitiesByType(
                 EntityType.ROCKET);
 
+        
+        if(checkProjectileCastleCollisions(projectiles)
+                || checkRocketCastleCollision(rockets)){
+            return;
+        }        
         checkCollisionsBetweenProjectiles(projectiles);
-        checkProjectileCastleCollisions(projectiles);
         checkProjectilePlayerCollision(projectiles);
         checkProjectileEnemyTankCollision(projectiles, enemyTanks);
         checkRocketPlayerCollision(rockets);
@@ -675,13 +678,26 @@ public class LevelState extends GameState {
             Rocket rocket = (Rocket) rockets.get(i);
             for (int j = 0; j < this.players.size(); ++j) {
                 Player currPlayer = this.players.get(j);
-                if (rocket.collides(currPlayer)) {
+                if (rocket.getOwnerId() == 0 && rocket.collides(currPlayer)) {
                     currPlayer.explode();
                     rocket.explode();
                     continue rocketLoop;
                 }
             }
         }
+    }
+    
+    private boolean checkRocketCastleCollision(List<Entity> rockets){
+        rocketLoop:
+        for (int i = rockets.size() - 1; i >= 0; --i) {
+            Rocket rocket = (Rocket) rockets.get(i);
+            if (this.castle.getState() == CastleState.ALIVE
+                    && rocket.collides(this.castle)) {
+                this.castle.kill();
+                return true;
+            }
+        }
+        return false;
     }
     
     private void checkEnemyTankDynamiteCollisions(List<Entity> dynamits,
@@ -710,16 +726,17 @@ public class LevelState extends GameState {
         }
     }
     
-    private void checkProjectileCastleCollisions(List<Entity> projectiles){
+    private boolean checkProjectileCastleCollisions(List<Entity> projectiles){
         for (int i = projectiles.size() - 1; i >= 0; --i) {
             Projectile projectile = (Projectile) projectiles.get(i);
 
             if (this.castle.getState() == CastleState.ALIVE
                     && projectile.collides(this.castle)) {
                 this.castle.kill();
-                return;
+                return true;
             }
         }
+        return false;
     }
     
     private void checkProjectilePlayerCollision(List<Entity> projectiles){
@@ -845,8 +862,10 @@ public class LevelState extends GameState {
             case KeyEvent.VK_RIGHT:
             case KeyEvent.VK_UP:
             case KeyEvent.VK_DOWN:
-                this.players.get(0).setSliding(true);
-                break;
+                if (!this.players.isEmpty()) {
+                    this.players.get(0).setSliding(true);
+                    break;
+                }
             case KeyEvent.VK_A:
             case KeyEvent.VK_S:
             case KeyEvent.VK_D:
